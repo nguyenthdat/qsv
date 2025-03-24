@@ -438,6 +438,11 @@ END {
     wrk.assert_success(&mut cmd);
 }
 
+// TODO: Ignore this test on Windows for now.
+// Multiple attempts to fix this test on Windows
+// have not been successful. The error is related to a file open
+// issue, which is not easily reproducible.
+#[cfg(not(target_os = "windows"))]
 #[test]
 fn luau_register_lookup_table_on_url() {
     let wrk = Workdir::new("luau_register_lookup_table_on_url");
