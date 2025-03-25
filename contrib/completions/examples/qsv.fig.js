@@ -2547,6 +2547,54 @@ const completion: Fig.Spec = {
       ],
     },
     {
+      name: "pivotp",
+      options: [
+        {
+          name: "--index",
+        },
+        {
+          name: "--values",
+        },
+        {
+          name: "--agg",
+        },
+        {
+          name: "--sort-columns",
+        },
+        {
+          name: "--col-separator",
+        },
+        {
+          name: "--validate",
+        },
+        {
+          name: "--try-parsedates",
+        },
+        {
+          name: "--infer-len",
+        },
+        {
+          name: "--decimal-comma",
+        },
+        {
+          name: "--ignore-errors",
+        },
+        {
+          name: "--output",
+        },
+        {
+          name: "--delimiter",
+        },
+        {
+          name: "--quiet",
+        },
+        {
+          name: ["-h", "--help"],
+          description: "Print help",
+        },
+      ],
+    },
+    {
       name: "pro",
       subcommands: [
         {
@@ -3552,6 +3600,9 @@ const completion: Fig.Spec = {
           name: "--infer-boolean",
         },
         {
+          name: "--boolean-patterns",
+        },
+        {
           name: "--mode",
         },
         {
@@ -3565,6 +3616,12 @@ const completion: Fig.Spec = {
         },
         {
           name: "--quartiles",
+        },
+        {
+          name: "--percentiles",
+        },
+        {
+          name: "--percentile-list",
         },
         {
           name: "--round",
@@ -4240,6 +4297,9 @@ const completion: Fig.Spec = {
         },
         {
           name: "partition",
+        },
+        {
+          name: "pivotp",
         },
         {
           name: "pro",

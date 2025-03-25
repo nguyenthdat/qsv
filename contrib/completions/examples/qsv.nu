@@ -965,6 +965,23 @@ module completions {
     --help(-h)                # Print help
   ]
 
+  export extern "qsv pivotp" [
+    --index
+    --values
+    --agg
+    --sort-columns
+    --col-separator
+    --validate
+    --try-parsedates
+    --infer-len
+    --decimal-comma
+    --ignore-errors
+    --output
+    --delimiter
+    --quiet
+    --help(-h)                # Print help
+  ]
+
   export extern "qsv pro" [
     --help(-h)                # Print help
   ]
@@ -1356,11 +1373,14 @@ module completions {
     --everything
     --typesonly
     --infer-boolean
+    --boolean-patterns
     --mode
     --cardinality
     --median
     --mad
     --quartiles
+    --percentiles
+    --percentile-list
     --round
     --nulls
     --infer-dates
@@ -1715,6 +1735,9 @@ module completions {
   ]
 
   export extern "qsv help partition" [
+  ]
+
+  export extern "qsv help pivotp" [
   ]
 
   export extern "qsv help pro" [
