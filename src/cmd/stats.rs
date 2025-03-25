@@ -616,7 +616,7 @@ impl BooleanPattern {
     }
 }
 
-fn parse_boolean_patterns(boolean_patterns: &str) -> Result<Vec<BooleanPattern>, String> {
+fn parse_boolean_patterns(boolean_patterns: &str) -> CliResult<Vec<BooleanPattern>> {
     let mut patterns = Vec::new();
     for pair in boolean_patterns.split(',') {
         let mut parts = pair.split(':');
@@ -653,19 +653,13 @@ pub fn run(argv: &[&str]) -> CliResult<()> {
         }
 
         // validate boolean patterns
-        match parse_boolean_patterns(&args.flag_boolean_patterns) {
-            Ok(patterns) => {
-                if patterns.is_empty() {
-                    return fail_incorrectusage_clierror!(
-                        "Boolean patterns must have at least one pattern"
-                    );
-                }
-                let _ = BOOLEAN_PATTERNS.set(patterns);
-            },
-            Err(e) => {
-                return fail_incorrectusage_clierror!("{e}");
-            },
+        let patterns = parse_boolean_patterns(&args.flag_boolean_patterns)?;
+        if patterns.is_empty() {
+            return fail_incorrectusage_clierror!(
+                "Boolean patterns must have at least one pattern"
+            );
         }
+        let _ = BOOLEAN_PATTERNS.set(patterns);
     }
 
     // check prefer_dmy env var
