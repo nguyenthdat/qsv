@@ -60,6 +60,7 @@ set edit:completion:arg-completer[qsv] = {|@words|
             cand lens 'lens'
             cand luau 'luau'
             cand partition 'partition'
+            cand pivotp 'pivotp'
             cand pro 'pro'
             cand prompt 'prompt'
             cand pseudo 'pseudo'
@@ -1056,6 +1057,23 @@ set edit:completion:arg-completer[qsv] = {|@words|
             cand -h 'Print help'
             cand --help 'Print help'
         }
+        &'qsv;pivotp'= {
+            cand --index 'index'
+            cand --values 'values'
+            cand --agg 'agg'
+            cand --sort-columns 'sort-columns'
+            cand --col-separator 'col-separator'
+            cand --validate 'validate'
+            cand --try-parsedates 'try-parsedates'
+            cand --infer-len 'infer-len'
+            cand --decimal-comma 'decimal-comma'
+            cand --ignore-errors 'ignore-errors'
+            cand --output 'output'
+            cand --delimiter 'delimiter'
+            cand --quiet 'quiet'
+            cand -h 'Print help'
+            cand --help 'Print help'
+        }
         &'qsv;pro'= {
             cand -h 'Print help'
             cand --help 'Print help'
@@ -1449,11 +1467,14 @@ set edit:completion:arg-completer[qsv] = {|@words|
             cand --everything 'everything'
             cand --typesonly 'typesonly'
             cand --infer-boolean 'infer-boolean'
+            cand --boolean-patterns 'boolean-patterns'
             cand --mode 'mode'
             cand --cardinality 'cardinality'
             cand --median 'median'
             cand --mad 'mad'
             cand --quartiles 'quartiles'
+            cand --percentiles 'percentiles'
+            cand --percentile-list 'percentile-list'
             cand --round 'round'
             cand --nulls 'nulls'
             cand --infer-dates 'infer-dates'
@@ -1682,6 +1703,7 @@ set edit:completion:arg-completer[qsv] = {|@words|
             cand lens 'lens'
             cand luau 'luau'
             cand partition 'partition'
+            cand pivotp 'pivotp'
             cand pro 'pro'
             cand prompt 'prompt'
             cand pseudo 'pseudo'
@@ -1837,6 +1859,8 @@ set edit:completion:arg-completer[qsv] = {|@words|
         &'qsv;help;luau;filter'= {
         }
         &'qsv;help;partition'= {
+        }
+        &'qsv;help;pivotp'= {
         }
         &'qsv;help;pro'= {
             cand lens 'lens'

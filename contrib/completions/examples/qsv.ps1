@@ -63,6 +63,7 @@ Register-ArgumentCompleter -Native -CommandName 'qsv' -ScriptBlock {
             [CompletionResult]::new('lens', 'lens', [CompletionResultType]::ParameterValue, 'lens')
             [CompletionResult]::new('luau', 'luau', [CompletionResultType]::ParameterValue, 'luau')
             [CompletionResult]::new('partition', 'partition', [CompletionResultType]::ParameterValue, 'partition')
+            [CompletionResult]::new('pivotp', 'pivotp', [CompletionResultType]::ParameterValue, 'pivotp')
             [CompletionResult]::new('pro', 'pro', [CompletionResultType]::ParameterValue, 'pro')
             [CompletionResult]::new('prompt', 'prompt', [CompletionResultType]::ParameterValue, 'prompt')
             [CompletionResult]::new('pseudo', 'pseudo', [CompletionResultType]::ParameterValue, 'pseudo')
@@ -1141,6 +1142,24 @@ Register-ArgumentCompleter -Native -CommandName 'qsv' -ScriptBlock {
             [CompletionResult]::new('--help', '--help', [CompletionResultType]::ParameterName, 'Print help')
             break
         }
+        'qsv;pivotp' {
+            [CompletionResult]::new('--index', '--index', [CompletionResultType]::ParameterName, 'index')
+            [CompletionResult]::new('--values', '--values', [CompletionResultType]::ParameterName, 'values')
+            [CompletionResult]::new('--agg', '--agg', [CompletionResultType]::ParameterName, 'agg')
+            [CompletionResult]::new('--sort-columns', '--sort-columns', [CompletionResultType]::ParameterName, 'sort-columns')
+            [CompletionResult]::new('--col-separator', '--col-separator', [CompletionResultType]::ParameterName, 'col-separator')
+            [CompletionResult]::new('--validate', '--validate', [CompletionResultType]::ParameterName, 'validate')
+            [CompletionResult]::new('--try-parsedates', '--try-parsedates', [CompletionResultType]::ParameterName, 'try-parsedates')
+            [CompletionResult]::new('--infer-len', '--infer-len', [CompletionResultType]::ParameterName, 'infer-len')
+            [CompletionResult]::new('--decimal-comma', '--decimal-comma', [CompletionResultType]::ParameterName, 'decimal-comma')
+            [CompletionResult]::new('--ignore-errors', '--ignore-errors', [CompletionResultType]::ParameterName, 'ignore-errors')
+            [CompletionResult]::new('--output', '--output', [CompletionResultType]::ParameterName, 'output')
+            [CompletionResult]::new('--delimiter', '--delimiter', [CompletionResultType]::ParameterName, 'delimiter')
+            [CompletionResult]::new('--quiet', '--quiet', [CompletionResultType]::ParameterName, 'quiet')
+            [CompletionResult]::new('-h', '-h', [CompletionResultType]::ParameterName, 'Print help')
+            [CompletionResult]::new('--help', '--help', [CompletionResultType]::ParameterName, 'Print help')
+            break
+        }
         'qsv;pro' {
             [CompletionResult]::new('-h', '-h', [CompletionResultType]::ParameterName, 'Print help')
             [CompletionResult]::new('--help', '--help', [CompletionResultType]::ParameterName, 'Print help')
@@ -1576,11 +1595,14 @@ Register-ArgumentCompleter -Native -CommandName 'qsv' -ScriptBlock {
             [CompletionResult]::new('--everything', '--everything', [CompletionResultType]::ParameterName, 'everything')
             [CompletionResult]::new('--typesonly', '--typesonly', [CompletionResultType]::ParameterName, 'typesonly')
             [CompletionResult]::new('--infer-boolean', '--infer-boolean', [CompletionResultType]::ParameterName, 'infer-boolean')
+            [CompletionResult]::new('--boolean-patterns', '--boolean-patterns', [CompletionResultType]::ParameterName, 'boolean-patterns')
             [CompletionResult]::new('--mode', '--mode', [CompletionResultType]::ParameterName, 'mode')
             [CompletionResult]::new('--cardinality', '--cardinality', [CompletionResultType]::ParameterName, 'cardinality')
             [CompletionResult]::new('--median', '--median', [CompletionResultType]::ParameterName, 'median')
             [CompletionResult]::new('--mad', '--mad', [CompletionResultType]::ParameterName, 'mad')
             [CompletionResult]::new('--quartiles', '--quartiles', [CompletionResultType]::ParameterName, 'quartiles')
+            [CompletionResult]::new('--percentiles', '--percentiles', [CompletionResultType]::ParameterName, 'percentiles')
+            [CompletionResult]::new('--percentile-list', '--percentile-list', [CompletionResultType]::ParameterName, 'percentile-list')
             [CompletionResult]::new('--round', '--round', [CompletionResultType]::ParameterName, 'round')
             [CompletionResult]::new('--nulls', '--nulls', [CompletionResultType]::ParameterName, 'nulls')
             [CompletionResult]::new('--infer-dates', '--infer-dates', [CompletionResultType]::ParameterName, 'infer-dates')
@@ -1826,6 +1848,7 @@ Register-ArgumentCompleter -Native -CommandName 'qsv' -ScriptBlock {
             [CompletionResult]::new('lens', 'lens', [CompletionResultType]::ParameterValue, 'lens')
             [CompletionResult]::new('luau', 'luau', [CompletionResultType]::ParameterValue, 'luau')
             [CompletionResult]::new('partition', 'partition', [CompletionResultType]::ParameterValue, 'partition')
+            [CompletionResult]::new('pivotp', 'pivotp', [CompletionResultType]::ParameterValue, 'pivotp')
             [CompletionResult]::new('pro', 'pro', [CompletionResultType]::ParameterValue, 'pro')
             [CompletionResult]::new('prompt', 'prompt', [CompletionResultType]::ParameterValue, 'prompt')
             [CompletionResult]::new('pseudo', 'pseudo', [CompletionResultType]::ParameterValue, 'pseudo')
@@ -2035,6 +2058,9 @@ Register-ArgumentCompleter -Native -CommandName 'qsv' -ScriptBlock {
             break
         }
         'qsv;help;partition' {
+            break
+        }
+        'qsv;help;pivotp' {
             break
         }
         'qsv;help;pro' {

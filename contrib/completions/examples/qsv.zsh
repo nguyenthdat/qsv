@@ -1210,6 +1210,25 @@ _arguments "${_arguments_options[@]}" : \
 '--help[Print help]' \
 && ret=0
 ;;
+(pivotp)
+_arguments "${_arguments_options[@]}" : \
+'--index[]' \
+'--values[]' \
+'--agg[]' \
+'--sort-columns[]' \
+'--col-separator[]' \
+'--validate[]' \
+'--try-parsedates[]' \
+'--infer-len[]' \
+'--decimal-comma[]' \
+'--ignore-errors[]' \
+'--output[]' \
+'--delimiter[]' \
+'--quiet[]' \
+'-h[Print help]' \
+'--help[Print help]' \
+&& ret=0
+;;
 (pro)
 _arguments "${_arguments_options[@]}" : \
 '-h[Print help]' \
@@ -1738,11 +1757,14 @@ _arguments "${_arguments_options[@]}" : \
 '--everything[]' \
 '--typesonly[]' \
 '--infer-boolean[]' \
+'--boolean-patterns[]' \
 '--mode[]' \
 '--cardinality[]' \
 '--median[]' \
 '--mad[]' \
 '--quartiles[]' \
+'--percentiles[]' \
+'--percentile-list[]' \
 '--round[]' \
 '--nulls[]' \
 '--infer-dates[]' \
@@ -2258,6 +2280,10 @@ esac
 _arguments "${_arguments_options[@]}" : \
 && ret=0
 ;;
+(pivotp)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
 (pro)
 _arguments "${_arguments_options[@]}" : \
 ":: :_qsv__help__pro_commands" \
@@ -2513,6 +2539,7 @@ _qsv_commands() {
 'lens:' \
 'luau:' \
 'partition:' \
+'pivotp:' \
 'pro:' \
 'prompt:' \
 'pseudo:' \
@@ -2958,6 +2985,7 @@ _qsv__help_commands() {
 'lens:' \
 'luau:' \
 'partition:' \
+'pivotp:' \
 'pro:' \
 'prompt:' \
 'pseudo:' \
@@ -3287,6 +3315,11 @@ _qsv__help__partition_commands() {
     local commands; commands=()
     _describe -t commands 'qsv help partition commands' commands "$@"
 }
+(( $+functions[_qsv__help__pivotp_commands] )) ||
+_qsv__help__pivotp_commands() {
+    local commands; commands=()
+    _describe -t commands 'qsv help pivotp commands' commands "$@"
+}
 (( $+functions[_qsv__help__pro_commands] )) ||
 _qsv__help__pro_commands() {
     local commands; commands=(
@@ -3580,6 +3613,11 @@ _qsv__luau__map_commands() {
 _qsv__partition_commands() {
     local commands; commands=()
     _describe -t commands 'qsv partition commands' commands "$@"
+}
+(( $+functions[_qsv__pivotp_commands] )) ||
+_qsv__pivotp_commands() {
+    local commands; commands=()
+    _describe -t commands 'qsv pivotp commands' commands "$@"
 }
 (( $+functions[_qsv__pro_commands] )) ||
 _qsv__pro_commands() {

@@ -33,6 +33,7 @@ pub mod jsonl;
 pub mod lens;
 pub mod luau;
 pub mod partition;
+pub mod pivotp;
 pub mod pro;
 pub mod prompt;
 pub mod pseudo;
