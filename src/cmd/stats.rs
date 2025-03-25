@@ -616,23 +616,23 @@ impl BooleanPattern {
     }
 }
 
-fn parse_boolean_patterns(boolean_patterns: &str) -> Vec<BooleanPattern> {
-    boolean_patterns
-        .split(',')
-        .filter_map(|pair| {
-            let mut parts = pair.split(':');
-            let true_pattern = parts.next()?.trim().to_lowercase();
-            let false_pattern = parts.next()?.trim().to_lowercase();
-            if true_pattern.is_empty() || false_pattern.is_empty() {
-                None
-            } else {
-                Some(BooleanPattern {
-                    true_pattern,
-                    false_pattern,
-                })
-            }
-        })
-        .collect()
+fn parse_boolean_patterns(boolean_patterns: &str) -> Result<Vec<BooleanPattern>, String> {
+    let mut patterns = Vec::new();
+    for pair in boolean_patterns.split(',') {
+        let mut parts = pair.split(':');
+        let true_pattern = parts.next().unwrap_or("").trim().to_lowercase();
+        let false_pattern = parts.next().unwrap_or("").trim().to_lowercase();
+
+        if true_pattern.is_empty() || false_pattern.is_empty() {
+            return fail_incorrectusage_clierror!("Invalid boolean pattern: {pair}");
+        }
+
+        patterns.push(BooleanPattern {
+            true_pattern,
+            false_pattern,
+        });
+    }
+    Ok(patterns)
 }
 
 pub fn run(argv: &[&str]) -> CliResult<()> {
@@ -651,7 +651,21 @@ pub fn run(argv: &[&str]) -> CliResult<()> {
         if !args.flag_cardinality {
             args.flag_cardinality = true;
         }
-        let _ = BOOLEAN_PATTERNS.set(parse_boolean_patterns(&args.flag_boolean_patterns));
+
+        // validate boolean patterns
+        match parse_boolean_patterns(&args.flag_boolean_patterns) {
+            Ok(patterns) => {
+                if patterns.is_empty() {
+                    return fail_incorrectusage_clierror!(
+                        "Boolean patterns must have at least one pattern"
+                    );
+                }
+                let _ = BOOLEAN_PATTERNS.set(patterns);
+            },
+            Err(e) => {
+                return fail_incorrectusage_clierror!("{e}");
+            },
+        }
     }
 
     // check prefer_dmy env var

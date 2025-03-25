@@ -1198,6 +1198,21 @@ fn stats_typesonly_infer_boolean_t_f() {
 }
 
 #[test]
+fn stats_infer_boolean_invalid_pattern() {
+    let wrk = Workdir::new("stats_infer_boolean_invalid_pattern");
+    let test_file = wrk.load_test_file("boston311-10-boolean-tf.csv");
+
+    let mut cmd = wrk.command("stats");
+    cmd.arg("--infer-boolean")
+        .arg("--boolean-patterns")
+        .arg(":false,yep:,1:0")
+        .arg(&"--dataset-stats")
+        .arg(test_file);
+
+    wrk.assert_err(&mut cmd);
+}
+
+#[test]
 fn stats_is_ascii() {
     let wrk = Workdir::new("stats_is_ascii");
     let test_file = wrk.load_test_file("boston311-100-with-nonascii.csv");
