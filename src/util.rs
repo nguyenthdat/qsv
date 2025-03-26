@@ -1855,7 +1855,7 @@ pub fn process_input(
         }
         return fail_clierror!("{custom_empty_stdin_errmsg}");
     }
-    log::debug!("processed input file/s: {:?}", processed_input);
+    log::debug!("processed input file/s: {processed_input:?}");
     Ok(processed_input)
 }
 
@@ -2122,7 +2122,7 @@ pub fn get_stats_records(
             false
         }
     } else {
-        info!("stats.csv.data.jsonl file does not exist: {statsdata_path:?}");
+        info!("stats.csv.data.jsonl file does not exist: {}", statsdata_path.display());
         false
     };
 

@@ -248,7 +248,7 @@ Use `tojsonl` command to convert _to_ jsonl instead of _from_ jsonl."#,
                 Ok(v) => Some(json_line_to_csv_record(&v, &headers)),
                 Err(e) => {
                     if !args.flag_ignore_errors {
-                        log::error!("serde_json::from_str error: {:#?}", e);
+                        log::error!("serde_json::from_str error: {e:#?}");
                     }
                     None
                 },

@@ -1462,7 +1462,7 @@ fn create_index(arg_input: Option<&String>) -> Result<bool, CliError> {
     }
 
     let pidx = util::idx_path(Path::new(&input));
-    debug!("Creating index file {pidx:?} for {input:?}.");
+    debug!("Creating index file {} for {input:?}., ", pidx.display());
 
     let rconfig = Config::new(Some((*input).to_string()).as_ref());
     let mut rdr = rconfig.reader_file()?;
@@ -1615,7 +1615,7 @@ fn setup_helpers(
     let qsv_sleep = luau.create_function(|_, args: mlua::Number| {
         let sleep_time = args as u64;
         if sleep_time > 0 {
-            log::info!("sleeping for {} milliseconds", sleep_time);
+            log::info!("sleeping for {sleep_time} milliseconds");
             std::thread::sleep(std::time::Duration::from_millis(sleep_time));
         }
 
@@ -1879,10 +1879,7 @@ fn setup_helpers(
 
             luau.globals().raw_set(&*table_name, luau_value)?;
 
-            info!(
-                "{} successfully loaded JSON into table '{}'.",
-                filepath, table_name
-            );
+            info!("{filepath} successfully loaded JSON into table '{table_name}'.");
 
             Ok(true)
         })?;
@@ -2748,8 +2745,7 @@ fn setup_helpers(
             }
 
             info!(
-                "qsv_register_lookup({}, {}, {}) successfully registered.",
-                lookup_name, lookup_table_uri, cache_age_secs
+                "qsv_register_lookup({lookup_name}, {lookup_table_uri}, {cache_age_secs}) successfully registered."
             );
 
             Ok(headers_table)

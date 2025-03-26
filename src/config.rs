@@ -511,10 +511,10 @@ impl Config {
                 let Ok(()) = io::Write::flush(&mut wtr) else {
                     return;
                 };
-                debug!("autoindex of {path_buf:?} successful.");
+                debug!("autoindex of {} successful.", path_buf.display());
                 AUTO_INDEXED.store(true, Ordering::Relaxed);
             },
-            Err(e) => debug!("autoindex of {path_buf:?} failed: {e}"),
+            Err(e) => debug!("autoindex of {} failed: {e}", path_buf.display()),
         }
     }
 
@@ -659,7 +659,7 @@ impl Config {
                     // sink is /dev/null
                     Box::new(io::sink())
                 } else if self.snappy {
-                    info!("writing snappy-compressed file: {p:?}");
+                    info!("writing snappy-compressed file: {}", p.display());
                     Box::new(snap::write::FrameEncoder::new(fs::File::create(p)?))
                 } else {
                     Box::new(fs::File::create(p)?)
