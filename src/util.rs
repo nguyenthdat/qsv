@@ -2122,7 +2122,10 @@ pub fn get_stats_records(
             false
         }
     } else {
-        info!("stats.csv.data.jsonl file does not exist: {}", statsdata_path.display());
+        info!(
+            "stats.csv.data.jsonl file does not exist: {}",
+            statsdata_path.display()
+        );
         false
     };
 

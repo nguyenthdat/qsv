@@ -2745,7 +2745,8 @@ fn setup_helpers(
             }
 
             info!(
-                "qsv_register_lookup({lookup_name}, {lookup_table_uri}, {cache_age_secs}) successfully registered."
+                "qsv_register_lookup({lookup_name}, {lookup_table_uri}, {cache_age_secs}) \
+                 successfully registered."
             );
 
             Ok(headers_table)
