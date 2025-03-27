@@ -1603,7 +1603,11 @@ impl Stats {
         }
         match t {
             TString => {
-                self.is_ascii &= sample.is_ascii();
+                // only check if the string is_ascii while it still is
+                // once it's false, don't needlessly call is_ascii()
+                if self.is_ascii {
+                    self.is_ascii = sample.is_ascii();
+                }
                 if let Some(v) = self.online_len.as_mut() {
                     v.add(&sample.len());
                 }
