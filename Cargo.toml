@@ -122,7 +122,7 @@ futures-util = "0.3"
 gender_guesser = { version = "0.2", optional = true }
 geosuggest-core = { version = "0.6", optional = true }
 geosuggest-utils = { version = "0.6", optional = true }
-governor = { version = "0.9", optional = true }
+governor = { version = "0.10", optional = true }
 grex = { version = "1.4", default-features = false }
 gzp = { version = "1", default-features = false, features = [
     "snappy_default",
