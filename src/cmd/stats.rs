@@ -1571,7 +1571,7 @@ impl Stats {
         }
     }
 
-    #[inline]
+    #[inline(always)]
     fn add(&mut self, sample: &[u8], infer_dates: bool, infer_boolean: bool, prefer_dmy: bool) {
         let (sample_type, timestamp_val) =
             FieldType::from_sample(infer_dates, prefer_dmy, sample, self.typ);
