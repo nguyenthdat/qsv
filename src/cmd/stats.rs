@@ -2300,7 +2300,7 @@ impl FieldType {
     /// returns the inferred type and if infer_dates is true,
     /// the date in ms since the epoch if the type is a date or datetime
     /// otherwise, 0
-    #[inline]
+    #[inline(always)]
     pub fn from_sample(
         infer_dates: bool,
         prefer_dmy: bool,
