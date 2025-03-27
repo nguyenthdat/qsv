@@ -632,6 +632,9 @@ fn parse_boolean_patterns(boolean_patterns: &str) -> CliResult<Vec<BooleanPatter
             false_pattern,
         });
     }
+    if patterns.is_empty() {
+        return fail_incorrectusage_clierror!("Boolean patterns must have at least one pattern");
+    }
     Ok(patterns)
 }
 
@@ -654,11 +657,6 @@ pub fn run(argv: &[&str]) -> CliResult<()> {
 
         // validate boolean patterns
         let patterns = parse_boolean_patterns(&args.flag_boolean_patterns)?;
-        if patterns.is_empty() {
-            return fail_incorrectusage_clierror!(
-                "Boolean patterns must have at least one pattern"
-            );
-        }
         let _ = BOOLEAN_PATTERNS.set(patterns);
     }
 
