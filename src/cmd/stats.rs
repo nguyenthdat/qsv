@@ -2422,7 +2422,7 @@ struct TypedSum {
 }
 
 impl TypedSum {
-    #[inline]
+    #[inline(always)]
     fn add(&mut self, typ: FieldType, sample: &[u8]) {
         if b"" == sample {
             return;
