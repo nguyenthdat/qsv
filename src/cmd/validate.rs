@@ -444,23 +444,23 @@ impl Keyword for UniqueCombinedWithValidator {
         let mut seen = self.seen_combinations.write().unwrap();
 
         if seen.contains(&combination) {
-            let column_desc = if !self.column_names.is_empty() {
-                format!("columns {}", self.column_names.join(", "))
-            } else {
+            let column_desc = if self.column_names.is_empty() {
                 format!(
                     "columns {}",
                     self.column_indices
                         .iter()
-                        .map(|i| i.to_string())
+                        .map(std::string::ToString::to_string)
                         .collect::<Vec<_>>()
                         .join(", ")
                 )
+            } else {
+                format!("columns {}", self.column_names.join(", "))
             };
             return Err(ValidationError::custom(
                 Location::default(),
                 instance_path.into(),
                 instance,
-                format!("Combination of values for {} is not unique", column_desc),
+                format!("Combination of values for {column_desc} is not unique"),
             ));
         }
 
@@ -469,9 +469,8 @@ impl Keyword for UniqueCombinedWithValidator {
     }
 
     fn is_valid(&self, instance: &Value) -> bool {
-        let obj = match instance.as_object() {
-            Some(obj) => obj,
-            None => return false,
+        let Some(obj) = instance.as_object() else {
+            return false;
         };
 
         let mut values = Vec::new();

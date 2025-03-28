@@ -1571,6 +1571,7 @@ impl Stats {
         }
     }
 
+    #[allow(clippy::inline_always)]
     #[inline(always)]
     fn add(&mut self, sample: &[u8], infer_dates: bool, infer_boolean: bool, prefer_dmy: bool) {
         let (sample_type, timestamp_val) =
@@ -2300,6 +2301,7 @@ impl FieldType {
     /// returns the inferred type and if infer_dates is true,
     /// the date in ms since the epoch if the type is a date or datetime
     /// otherwise, 0
+    #[allow(clippy::inline_always)]
     #[inline(always)]
     pub fn from_sample(
         infer_dates: bool,
@@ -2422,6 +2424,7 @@ struct TypedSum {
 }
 
 impl TypedSum {
+    #[allow(clippy::inline_always)]
     #[inline(always)]
     fn add(&mut self, typ: FieldType, sample: &[u8]) {
         if b"" == sample {
