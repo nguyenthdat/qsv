@@ -32,7 +32,11 @@ qsv supports a custom format - `currency`. This format will only accept a valid 
       Negative amounts: ($100.00) or -$100.00
       Different styles: 1.000,00 (used in some countries for euros)
 
-qsv also supports a custom keyword - `dynamicEnum`. It allows for dynamic validation against a CSV.
+qsv also supports two custom keywords - `dynamicEnum` and `uniqueCombinedWith`.
+
+dynamicEnum
+===========
+`dynamicEnum` allows for dynamic validation against a CSV.
 This is useful for validating against a set of values unknown at the time of schema creation or
 when the set of valid values is dynamic or too large to hardcode into the JSON Schema.
 `dynamicEnum` can be used to validate against a CSV file on the local filesystem or a URL
@@ -81,6 +85,23 @@ when the set of valid values is dynamic or too large to hardcode into the JSON S
     dynamicEnum = "dathere://us_states.csv"
 
 If colname is not specified, the first column of the CSV file is read and used for validation.
+
+uniqueCombinedWith
+==================
+`uniqueCombinedWith` allows you to validate that combinations of values across specified columns
+are unique. It can be used with either column names or column indices (0-based). For example:
+
+    // Validate that combinations of name and email are unique
+    uniqueCombinedWith = ["name", "email"]
+
+    // Validate that combinations of columns at indices 1 and 2 are unique
+    uniqueCombinedWith = [1, 2]
+
+When a duplicate combination is found, the validation will fail and the error message will indicate
+which columns had duplicate combinations. The invalid records will be written to the .invalid file,
+while valid records will be written to the .valid file.
+
+-------------------------------------------------------
 
 You can create a JSON Schema file from a reference CSV file using the `qsv schema` command.
 Once the schema is created, you can fine-tune it to your needs and use it to validate other CSV
@@ -367,6 +388,169 @@ impl Keyword for DynEnumValidator {
             false
         }
     }
+}
+
+struct UniqueCombinedWithValidator {
+    column_names:      Vec<String>,
+    column_indices:    Vec<usize>,
+    seen_combinations: std::sync::RwLock<HashSet<String>>,
+}
+
+impl UniqueCombinedWithValidator {
+    fn new(column_names: Vec<String>, column_indices: Vec<usize>) -> Self {
+        Self {
+            column_names,
+            column_indices,
+            seen_combinations: std::sync::RwLock::new(HashSet::new()),
+        }
+    }
+}
+
+impl Keyword for UniqueCombinedWithValidator {
+    fn validate<'instance>(
+        &self,
+        instance: &'instance Value,
+        instance_path: &LazyLocation,
+    ) -> Result<(), ValidationError<'instance>> {
+        let obj = instance.as_object().ok_or_else(|| {
+            ValidationError::custom(
+                Location::default(),
+                instance_path.into(),
+                instance,
+                "Instance must be an object",
+            )
+        })?;
+
+        let mut values = Vec::new();
+
+        // Get values from column names
+        for name in &self.column_names {
+            if let Some(value) = obj.get(name) {
+                values.push(value.to_string());
+            }
+        }
+
+        // Get values from column indices by converting to array first
+        if !self.column_indices.is_empty() {
+            let array: Vec<_> = obj.values().collect();
+            for &idx in &self.column_indices {
+                if let Some(value) = array.get(idx) {
+                    values.push(value.to_string());
+                }
+            }
+        }
+
+        let combination = values.join("|");
+        let mut seen = self.seen_combinations.write().unwrap();
+
+        if seen.contains(&combination) {
+            let column_desc = if !self.column_names.is_empty() {
+                format!("columns {}", self.column_names.join(", "))
+            } else {
+                format!(
+                    "columns {}",
+                    self.column_indices
+                        .iter()
+                        .map(|i| i.to_string())
+                        .collect::<Vec<_>>()
+                        .join(", ")
+                )
+            };
+            return Err(ValidationError::custom(
+                Location::default(),
+                instance_path.into(),
+                instance,
+                format!("Combination of values for {} is not unique", column_desc),
+            ));
+        }
+
+        seen.insert(combination);
+        Ok(())
+    }
+
+    fn is_valid(&self, instance: &Value) -> bool {
+        let obj = match instance.as_object() {
+            Some(obj) => obj,
+            None => return false,
+        };
+
+        let mut values = Vec::new();
+
+        // Get values from column names
+        for name in &self.column_names {
+            if let Some(value) = obj.get(name) {
+                values.push(value.to_string());
+            }
+        }
+
+        // Get values from column indices by converting to array first
+        if !self.column_indices.is_empty() {
+            let array: Vec<_> = obj.values().collect();
+            for &idx in &self.column_indices {
+                if let Some(value) = array.get(idx) {
+                    values.push(value.to_string());
+                }
+            }
+        }
+
+        let combination = values.join("|");
+        let seen = self.seen_combinations.read().unwrap();
+        !seen.contains(&combination)
+    }
+}
+
+#[allow(clippy::result_large_err)]
+fn unique_combined_with_validator_factory<'a>(
+    _parent: &'a Map<String, Value>,
+    value: &'a Value,
+    location: Location,
+) -> Result<Box<dyn Keyword>, ValidationError<'a>> {
+    // Get the array of column names/indices
+    let columns = value.as_array().ok_or_else(|| {
+        ValidationError::custom(
+            Location::default(),
+            location.clone(),
+            value,
+            "'uniqueCombinedWith' must be an array of column names or indices",
+        )
+    })?;
+
+    let mut column_names = Vec::new();
+    let mut column_indices = Vec::new();
+
+    // Convert each column name/index to appropriate type
+    for col in columns {
+        // Try parsing as index first
+        if let Some(idx) = col.as_u64() {
+            column_indices.push(idx as usize);
+        } else {
+            // Try as string
+            let name = col.as_str().ok_or_else(|| {
+                ValidationError::custom(
+                    Location::default(),
+                    location.clone(),
+                    col,
+                    "Column names must be strings or numbers",
+                )
+            })?;
+            column_names.push(name.to_string());
+        }
+    }
+
+    // Validate that we have at least one column
+    if column_names.is_empty() && column_indices.is_empty() {
+        return Err(ValidationError::custom(
+            Location::default(),
+            location,
+            value,
+            "'uniqueCombinedWith' must specify at least one column",
+        ));
+    }
+
+    Ok(Box::new(UniqueCombinedWithValidator::new(
+        column_names,
+        column_indices,
+    )))
 }
 
 /// Parse the dynamicEnum URI string to extract cache_name, final_uri, cache_age and column
@@ -1141,6 +1325,7 @@ pub fn run(argv: &[&str]) -> CliResult<()> {
                         match Validator::options()
                             .with_format("currency", currency_format_checker)
                             .with_keyword("dynamicEnum", dyn_enum_validator_factory)
+                            .with_keyword("uniqueCombinedWith", unique_combined_with_validator_factory)
                             .should_validate_formats(true)
                             .build(&json)
                         {
