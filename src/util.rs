@@ -1095,7 +1095,7 @@ fn send_hwsurvey(
     let long_os_version =
         sysinfo::System::long_os_version().unwrap_or_else(|| "Unknown OS version".to_string());
     let cpu_count = sys.cpus().len();
-    let physical_cpu_count = sys.physical_core_count().unwrap_or_default();
+    let physical_cpu_count = sysinfo::System::physical_core_count().unwrap_or_default();
     let cpu_vendor_id = sys.cpus()[0].vendor_id();
     let cpu_brand = sys.cpus()[0].brand().trim();
     let cpu_freq = sys.cpus()[0].frequency();
