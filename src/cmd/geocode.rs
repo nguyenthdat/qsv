@@ -1291,7 +1291,7 @@ fn check_index_file(index_file: &String) -> CliResult<()> {
 
 /// load_engine loads the Geonames index file into memory
 /// if the index file does not exist, it will download the default index file
-/// from the qsv GitHub repo. For covenience, if geocode_index_file is 500, 1000, 5000 or 15000,
+/// from the qsv GitHub repo. For convenience, if geocode_index_file is 500, 1000, 5000 or 15000,
 /// it will download the desired index file from the qsv GitHub repo.
 async fn load_engine(geocode_index_file: PathBuf, progressbar: &ProgressBar) -> CliResult<Engine> {
     // default cities index file
