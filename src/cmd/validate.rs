@@ -465,6 +465,7 @@ impl Keyword for UniqueCombinedWithValidator {
         }
 
         seen.insert(combination);
+        drop(seen);
         Ok(())
     }
 
@@ -844,7 +845,7 @@ fn dyn_enum_validator_factory<'a>(
     // Load the lookup table
     let lookup_result = match load_lookup_table(&opts) {
         Ok(result) => result,
-        Err(e) => return fail_validation_error!("Error loading dynamicEnum lookup table: {}", e),
+        Err(e) => return fail_validation_error!("Error loading dynamicEnum lookup table: {e}"),
     };
 
     // Read the specified column into a HashSet
@@ -911,7 +912,7 @@ fn dyn_enum_validator_factory<'a>(
     if let Value::String(uri) = value {
         let temp_download = match NamedTempFile::new() {
             Ok(file) => file,
-            Err(e) => return fail_validation_error!("Failed to create temporary file: {}", e),
+            Err(e) => return fail_validation_error!("Failed to create temporary file: {e}"),
         };
 
         // Split URI to get column specification
