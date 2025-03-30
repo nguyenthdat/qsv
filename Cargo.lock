@@ -5329,7 +5329,7 @@ dependencies = [
  "polars-ops",
  "publicsuffix",
  "pyo3",
- "qsv-dateparser",
+ "qsv-dateparser 0.13.0",
  "qsv-sniffer",
  "qsv-stats",
  "qsv_currency",
@@ -5388,6 +5388,18 @@ dependencies = [
 ]
 
 [[package]]
+name = "qsv-dateparser"
+version = "0.13.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "6030a42cfbad8f656c7c16b027e0957d85dc0b43365a88d830834de582d7a603"
+dependencies = [
+ "anyhow",
+ "chrono",
+ "fast-float2",
+ "regex",
+]
+
+[[package]]
 name = "qsv-sniffer"
 version = "0.10.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -5399,7 +5411,7 @@ dependencies = [
  "csv-core",
  "hashbrown 0.14.5",
  "memchr",
- "qsv-dateparser",
+ "qsv-dateparser 0.12.1",
  "regex",
  "simdutf8",
  "tabwriter",
