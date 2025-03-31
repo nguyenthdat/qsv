@@ -97,9 +97,12 @@ are unique. It can be used with either column names or column indices (0-based).
     // Validate that combinations of columns at indices 1 and 2 are unique
     uniqueCombinedWith = [1, 2]
 
+    // Validate that the combinations of named and indexed columns are unique
+    uniqueCombinedWith = ["name", 2]
+
 When a duplicate combination is found, the validation will fail and the error message will indicate
-which columns had duplicate combinations. The invalid records will be written to the .invalid file,
-while valid records will be written to the .valid file.
+which columns had duplicate combinations (named columns first, then indexed columns). The invalid
+records will be written to the .invalid file, while valid records will be written to the .valid file.
 
 -------------------------------------------------------
 
@@ -421,7 +424,7 @@ impl Keyword for UniqueCombinedWithValidator {
             )
         })?;
 
-        let mut values = Vec::new();
+        let mut values = Vec::with_capacity(self.column_names.len() + self.column_indices.len());
 
         // Get values from column names
         for name in &self.column_names {
@@ -444,23 +447,29 @@ impl Keyword for UniqueCombinedWithValidator {
         let mut seen = self.seen_combinations.write().unwrap();
 
         if seen.contains(&combination) {
-            let column_desc = if self.column_names.is_empty() {
-                format!(
-                    "columns {}",
+            let mut column_desc_parts =
+                Vec::with_capacity(self.column_names.len() + self.column_indices.len());
+
+            // Add named columns
+            if !self.column_names.is_empty() {
+                column_desc_parts.extend(self.column_names.iter().cloned());
+            }
+
+            // Add indexed columns
+            if !self.column_indices.is_empty() {
+                column_desc_parts.extend(
                     self.column_indices
                         .iter()
-                        .map(std::string::ToString::to_string)
-                        .collect::<Vec<_>>()
-                        .join(", ")
-                )
-            } else {
-                format!("columns {}", self.column_names.join(", "))
-            };
+                        .map(std::string::ToString::to_string),
+                );
+            }
+
+            let column_desc = column_desc_parts.join(", ");
             return Err(ValidationError::custom(
                 Location::default(),
                 instance_path.into(),
                 instance,
-                format!("Combination of values for {column_desc} is not unique"),
+                format!("Combination of values for columns {column_desc} is not unique"),
             ));
         }
 
@@ -474,7 +483,7 @@ impl Keyword for UniqueCombinedWithValidator {
             return false;
         };
 
-        let mut values = Vec::new();
+        let mut values = Vec::with_capacity(self.column_names.len() + self.column_indices.len());
 
         // Get values from column names
         for name in &self.column_names {
