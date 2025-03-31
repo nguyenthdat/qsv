@@ -429,9 +429,10 @@ fn validate_dynenum_with_column() {
     // Check validation-errors.tsv
     let validation_errors: String = wrk.from_str(&wrk.path("data.csv.validation-errors.tsv"));
 
-    let expected_errors = "row_number\tfield\terror\n3\tproduct\t\"Orange\" is not a valid \
-                           dynamicEnum value\n4\tproduct\t\"Grape\" is not a valid dynamicEnum \
-                           value\n";
+    let expected_errors = r#"row_number	field	error
+3	product	"Orange" is not a valid dynamicEnum value
+4	product	"Grape" is not a valid dynamicEnum value
+"#;
     similar_asserts::assert_eq!(validation_errors, expected_errors);
 
     // Check valid records
@@ -612,9 +613,10 @@ fn validate_dynenum_with_remote_csv() {
     let validation_errors = wrk
         .read_to_string("data.csv.validation-errors.tsv")
         .unwrap();
-    let expected_errors = "row_number\tfield\terror\n2\tfruit\t\"mango\" is not a valid \
-                           dynamicEnum value\n4\tfruit\t\"dragonfruit\" is not a valid \
-                           dynamicEnum value\n";
+    let expected_errors = r#"row_number	field	error
+2	fruit	"mango" is not a valid dynamicEnum value
+4	fruit	"dragonfruit" is not a valid dynamicEnum value
+"#;
     similar_asserts::assert_eq!(validation_errors, expected_errors);
 
     // Check valid records
@@ -795,9 +797,10 @@ fn validate_unique_combined_with() {
     let validation_errors = wrk
         .read_to_string("data.csv.validation-errors.tsv")
         .unwrap();
-    let expected_errors = "row_number\tfield\terror\n3\t\tCombination of values for columns name, \
-                           email is not unique\n5\t\tCombination of values for columns name, \
-                           email is not unique\n";
+    let expected_errors = r#"row_number	field	error
+3		Combination of values for columns name, email is not unique
+5		Combination of values for columns name, email is not unique
+"#;
     similar_asserts::assert_eq!(validation_errors, expected_errors);
 
     // Check valid records
@@ -864,9 +867,80 @@ fn validate_unique_combined_with_indices() {
     let validation_errors = wrk
         .read_to_string("data.csv.validation-errors.tsv")
         .unwrap();
-    let expected_errors = "row_number\tfield\terror\n3\t\tCombination of values for columns 1, 2 \
-                           is not unique\n5\t\tCombination of values for columns 1, 2 is not \
-                           unique\n";
+    let expected_errors = r#"row_number	field	error
+3		Combination of values for columns 1, 2 is not unique
+5		Combination of values for columns 1, 2 is not unique
+"#;
+    similar_asserts::assert_eq!(validation_errors, expected_errors);
+
+    // Check valid records
+    let valid_records: Vec<Vec<String>> = wrk.read_csv("data.csv.valid");
+    let expected_valid = vec![
+        svec!["1", "John Doe", "john@example.com", "IT"],
+        svec!["2", "Jane Smith", "jane@example.com", "HR"],
+        svec!["4", "Bob Wilson", "bob@example.com", "IT"],
+    ];
+    similar_asserts::assert_eq!(valid_records, expected_valid);
+
+    // Check invalid records
+    let invalid_records: Vec<Vec<String>> = wrk.read_csv("data.csv.invalid");
+    let expected_invalid = vec![
+        svec!["3", "John Doe", "john@example.com", "IT"],
+        svec!["5", "Jane Smith", "jane@example.com", "HR"],
+    ];
+    similar_asserts::assert_eq!(invalid_records, expected_invalid);
+
+    wrk.assert_err(&mut cmd);
+}
+
+#[test]
+fn validate_unique_combined_with_both_names_and_indices() {
+    let wrk = Workdir::new("validate_unique_combined_with_both_names_and_indices").flexible(true);
+
+    // Create test data with duplicate combinations
+    wrk.create(
+        "data.csv",
+        vec![
+            svec!["id", "name", "email", "department"],
+            svec!["1", "John Doe", "john@example.com", "IT"],
+            svec!["2", "Jane Smith", "jane@example.com", "HR"],
+            svec!["3", "John Doe", "john@example.com", "IT"], // Duplicate name+email
+            svec!["4", "Bob Wilson", "bob@example.com", "IT"],
+            svec!["5", "Jane Smith", "jane@example.com", "HR"], // Duplicate name+email
+        ],
+    );
+
+    // Create schema using uniqueCombinedWith to validate unique name+email combinations
+    wrk.create_from_string(
+        "schema.json",
+        r#"{
+            "$schema": "https://json-schema.org/draft/2020-12/schema",
+            "type": "object",
+            "properties": {
+                "id": { "type": "string" },
+                "name": { "type": "string" },
+                "email": { "type": "string" },
+                "department": { "type": "string" }
+            },
+            "uniqueCombinedWith": ["name", 2]
+        }"#,
+    );
+
+    // Run validate command
+    let mut cmd = wrk.command("validate");
+    cmd.arg("data.csv").arg("schema.json");
+    wrk.output(&mut cmd);
+
+    wrk.assert_err(&mut cmd);
+
+    // Check validation-errors.tsv
+    let validation_errors = wrk
+        .read_to_string("data.csv.validation-errors.tsv")
+        .unwrap();
+    let expected_errors = r#"row_number	field	error
+3		Combination of values for columns name, 2 is not unique
+5		Combination of values for columns name, 2 is not unique
+"#;
     similar_asserts::assert_eq!(validation_errors, expected_errors);
 
     // Check valid records
@@ -943,10 +1017,10 @@ fn validate_unique_combined_with_empty_values() {
     let validation_errors = wrk
         .read_to_string("data.csv.validation-errors.tsv")
         .unwrap();
-    let expected_errors = "row_number\tfield\terror\n5\t\tCombination of values for columns name, \
-                           email is not unique\n";
-    //similar_asserts::
-    assert_eq!(validation_errors, expected_errors);
+    let expected_errors = r#"row_number	field	error
+5		Combination of values for columns name, email is not unique
+"#;
+    similar_asserts::assert_eq!(validation_errors, expected_errors);
 
     // Check valid records
     let valid_records: Vec<Vec<String>> = wrk.read_csv("data.csv.valid");
@@ -956,14 +1030,12 @@ fn validate_unique_combined_with_empty_values() {
         svec!["3", "John Doe", "", "IT"],
         svec!["4", "", "", "IT"],
     ];
-    //similar_asserts::
-    assert_eq!(valid_records, expected_valid);
+    similar_asserts::assert_eq!(valid_records, expected_valid);
 
     // Check invalid records
     let invalid_records: Vec<Vec<String>> = wrk.read_csv("data.csv.invalid");
     let expected_invalid = vec![svec!["5", "", "", "HR"]];
-    //similar_asserts::
-    assert_eq!(invalid_records, expected_invalid);
+    similar_asserts::assert_eq!(invalid_records, expected_invalid);
 
     wrk.assert_err(&mut cmd);
 }
@@ -1012,9 +1084,10 @@ fn validate_unique_combined_with_special_chars() {
     let validation_errors = wrk
         .read_to_string("data.csv.validation-errors.tsv")
         .unwrap();
-    let expected_errors = "row_number\tfield\terror\n3\t\tCombination of values for columns name, \
-                           email is not unique\n5\t\tCombination of values for columns name, \
-                           email is not unique\n";
+    let expected_errors = r#"row_number	field	error
+3		Combination of values for columns name, email is not unique
+5		Combination of values for columns name, email is not unique
+"#;
     similar_asserts::assert_eq!(validation_errors, expected_errors);
 
     // Check valid records
@@ -1101,8 +1174,9 @@ fn validate_dynenum_with_multiple_columns() {
     let validation_errors = wrk
         .read_to_string("data.csv.validation-errors.tsv")
         .unwrap();
-    let expected_errors =
-        "row_number\tfield\terror\n3\tproduct\t\"Orange\" is not a valid dynamicEnum value\n";
+    let expected_errors = r#"row_number	field	error
+3	product	"Orange" is not a valid dynamicEnum value
+"#;
     similar_asserts::assert_eq!(validation_errors, expected_errors);
 
     // Check valid records
@@ -1177,8 +1251,9 @@ fn validate_dynenum_with_caching() {
     let validation_errors = wrk
         .read_to_string("data.csv.validation-errors.tsv")
         .unwrap();
-    let expected_errors =
-        "row_number\tfield\terror\n2\tproduct\t\"Orange\" is not a valid dynamicEnum value\n";
+    let expected_errors = r#"row_number	field	error
+2	product	"Orange" is not a valid dynamicEnum value
+"#;
     similar_asserts::assert_eq!(validation_errors, expected_errors);
 
     // Check valid records
@@ -1232,6 +1307,85 @@ fn validate_dynenum_with_invalid_uri() {
     let got = wrk.output_stderr(&mut cmd);
 
     assert!(got.starts_with("Cannot compile JSONschema."));
+
+    wrk.assert_err(&mut cmd);
+}
+
+#[test]
+fn validate_unique_combined_with_mixed_names_and_indices() {
+    let wrk = Workdir::new("validate_unique_combined_with_mixed_names_and_indices").flexible(true);
+
+    // Create test data with duplicate combinations
+    wrk.create(
+        "data.csv",
+        vec![
+            svec!["id", "name", "email", "department", "role"],
+            svec!["1", "John Doe", "john@example.com", "IT", "Developer"],
+            svec!["2", "Jane Smith", "jane@example.com", "HR", "Manager"],
+            svec!["3", "John Doe", "john@example.com", "IT", "Developer"], // Duplicate name+email+role
+            svec!["4", "Bob Wilson", "bob@example.com", "IT", "Developer"],
+            svec!["5", "Jane Smith", "jane@example.com", "HR", "Manager"], // Duplicate name+email+role
+            svec!["6", "Alice Brown", "alice@example.com", "IT", "Developer"], // Valid - different role
+            svec!["7", "Alice Brown", "alice@example.com", "IT", "Manager"], // Valid - different role
+        ],
+    );
+
+    // Create schema using uniqueCombinedWith with mix of column names and indices
+    // name (by name), email (by index 2), role (by name)
+    wrk.create_from_string(
+        "schema.json",
+        r#"{
+            "$schema": "https://json-schema.org/draft/2020-12/schema",
+            "type": "object",
+            "properties": {
+                "id": { "type": "string" },
+                "name": { "type": "string" },
+                "email": { "type": "string" },
+                "department": { "type": "string" },
+                "role": { "type": "string" }
+            },
+            "uniqueCombinedWith": ["name", 2, "role"]
+        }"#,
+    );
+
+    // Run validate command
+    let mut cmd = wrk.command("validate");
+    cmd.arg("data.csv").arg("schema.json");
+    wrk.output(&mut cmd);
+
+    wrk.assert_err(&mut cmd);
+
+    // Check validation-errors.tsv
+    let validation_errors = wrk
+        .read_to_string("data.csv.validation-errors.tsv")
+        .unwrap();
+    // note: the order of the columns in the error message is named first, then indexed
+    // that's why the error message names the columns as name, role, 2,
+    // but the order of the columns in the schema is name, 2
+    let expected_errors = r#"row_number	field	error
+3		Combination of values for columns name, role, 2 is not unique
+5		Combination of values for columns name, role, 2 is not unique
+"#;
+    similar_asserts::assert_eq!(validation_errors, expected_errors);
+
+    // Check valid records
+    let valid_records: Vec<Vec<String>> = wrk.read_csv("data.csv.valid");
+    let expected_valid = vec![
+        svec!["1", "John Doe", "john@example.com", "IT", "Developer"],
+        svec!["2", "Jane Smith", "jane@example.com", "HR", "Manager"],
+        svec!["4", "Bob Wilson", "bob@example.com", "IT", "Developer"],
+        svec!["6", "Alice Brown", "alice@example.com", "IT", "Developer"],
+        svec!["7", "Alice Brown", "alice@example.com", "IT", "Manager"],
+    ];
+    similar_asserts::assert_eq!(valid_records, expected_valid);
+
+    // Check invalid records
+    let invalid_records: Vec<Vec<String>> = wrk.read_csv("data.csv.invalid");
+    let expected_invalid = vec![
+        svec!["3", "John Doe", "john@example.com", "IT", "Developer"],
+        svec!["5", "Jane Smith", "jane@example.com", "HR", "Manager"],
+    ];
+    similar_asserts::assert_eq!(invalid_records, expected_invalid);
 
     wrk.assert_err(&mut cmd);
 }
