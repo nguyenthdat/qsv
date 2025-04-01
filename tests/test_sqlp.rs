@@ -1112,6 +1112,73 @@ select ward,count(*) as cnt from temp_table2 group by ward order by cnt desc, wa
 }
 
 #[test]
+fn sqlp_boston311_sql_cache_schema_decimal_override() {
+    let wrk = Workdir::new("sqlp_boston311_sql_cache_schema_decimal_override");
+    let test_file = wrk.load_test_file("boston311-100.csv");
+
+    wrk.create_from_string("test.sql", "select latitude,longitude from _t_1 limit 10;");
+
+    wrk.create_from_string(
+        "boston311-100.pschema.json",
+        r#"{
+        "fields": {
+          "case_enquiry_id": "Int64",
+          "open_dt": "String",
+          "target_dt": "String",
+          "closed_dt": "String",
+          "ontime": "String",
+          "case_status": "String",
+          "closure_reason": "String",
+          "case_title": "String",
+          "subject": "String",
+          "reason": "String",
+          "type": "String",
+          "queue": "String",
+          "department": "String",
+          "submittedphoto": "String",
+          "closedphoto": "String",
+          "location": "String",
+          "fire_district": "String",
+          "pwd_district": "String",
+          "city_council_district": "String",
+          "police_district": "String",
+          "neighborhood": "String",
+          "neighborhood_services_district": "String",
+          "ward": "String",
+          "precinct": "String",
+          "location_street_name": "String",
+          "location_zipcode": "String",
+          "latitude": {"Decimal" : [10, 3]},
+          "longitude": {"Decimal" : [10, 6]},
+          "source": "String"
+        }
+      }"#,
+    );
+
+    assert!(wrk.path("boston311-100.csv").exists());
+    assert!(wrk.path("boston311-100.pschema.json").exists());
+
+    let mut cmd = wrk.command("sqlp");
+    cmd.arg(&test_file)
+        .arg("test.sql")
+        .args(["--format", "jsonl", "--cache-schema"]);
+
+    let got: String = wrk.stdout(&mut cmd);
+    let expected = r#"{"latitude":"42.359","longitude":"-71.058700"}
+{"latitude":"42.363","longitude":"-71.056600"}
+{"latitude":"42.288","longitude":"-71.133000"}
+{"latitude":"42.340","longitude":"-71.080300"}
+{"latitude":"42.373","longitude":"-71.059900"}
+{"latitude":"42.359","longitude":"-71.070000"}
+{"latitude":"42.311","longitude":"-71.115200"}
+{"latitude":"42.360","longitude":"-71.063800"}
+{"latitude":"42.359","longitude":"-71.063400"}
+{"latitude":"42.349","longitude":"-71.081100"}"#;
+
+    similar_asserts::assert_eq!(got, expected);
+}
+
+#[test]
 // #[ignore = "temporarily disable due to a bug in polars aliasing"]
 fn sqlp_boston311_cte_script() {
     let wrk = Workdir::new("sqlp_boston311_cte");
