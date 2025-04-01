@@ -185,6 +185,7 @@ polars = { version = "0.46", features = [
     "decompress",
     "diagonal_concat",
     "dtype-categorical",
+    "dtype-decimal",
     # "dtype-full",
     "extract_jsonpath",
     "iejoin",
