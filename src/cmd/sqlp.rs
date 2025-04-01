@@ -194,6 +194,9 @@ sqlp options:
                               Set to 0 to do a full table scan (warning: can be slow).
                               [default: 10000]
     --cache-schema            Create and cache Polars schema JSON files.
+                              If the schema file/s exists, it will load the schema instead of inferring
+                              it (ignoring --infer-len) and attempt to use it for each corresponding
+                              Polars "table" with the same file stem.
                               If specified and the schema file/s do not exist, it will check if a
                               stats cache is available. If so, it will use it to derive a Polars schema
                               and save it. If there's no stats cache, it will infer the schema 
@@ -201,9 +204,16 @@ sqlp options:
                               Each schema file will have the same file stem as the corresponding
                               input file, with the extension ".pschema.json"
                               (data.csv's Polars schema file will be data.pschema.json)
-                              If the file/s exists, it will load the schema instead of inferring it
-                              (ignoring --infer-len) and attempt to use it for each corresponding
-                              Polars "table" with the same file stem.
+                              NOTE: You can edit the generated schema files to change the Polars schema
+                              and cast columns to the desired data type. For example, you can force
+                              a Float32 column to be a Float64 column by changing the "Float32" type
+                              to "Float64" in the schema file.
+                              You can also cast a Float to a Decimal with a desired precision and scale.
+                              (e.g. instead of "Float32", use "{Decimal" : [10, 3]}")
+                              The valid types are: `Boolean`, `UInt8`, `UInt16`, `UInt32`, `UInt64`, `Int8`,
+                              `Int16`, `Int32`, `Int64`, `Float32`, `Float64`, `String`, `Date`, `Datetime`,
+                              `Duration`, `Time`, `Null`, `Categorical`, `Decimal` and `Enum`.
+                              
     --streaming               Use streaming mode when parsing CSVs. This will use less memory
                               but will be slower. Only use this when you get out of memory errors.
     --low-memory              Use low memory mode when parsing CSVs. This will use less memory
