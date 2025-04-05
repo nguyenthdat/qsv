@@ -1,13 +1,13 @@
 #[cfg(any(feature = "feature_capable", feature = "lite"))]
 use std::borrow::Cow;
+#[allow(unused_imports)]
+use std::fmt::Write as _;
 #[cfg(target_family = "unix")]
 use std::os::unix::process::ExitStatusExt;
 use std::{
     cmp::min,
     collections::HashMap,
-    env,
-    fmt::Write as _,
-    fs,
+    env, fs,
     fs::File,
     io::{BufRead, BufReader, BufWriter, Read, Write},
     path::{Path, PathBuf},
@@ -61,6 +61,7 @@ static JOBS_TO_USE: OnceLock<usize> = OnceLock::new();
 
 pub type ByteString = Vec<u8>;
 
+#[allow(dead_code)]
 #[derive(Clone, Copy, PartialEq, Eq)]
 pub enum StatsMode {
     Schema,
