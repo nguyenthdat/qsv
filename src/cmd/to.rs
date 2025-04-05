@@ -1,5 +1,5 @@
 static USAGE: &str = r#"
-Convert CSV files to PostgreSQL, SQLite, XLSX and Data Package.
+Convert CSV files to PostgreSQL, SQLite, Excel XLSX and Data Package.
 
 POSTGRES
 To convert to postgres you need to supply connection string.
@@ -266,14 +266,14 @@ pub fn run(argv: &[&str]) -> CliResult<()> {
         }
         debug!("conversion to sqlite complete");
     } else if args.cmd_xlsx {
-        debug!("converting to xlsx");
+        debug!("converting to Excel XLSX");
         arg_input = process_input(arg_input, &tmpdir, EMPTY_STDIN_ERRMSG)?;
 
         output =
             csvs_to_xlsx_with_options(args.arg_xlsx.expect("checked above"), arg_input, options)?;
-        debug!("conversion to xlsx complete");
+        debug!("conversion to Excel XLSX complete");
     } else if args.cmd_datapackage {
-        debug!("creating datapackage");
+        debug!("creating Data Package");
         arg_input = process_input(arg_input, &tmpdir, EMPTY_STDIN_ERRMSG)?;
 
         let describe_options = DescribeOptions::builder()
@@ -284,7 +284,7 @@ pub fn run(argv: &[&str]) -> CliResult<()> {
         output = make_datapackage(arg_input, PathBuf::new(), &describe_options.build())?;
         let file = std::fs::File::create(args.arg_datapackage.expect("checked above"))?;
         serde_json::to_writer_pretty(file, &output)?;
-        debug!("datapackage complete");
+        debug!("Data Package complete");
     } else {
         return fail_clierror!(
             "Need to supply either xlsx,postgres,sqlite,datapackage as subcommand"
