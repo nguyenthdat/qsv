@@ -1135,9 +1135,9 @@ dependencies = [
 
 [[package]]
 name = "cc"
-version = "1.2.17"
+version = "1.2.18"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1fcb57c740ae1daf453ae85f16e37396f672b039e00d9d866e07ddb24e328e3a"
+checksum = "525046617d8376e3db1deffb079e91cef90a89fc3ca5c185bbf8c9ecdd15cd5c"
 dependencies = [
  "jobserver",
  "libc",
@@ -1628,7 +1628,7 @@ dependencies = [
 [[package]]
 name = "csvlens"
 version = "0.12.0"
-source = "git+https://github.com/jqnatividad/csvlens?branch=2024-edition#7bf6671606736feac64615b7e7aba1c049e46c5a"
+source = "git+https://github.com/jqnatividad/csvlens?branch=2024-edition#b464abfbdd4d0b858483121de0c027a77edda8c1"
 dependencies = [
  "anyhow",
  "arboard",
@@ -1646,9 +1646,8 @@ dependencies = [
 
 [[package]]
 name = "csvs_convert"
-version = "0.9.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "dc976a67165ea990c46d41d1d6b8bcbf39db359f3579a13e4640ede1ea57aa91"
+version = "0.10.0"
+source = "git+https://github.com/jqnatividad/csvs_convert?branch=14-parquet-feature-gate-parquet-converters#c8df057d89d48ad357757c97c3e548bb6e69f906"
 dependencies = [
  "chrono",
  "counter",
@@ -1790,9 +1789,9 @@ dependencies = [
 
 [[package]]
 name = "deranged"
-version = "0.4.1"
+version = "0.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "28cfac68e08048ae1883171632c2aef3ebc555621ae56fbccce1cbf22dd7f058"
+checksum = "9c9e6a11ca8224451684bc0d7d5a7adbf8f2fd6887261a1cfc3c0432f9d4068e"
 dependencies = [
  "powerfmt",
  "serde",
@@ -2077,9 +2076,9 @@ dependencies = [
 
 [[package]]
 name = "errno"
-version = "0.3.10"
+version = "0.3.11"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "33d852cb9b869c2a9b3df2f71a3074817f01e1844f839a144f5fcef059a4eb5d"
+checksum = "976dd42dc7e85965fe702eb8164f21f450704bdde31faefd6471dba214cb594e"
 dependencies = [
  "libc",
  "windows-sys 0.59.0",
@@ -5887,9 +5886,9 @@ dependencies = [
 
 [[package]]
 name = "rust_xlsxwriter"
-version = "0.84.2"
+version = "0.85.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "471ad60b86a26bae9b541a7c3561174c22f474202e653b78f47549939d6b93fa"
+checksum = "e04e5c9e505db0e7f0b48449b138d6de1fba90bd178833a0e401f8d1aab16774"
 dependencies = [
  "tempfile",
  "zip",
