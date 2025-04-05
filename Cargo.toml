@@ -98,7 +98,7 @@ csv-index = "0.1"
 csvlens = { version = "0.12", optional = true, default-features = false, features = [
     "clipboard",
 ] }
-csvs_convert = { version = "0.9.1", default-features = false, features = [
+csvs_convert = { version = "0.10", default-features = false, features = [
     "converters",
 ], optional = true }
 data-encoding = { version = "2.8", optional = true }
@@ -307,6 +307,11 @@ csv-index = { git = "https://github.com/dathere/rust-csv", branch = "qsv-optimiz
 
 # use our fork of csvlens using 2024 edition, till it's merged upstream
 csvlens = { git = "https://github.com/jqnatividad/csvlens", branch = "2024-edition" }
+
+# use our fork of csvs_convert with parquet converters properly feature gated
+# until our PR is merged upstream. We don't use the parquet feature as we use
+# Polars-powered sqlp --format parquet for that.
+csvs_convert = { git = "https://github.com/jqnatividad/csvs_convert", branch = "14-parquet-feature-gate-parquet-converters" }
 
 # use latest upstream with upgraded quick-xml and accelerated int/float parsing
 # now that our PR has been merged
