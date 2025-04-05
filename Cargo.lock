@@ -1646,8 +1646,8 @@ dependencies = [
 
 [[package]]
 name = "csvs_convert"
-version = "0.10.0"
-source = "git+https://github.com/jqnatividad/csvs_convert?branch=14-parquet-feature-gate-parquet-converters#c8df057d89d48ad357757c97c3e548bb6e69f906"
+version = "0.10.1"
+source = "git+https://github.com/kindly/csvs_convert?rev=10402cb#10402cbce44ae3f5f56d4e50cf513937685a9264"
 dependencies = [
  "chrono",
  "counter",
