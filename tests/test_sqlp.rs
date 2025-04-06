@@ -1116,7 +1116,10 @@ fn sqlp_boston311_sql_cache_schema_decimal_override() {
     let wrk = Workdir::new("sqlp_boston311_sql_cache_schema_decimal_override");
     let test_file = wrk.load_test_file("boston311-100.csv");
 
-    wrk.create_from_string("test.sql", "select latitude,longitude from _t_1 limit 10;");
+    wrk.create_from_string(
+        "test.sql",
+        "select latitude,longitude from boston311-100 limit 10;",
+    );
 
     wrk.create_from_string(
         "boston311-100.pschema.json",
@@ -1162,6 +1165,8 @@ fn sqlp_boston311_sql_cache_schema_decimal_override() {
     cmd.arg(&test_file)
         .arg("test.sql")
         .args(["--format", "jsonl", "--cache-schema"]);
+
+    wrk.assert_success(&mut cmd);
 
     let got: String = wrk.stdout(&mut cmd);
     let expected = r#"{"latitude":"42.359","longitude":"-71.058700"}
