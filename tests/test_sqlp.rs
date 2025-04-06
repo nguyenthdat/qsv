@@ -3202,6 +3202,34 @@ fn sqlp_string_function_joins() {
     similar_asserts::assert_eq!(got, expected);
 }
 
+#[test]
+fn sqlp_string_to_array() {
+    let wrk = Workdir::new("sqlp_string_to_array");
+    wrk.create(
+        "data.csv",
+        vec![
+            svec!["id", "cities"],
+            svec!["1", "Dubai,Abu Dhabi,Sharjah"],
+            svec!["2", "Mumbai,Delhi,Bangalore"],
+        ],
+    );
+
+    let mut cmd = wrk.command("sqlp");
+    cmd.arg("data.csv")
+        .arg(
+            r#"
+        SELECT id, STRING_TO_ARRAY(cities, ',') AS cities FROM data
+    "#,
+        )
+        .args(["--format", "json"]);
+
+    wrk.assert_success(&mut cmd);
+
+    let got: String = wrk.stdout(&mut cmd);
+    let expected = r#"[{"id":1,"cities":["Dubai","Abu Dhabi","Sharjah"]},{"id":2,"cities":["Mumbai","Delhi","Bangalore"]}]"#;
+    similar_asserts::assert_eq!(got, expected);
+}
+
 // #[test]
 // fn sqlp_generate_graphviz_plan() {
 //     let wrk = Workdir::new("sqlp_generate_graphviz_plan");
