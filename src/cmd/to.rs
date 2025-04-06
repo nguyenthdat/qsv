@@ -1,7 +1,8 @@
 static USAGE: &str = r#"
-Convert CSV files to PostgreSQL, SQLite, Excel XLSX and Data Package.
+Convert CSV files to PostgreSQL, SQLite, Excel XLSX, Parquet and Data Package.
 
-POSTGRES
+POSTGRESQL
+==========
 To convert to postgres you need to supply connection string.
 The format is described here - https://docs.rs/postgres/latest/postgres/config/struct.Config.html#examples-1.
 Additionally you can use `env=MY_ENV_VAR` and qsv will get the connection string from the
@@ -51,6 +52,7 @@ Print dump to stdout.
 
 
 SQLITE
+======
 Convert to sqlite db file. Will be created if it does not exist.
 
 If using the `--dump` option, instead of a sqlite database file, put the name of the dump file or `-` for stdout.
@@ -87,7 +89,8 @@ Print dump to stdout.
   $ qsv to sqlite --dump - file1.csv file2.csv
 
 
-XLSX
+EXCEL XLSX
+==========
 Convert to new xlsx file.
 
 Example:
@@ -106,7 +109,35 @@ Load files listed in the 'ourdata.infile-list' into xlsx file.
 
     $ qsv to xlsx output.xlsx ourdata.infile-list
 
-DATAPACKAGE
+PARQUET
+=======
+Convert to directory of parquet files.  Need to select a directory, it will be created if it does not exists.
+If the `to_parquet` feature is not enabled, a simpler parquet conversion is available using the `sqlp`
+subcommand with the `--format parquet` option.
+
+To stream the data use the `pipe` option.  To pipe from stdin use `-` for the filename or use named pipe.
+Type guessing is more limited with this option.
+
+Examples:
+
+Convert `file1.csv` and `file2.csv' into `mydir/file1.parquet` and `mydir/file2.parquet` files.
+
+    $ qsv to parquet mydir file1.csv file2.csv
+
+Convert from stdin.
+
+    $ qsv to parquet --pipe mydir -
+
+Convert all files in dir1 into parquet files in myparquetdir.
+
+    $ qsv to parquet myparquetdir dir1
+
+Convert files listed in the 'data.infile-list' into parquet files in myparquetdir.
+    
+        $ qsv to parquet myparquetdir data.infile-list
+        
+DATA PACKAGE
+============
 Generate a datapackage, which contains stats and information about what is in the CSV files.
 
 Examples:
@@ -137,6 +168,7 @@ Usage:
     qsv to postgres [options] <postgres> [<input>...]
     qsv to sqlite [options] <sqlite> [<input>...]
     qsv to xlsx [options] <xlsx> [<input>...]
+    qsv to parquet [options] <parquet> [<input>...]
     qsv to datapackage [options] <datapackage> [<input>...]
     qsv to --help
 
@@ -149,7 +181,7 @@ To options:
     -s --schema <arg>      The schema to load the data into. (postgres only).
     -d --drop              Drop tables before loading new data into them (postgres/sqlite only).
     -e --evolve            If loading into existing db, alter existing tables so that new data will load. (postgres/sqlite only).
-    -i --pipe              Allow piping from stdin (using `-`) or from a named pipe.
+    -i --pipe              For parquet, allow piping from stdin (using `-`) or from a named pipe.
     -p --separator <arg>   For xlsx, use this character to help truncate xlsx sheet names.
                            Defaults to space.
     -j, --jobs <arg>       The number of jobs to run in parallel.
@@ -164,8 +196,8 @@ Common options:
 use std::{io::Write, path::PathBuf};
 
 use csvs_convert::{
-    DescribeOptions, Options, csvs_to_postgres_with_options, csvs_to_sqlite_with_options,
-    csvs_to_xlsx_with_options, make_datapackage,
+    DescribeOptions, Options, csvs_to_parquet_with_options, csvs_to_postgres_with_options,
+    csvs_to_sqlite_with_options, csvs_to_xlsx_with_options, make_datapackage,
 };
 use log::debug;
 use serde::Deserialize;
@@ -184,6 +216,8 @@ struct Args {
     arg_postgres:       Option<String>,
     cmd_sqlite:         bool,
     arg_sqlite:         Option<String>,
+    cmd_parquet:        bool,
+    arg_parquet:        Option<String>,
     cmd_xlsx:           bool,
     arg_xlsx:           Option<String>,
     cmd_datapackage:    bool,
@@ -238,7 +272,7 @@ pub fn run(argv: &[&str]) -> CliResult<()> {
     let tmpdir = tempfile::tempdir()?;
 
     if args.cmd_postgres {
-        debug!("converting to postgres");
+        debug!("converting to PostgreSQL");
         arg_input = process_input(arg_input, &tmpdir, EMPTY_STDIN_ERRMSG)?;
         if args.flag_dump {
             options.dump_file = args.arg_postgres.expect("checked above");
@@ -250,9 +284,9 @@ pub fn run(argv: &[&str]) -> CliResult<()> {
                 options,
             )?;
         }
-        debug!("conversion to postgres complete");
+        debug!("conversion to PostgreSQL complete");
     } else if args.cmd_sqlite {
-        debug!("converting to sqlite");
+        debug!("converting to SQLite");
         arg_input = process_input(arg_input, &tmpdir, EMPTY_STDIN_ERRMSG)?;
         if args.flag_dump {
             options.dump_file = args.arg_sqlite.expect("checked above");
@@ -264,7 +298,16 @@ pub fn run(argv: &[&str]) -> CliResult<()> {
                 options,
             )?;
         }
-        debug!("conversion to sqlite complete");
+        debug!("conversion to SQLite complete");
+    } else if args.cmd_parquet {
+        debug!("converting to Parquet");
+        arg_input = process_input(arg_input, &tmpdir, EMPTY_STDIN_ERRMSG)?;
+        output = csvs_to_parquet_with_options(
+            args.arg_parquet.expect("checked above"),
+            arg_input,
+            options,
+        )?;
+        debug!("conversion to Parquet complete");
     } else if args.cmd_xlsx {
         debug!("converting to Excel XLSX");
         arg_input = process_input(arg_input, &tmpdir, EMPTY_STDIN_ERRMSG)?;
@@ -287,7 +330,7 @@ pub fn run(argv: &[&str]) -> CliResult<()> {
         debug!("Data Package complete");
     } else {
         return fail_clierror!(
-            "Need to supply either xlsx,postgres,sqlite,datapackage as subcommand"
+            "Need to supply either xlsx,parquet,postgres,sqlite,datapackage as subcommand"
         );
     }
 
