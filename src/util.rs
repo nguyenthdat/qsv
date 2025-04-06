@@ -22,7 +22,6 @@ use filetime::FileTime;
 use human_panic::setup_panic;
 #[cfg(any(feature = "feature_capable", feature = "lite"))]
 use indicatif::{HumanCount, ProgressBar, ProgressDrawTarget, ProgressStyle};
-use libc;
 use log::{info, log_enabled};
 use reqwest::Client;
 use serde::de::DeserializeOwned;

@@ -435,7 +435,7 @@ impl Args {
             };
 
             let path_str = canonical_path.to_string_lossy().to_string();
-            debug!("Canonicalized path: {}", path_str);
+            debug!("Canonicalized path: {path_str}");
 
             let canonical_outdir = match dunce::canonicalize(&outdir) {
                 Ok(path) => path,
@@ -450,7 +450,7 @@ impl Args {
             // Execute the command using the appropriate shell based on platform
             let status = if cfg!(windows) {
                 debug!("Running Windows command: cmd /C {cmd}");
-                let cmd_vec = cmd.split(" ").collect::<Vec<&str>>();
+                let cmd_vec = cmd.split(' ').collect::<Vec<&str>>();
                 Command::new("cmd")
                     .arg("/C")
                     .args(&cmd_vec)
