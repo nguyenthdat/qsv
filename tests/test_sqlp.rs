@@ -1118,7 +1118,7 @@ fn sqlp_boston311_sql_cache_schema_decimal_override() {
 
     wrk.create_from_string(
         "test.sql",
-        "select latitude,longitude from boston311-100 limit 10;",
+        "select latitude,longitude from 'boston311-100' limit 10",
     );
 
     wrk.create_from_string(
