@@ -124,6 +124,7 @@ struct Args {
 
 fn main() -> QsvExitCode {
     util::qsv_custom_panic();
+    util::reset_sigpipe();
 
     let now = Instant::now();
     #[allow(unused_variables)]
