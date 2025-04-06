@@ -5218,6 +5218,7 @@ dependencies = [
  "jemallocator",
  "json-objects-to-csv",
  "jsonschema",
+ "libc",
  "localzone",
  "log",
  "memmap2",
