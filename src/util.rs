@@ -22,6 +22,7 @@ use filetime::FileTime;
 use human_panic::setup_panic;
 #[cfg(any(feature = "feature_capable", feature = "lite"))]
 use indicatif::{HumanCount, ProgressBar, ProgressDrawTarget, ProgressStyle};
+use libc;
 use log::{info, log_enabled};
 use reqwest::Client;
 use serde::de::DeserializeOwned;
@@ -138,6 +139,18 @@ const WHITESPACE_MARKERS: &[(char, &str)] = &[
     ('\u{2007}', "《figsp》"), // figure space
     ('\u{200B}', "《zwsp》"),  // zero width space
 ];
+
+#[cfg(unix)]
+pub fn reset_sigpipe() {
+    unsafe {
+        libc::signal(libc::SIGPIPE, libc::SIG_DFL);
+    }
+}
+
+#[cfg(not(unix))]
+pub fn reset_sigpipe() {
+    // no-op
+}
 
 /// Visualizes whitespace characters in a string by replacing them with visible markers
 ///

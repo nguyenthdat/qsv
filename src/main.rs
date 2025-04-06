@@ -88,6 +88,7 @@ struct Args {
 
 fn main() -> QsvExitCode {
     util::qsv_custom_panic();
+    util::reset_sigpipe();
 
     let mut enabled_commands = String::new();
     #[cfg(all(feature = "apply", feature = "feature_capable"))]
