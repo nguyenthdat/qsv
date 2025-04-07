@@ -222,8 +222,6 @@ impl Config {
                 } else {
                     match util::convert_special_format(&path, special_format, default_delim) {
                         Ok(temp_path) => {
-                            // let _ = TEMP_FILE_DIR.get_or_init(|| std::env::temp_dir());
-                            // let _ = CLEANUP_TEMP_FILE.set(temp_path.clone());
                             path.clone_from(&temp_path);
                             sniff = false;
                             get_delim_by_extension(&temp_path, default_delim)
