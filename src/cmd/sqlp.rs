@@ -870,9 +870,17 @@ pub fn run(argv: &[&str]) -> CliResult<()> {
                                         let max = stat.max.as_ref().unwrap();
                                         let precision = stat.max_precision.unwrap_or(0);
 
-                                        // Use Float64 if precision is high or values are outside
-                                        // f32 range
-                                        if precision > 7
+                                        // As we use f64 internally, its unlikely that we have more
+                                        // than 16 digits of precision, but we do this anyway to
+                                        // document it as the polars engine does support it
+                                        if precision > 16 {
+                                            // For very high precision, use Decimal type
+                                            polars::datatypes::DataType::Decimal(
+                                                Some(precision as usize),
+                                                // polars will infer scale from the data if None
+                                                None,
+                                            )
+                                        } else if precision > 7
                                             || min.parse::<f32>().is_err()
                                             || max.parse::<f32>().is_err()
                                         {
