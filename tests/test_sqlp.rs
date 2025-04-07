@@ -1077,7 +1077,7 @@ select ward,count(*) as cnt from temp_table2 group by ward order by cnt desc, wa
         boston311_schema,
         r#"{
   "fields": {
-    "case_enquiry_id": "Int64",
+    "case_enquiry_id": "UInt64",
     "open_dt": "String",
     "target_dt": "String",
     "closed_dt": "String",

@@ -832,21 +832,53 @@ pub fn run(argv: &[&str]) -> CliResult<()> {
                                     "Integer" => {
                                         let min = stat.min.as_ref().unwrap();
                                         let max = stat.max.as_ref().unwrap();
-                                        if min.parse::<i32>().is_ok() && max.parse::<i32>().is_ok()
+
+                                        // Check if all values are non-negative to
+                                        // use unsigned types
+                                        if let (Ok(min_val), Ok(max_val)) =
+                                            (min.parse::<i64>(), max.parse::<i64>())
                                         {
-                                            polars::datatypes::DataType::Int32
+                                            if min_val >= 0 {
+                                                // Use smallest unsigned type that can hold
+                                                // the max value
+                                                if max_val <= u8::MAX as i64 {
+                                                    polars::datatypes::DataType::UInt8
+                                                } else if max_val <= u16::MAX as i64 {
+                                                    polars::datatypes::DataType::UInt16
+                                                } else if max_val <= u32::MAX as i64 {
+                                                    polars::datatypes::DataType::UInt32
+                                                } else {
+                                                    polars::datatypes::DataType::UInt64
+                                                }
+                                            } else {
+                                                // Use signed types for negative values
+                                                if min_val >= i32::MIN as i64
+                                                    && max_val <= i32::MAX as i64
+                                                {
+                                                    polars::datatypes::DataType::Int32
+                                                } else {
+                                                    polars::datatypes::DataType::Int64
+                                                }
+                                            }
                                         } else {
+                                            // Fallback to Int64 if parsing fails
                                             polars::datatypes::DataType::Int64
                                         }
                                     },
                                     "Float" => {
                                         let min = stat.min.as_ref().unwrap();
                                         let max = stat.max.as_ref().unwrap();
-                                        if min.parse::<f32>().is_ok() && max.parse::<f32>().is_ok()
+                                        let precision = stat.max_precision.unwrap_or(0);
+
+                                        // Use Float64 if precision is high or values are outside
+                                        // f32 range
+                                        if precision > 7
+                                            || min.parse::<f32>().is_err()
+                                            || max.parse::<f32>().is_err()
                                         {
-                                            polars::datatypes::DataType::Float32
-                                        } else {
                                             polars::datatypes::DataType::Float64
+                                        } else {
+                                            polars::datatypes::DataType::Float32
                                         }
                                     },
                                     "Boolean" => polars::datatypes::DataType::Boolean,
