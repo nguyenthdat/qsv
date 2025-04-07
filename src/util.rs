@@ -35,7 +35,10 @@ use crate::{
     CURRENT_COMMAND, CliError, CliResult,
     cmd::stats::{JsonTypes, STATSDATA_TYPES_MAP, StatsData},
     config,
-    config::{Config, DEFAULT_RDR_BUFFER_CAPACITY, DEFAULT_WTR_BUFFER_CAPACITY, Delimiter},
+    config::{
+        Config, DEFAULT_RDR_BUFFER_CAPACITY, DEFAULT_WTR_BUFFER_CAPACITY, Delimiter, SpecialFormat,
+        is_special_format,
+    },
     select::SelectColumns,
 };
 
@@ -1299,6 +1302,16 @@ pub fn is_safe_name(header_name: &str) -> bool {
 }
 
 pub fn log_end(mut qsv_args: String, now: std::time::Instant) {
+    #[cfg(feature = "polars")]
+    use crate::config::TEMP_FILE_DIR;
+
+    #[cfg(feature = "polars")]
+    if let Some(temp_dir) = TEMP_FILE_DIR.get() {
+        // if polars is enabled, we need to remove the temporary directory
+        // after the command finishes. This is using unwrap_or_default()
+        // to avoid panics if the directory is already deleted.
+        std::fs::remove_dir_all(temp_dir).unwrap_or_default();
+    }
     if log::log_enabled!(log::Level::Info) {
         let ellipsis = if qsv_args.len() > 24 {
             utf8_truncate(&mut qsv_args, 24);
@@ -2111,6 +2124,7 @@ pub fn get_stats_records(
         || env_mode == "none"
         || args.arg_input.is_none()
         || args.arg_input.as_ref() == Some(&"-".to_string())
+        || is_special_format(Path::new(args.arg_input.as_ref().unwrap())) != SpecialFormat::Unknown
     {
         // if stdin or StatsMode::None,
         // we're just doing frequency old school w/o cardinality
@@ -2598,3 +2612,81 @@ pub fn expand_tilde(path: impl AsRef<Path>) -> Option<PathBuf> {
 //     json_record.push('}');
 //     Ok(json_record)
 // }
+
+/// Convert a special format file (Parquet, Arrow IPC, JSONL, or compressed CSV) to a regular CSV
+/// file.
+///
+/// # Arguments
+///
+/// * `path` - The path to the input file.
+/// * `format` - The format of the input file.
+/// * `delim` - The delimiter to use for the output CSV file.
+///
+/// # Returns
+///
+/// A `Result` containing the path to the temporary CSV file.
+/// The caller is responsible for deleting the temporary file.
+#[cfg(feature = "polars")]
+pub fn convert_special_format(
+    path: &Path,
+    format: SpecialFormat,
+    delim: u8,
+) -> Result<PathBuf, Box<dyn std::error::Error>> {
+    use polars::prelude::{
+        CsvReadOptions, CsvWriter, IpcReader, JsonReader, ParquetReader, SerReader, SerWriter,
+    };
+
+    let mut df = match format {
+        SpecialFormat::Parquet => {
+            let file = File::open(path)?;
+            let reader = BufReader::new(file);
+            ParquetReader::new(reader).finish()?
+        },
+        SpecialFormat::Ipc => {
+            let file = File::open(path)?;
+            let reader = BufReader::new(file);
+            IpcReader::new(reader).finish()?
+        },
+        SpecialFormat::Jsonl => {
+            let file = File::open(path)?;
+            let reader = BufReader::new(file);
+            JsonReader::new(reader).finish()?
+        },
+        SpecialFormat::CsvGz | SpecialFormat::CsvZst | SpecialFormat::CsvZlib => {
+            CsvReadOptions::default()
+                .try_into_reader_with_file_path(Some(path.to_path_buf()))?
+                .finish()?
+        },
+        SpecialFormat::Unknown => return Err("Unknown format".into()),
+    };
+
+    let temp_dir = crate::config::TEMP_FILE_DIR.get_or_init(|| {
+        let temp_dir = tempfile::TempDir::new().unwrap();
+        // by turning the tempdir into a pathbuf, we can ensure that the tempdir persists
+        // until the program exits
+        temp_dir.into_path()
+    });
+    let temp_csv_file = tempfile::Builder::new()
+        .suffix(".csv")
+        .tempfile_in(temp_dir)?;
+
+    let writer = BufWriter::new(&temp_csv_file);
+    CsvWriter::new(writer)
+        .with_separator(delim)
+        .finish(&mut df)?;
+
+    let temp_csv_file_path = temp_csv_file.path().to_path_buf();
+    temp_csv_file.keep()?;
+
+    Ok(temp_csv_file_path)
+}
+
+#[cfg(not(feature = "polars"))]
+#[allow(unused_variables)]
+pub fn convert_special_format(
+    path: &Path,
+    format: SpecialFormat,
+    delim: u8,
+) -> Result<PathBuf, Box<dyn std::error::Error>> {
+    Err("Unknown format".into())
+}

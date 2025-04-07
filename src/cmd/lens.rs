@@ -26,13 +26,19 @@ Common options:
     -h, --help      Display this message
 "#;
 
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 
 use csvlens::{CsvlensOptions, run_csvlens_with_options};
 use serde::Deserialize;
 use tempfile;
 
-use crate::{CliError, CliResult, config::Config, util};
+#[cfg(feature = "polars")]
+use crate::config::SpecialFormat;
+use crate::{
+    CliError, CliResult,
+    config::{Config, is_special_format},
+    util,
+};
 
 #[derive(Deserialize)]
 struct Args {
@@ -70,6 +76,24 @@ pub fn run(argv: &[&str]) -> CliResult<()> {
     // we do config here to get the delimiter, just in case
     // QSV_SNIFF_DELIMITER or QSV_DELIMITER is set
     let config: Config = Config::new(Some(input.clone()).as_ref());
+
+    // if polars is enabled, check if the input is a special format
+    // and convert it to a csv file if so
+    #[cfg(feature = "polars")]
+    let input = {
+        let special_format = is_special_format(Path::new(&input));
+        if special_format == SpecialFormat::Unknown {
+            input
+        } else {
+            let converted = util::convert_special_format(
+                Path::new(&input),
+                special_format,
+                config.get_delimiter(),
+            )
+            .map_err(|e| CliError::Other(format!("csvlens error: {e}")))?;
+            converted.to_string_lossy().to_string()
+        }
+    };
 
     let options = CsvlensOptions {
         filename:           Some(input),
