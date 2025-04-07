@@ -313,9 +313,6 @@ csv-index = { git = "https://github.com/dathere/rust-csv", branch = "qsv-optimiz
 # use our fork of csvlens using 2024 edition, till it's merged upstream
 csvlens = { git = "https://github.com/jqnatividad/csvlens", branch = "2024-edition" }
 
-# use upstream now that our PR has been merged with parquet converters properly feature gated
-csvs_convert = { git = "https://github.com/kindly/csvs_convert", rev = "10402cb" }
-
 # use latest upstream with upgraded quick-xml and accelerated int/float parsing
 # now that our PR has been merged
 calamine = { git = "https://github.com/tafia/calamine", rev = "5cda5c7" }
