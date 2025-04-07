@@ -2,7 +2,10 @@ use std::{
     env, fs,
     io::{self, Read},
     path::{Path, PathBuf},
-    sync::atomic::{AtomicBool, Ordering},
+    sync::{
+        OnceLock,
+        atomic::{AtomicBool, Ordering},
+    },
 };
 
 use log::{debug, info, warn};
@@ -34,6 +37,20 @@ pub static SPONSOR_MESSAGE: &str = r#"sponsored by datHere - Data Infrastructure
 Need a UI & more advanced data-wrangling? Upgrade to qsv pro (https://qsvpro.datHere.com)
 "#;
 
+pub static TEMP_FILE_DIR: OnceLock<PathBuf> = OnceLock::new();
+
+#[allow(unused_variables)]
+#[allow(dead_code)]
+#[derive(Clone, Copy, PartialEq, Eq)]
+pub enum SpecialFormat {
+    Parquet,
+    Ipc,
+    Jsonl,
+    CsvGz,
+    CsvZst,
+    CsvZlib,
+    Unknown,
+}
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct Delimiter(pub u8);
 
@@ -146,7 +163,7 @@ impl Config {
             Ok(delim) => Delimiter::decode_delimiter(&delim).unwrap().as_byte(),
             _ => b',',
         };
-        let sniff = util::get_envvar_flag("QSV_SNIFF_DELIMITER")
+        let mut sniff = util::get_envvar_flag("QSV_SNIFF_DELIMITER")
             || util::get_envvar_flag("QSV_SNIFF_PREAMBLE");
         let mut skip_format_check = true;
         let mut format_error = None;
@@ -170,29 +187,56 @@ impl Config {
             // },
             Some(s) if s == "-" => (None, default_delim, false),
             Some(ref s) => {
-                let path = PathBuf::from(s);
+                let mut path = PathBuf::from(s);
                 // if QSV_SKIP_FORMAT_CHECK is set or path is a temp file, we skip format check
                 skip_format_check = sniff
                     || util::get_envvar_flag("QSV_SKIP_FORMAT_CHECK")
                     || path.starts_with(std::env::temp_dir());
-                let (file_extension, delim, snappy) = get_delim_by_extension(&path, default_delim);
-                format_error = if skip_format_check {
-                    None
+
+                #[cfg(feature = "polars")]
+                let special_format = {
+                    let special_format = is_special_format(&path);
+                    if special_format != SpecialFormat::Unknown {
+                        skip_format_check = true;
+                    }
+                    special_format
+                };
+                #[cfg(not(feature = "polars"))]
+                let special_format = SpecialFormat::Unknown;
+                let (file_extension, delim, snappy) = if special_format == SpecialFormat::Unknown {
+                    let (file_extension, delim, snappy) =
+                        get_delim_by_extension(&path, default_delim);
+                    format_error = if skip_format_check {
+                        None
+                    } else {
+                        match file_extension.as_str() {
+                            "csv" | "tsv" | "tab" | "ssv" => None,
+                            ext => Some(format!(
+                                "{} is using an unsupported file format: {ext}. Set \
+                                 QSV_SKIP_FORMAT_CHECK to skip input format checking.",
+                                path.display()
+                            )),
+                        }
+                    };
+                    (file_extension, delim, snappy)
                 } else {
-                    match file_extension.as_str() {
-                        "csv" | "tsv" | "tab" | "ssv" => None,
-                        ext => Some(format!(
-                            "{} is using an unsupported file format: {ext}. Set \
-                             QSV_SKIP_FORMAT_CHECK to skip input format checking.",
-                            path.display()
-                        )),
+                    match util::convert_special_format(&path, special_format, default_delim) {
+                        Ok(temp_path) => {
+                            // let _ = TEMP_FILE_DIR.get_or_init(|| std::env::temp_dir());
+                            // let _ = CLEANUP_TEMP_FILE.set(temp_path.clone());
+                            path.clone_from(&temp_path);
+                            sniff = false;
+                            get_delim_by_extension(&temp_path, default_delim)
+                        },
+                        Err(e) => {
+                            format_error = Some(format!("Failed to convert special format: {e}"));
+                            ("DUMMY".to_string(), default_delim, false)
+                        },
                     }
                 };
                 (Some(path), delim, snappy || file_extension.ends_with("sz"))
             },
         };
-        let sniff = util::get_envvar_flag("QSV_SNIFF_DELIMITER")
-            || util::get_envvar_flag("QSV_SNIFF_PREAMBLE");
         let comment: Option<u8> = match env::var("QSV_COMMENT_CHAR") {
             Ok(comment_char) => Some(comment_char.as_bytes().first().unwrap().to_owned()),
             Err(_) => None,
@@ -739,6 +783,39 @@ pub fn get_delim_by_extension(path: &Path, default_delim: u8) -> (String, u8, bo
     };
 
     (file_extension, delim, snappy)
+}
+
+/// Determines if a file is a Parquet, Arrow IPC, JSONL, or compressed CSV file.
+///
+/// # Arguments
+///
+/// * `path` - A reference to the `Path` of the file.
+///
+/// # Returns
+///
+/// A `SpecialFormat` enum value indicating the type of special format the file is.
+pub fn is_special_format(path: &Path) -> SpecialFormat {
+    if !path.exists() {
+        return SpecialFormat::Unknown;
+    }
+    let path_str = path.to_str().unwrap_or_default().to_ascii_lowercase();
+
+    #[allow(clippy::case_sensitive_file_extension_comparisons)]
+    if path_str.ends_with(".parquet") {
+        return SpecialFormat::Parquet;
+    } else if path_str.ends_with(".ipc") || path_str.ends_with(".arrow") {
+        return SpecialFormat::Ipc;
+    } else if path_str.ends_with(".jsonl") || path_str.ends_with(".json") {
+        return SpecialFormat::Jsonl;
+    } else if path_str.ends_with(".csv.gz") {
+        return SpecialFormat::CsvGz;
+    } else if path_str.ends_with(".csv.zst") {
+        return SpecialFormat::CsvZst;
+    } else if path_str.ends_with(".csv.zlib") {
+        return SpecialFormat::CsvZlib;
+    }
+
+    SpecialFormat::Unknown
 }
 
 #[cfg(test)]
