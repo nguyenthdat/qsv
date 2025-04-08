@@ -37,6 +37,7 @@ pub static SPONSOR_MESSAGE: &str = r#"sponsored by datHere - Data Infrastructure
 Need a UI & more advanced data-wrangling? Upgrade to qsv pro (https://qsvpro.datHere.com)
 "#;
 
+#[cfg(feature = "polars")]
 pub static TEMP_FILE_DIR: OnceLock<PathBuf> = OnceLock::new();
 
 #[allow(unused_variables)]
