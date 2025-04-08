@@ -414,7 +414,7 @@ impl Selection {
     ) -> iter::Scan<slice::Iter<'a, usize>, &'b csv::ByteRecord, _GetField> {
         #[allow(clippy::trivially_copy_pass_by_ref)]
         fn get_field<'c>(row: &mut &'c csv::ByteRecord, idx: &usize) -> Option<&'c [u8]> {
-            Some(&row[*idx])
+            row.get(*idx)
         }
 
         let get_field: _GetField = get_field;
