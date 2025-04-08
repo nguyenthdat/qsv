@@ -2651,3 +2651,78 @@ fn stats_infer_boolean_missing_false_pattern() {
     // This should fail with an error
     wrk.assert_err(&mut cmd);
 }
+
+#[test]
+fn stats_issue_2668_semicolon_separator() {
+    let wrk = Workdir::new("stats_issue_2668_semicolon_separator");
+    wrk.create("data.csv", vec![svec!["h1;h2;h3;h4"], svec!["1;2;3;4"]]);
+
+    let mut cmd = wrk.command("stats");
+    cmd.arg("data.csv");
+
+    // should not fail, and just treat the data as a single column
+    // as the default delimiter is comma, and the separator is semicolon
+    wrk.assert_success(&mut cmd);
+
+    let got: Vec<Vec<String>> = wrk.read_stdout(&mut cmd);
+    let expected = vec![
+        svec![
+            "field",
+            "type",
+            "is_ascii",
+            "sum",
+            "min",
+            "max",
+            "range",
+            "sort_order",
+            "sortiness",
+            "min_length",
+            "max_length",
+            "sum_length",
+            "avg_length",
+            "stddev_length",
+            "variance_length",
+            "cv_length",
+            "mean",
+            "sem",
+            "geometric_mean",
+            "harmonic_mean",
+            "stddev",
+            "variance",
+            "cv",
+            "nullcount",
+            "max_precision",
+            "sparsity"
+        ],
+        svec![
+            "h1;h2;h3;h4",
+            "String",
+            "true",
+            "",
+            "1;2;3;4",
+            "1;2;3;4",
+            "",
+            "Unsorted",
+            "0",
+            "7",
+            "7",
+            "7",
+            "7",
+            "0",
+            "0",
+            "0",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "0",
+            "",
+            "0"
+        ],
+    ];
+
+    similar_asserts::assert_eq!(got, expected);
+}
