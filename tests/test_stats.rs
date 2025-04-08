@@ -2472,3 +2472,182 @@ fn stats_percentiles_single_value() {
 
     similar_asserts::assert_eq!(got, expected);
 }
+
+#[test]
+fn stats_infer_boolean_prefix_pattern() {
+    let wrk = Workdir::new("stats_infer_boolean_prefix_pattern");
+    let test_file = wrk.load_test_file("boston311-10-boolean-tf.csv");
+
+    let mut cmd = wrk.command("stats");
+    cmd.arg("--infer-boolean")
+        .arg("--boolean-patterns")
+        .arg("t*:f*")
+        .arg(&"--dataset-stats")
+        .arg(test_file);
+
+    let got: String = wrk.stdout(&mut cmd);
+
+    let expected = wrk.load_test_resource("boston311-10-boolean-tf-stats.csv");
+
+    similar_asserts::assert_eq!(dos2unix(&got), dos2unix(&expected).trim_end());
+}
+
+#[test]
+fn stats_infer_boolean_multiple_patterns() {
+    let wrk = Workdir::new("stats_infer_boolean_multiple_patterns");
+    let test_file = wrk.load_test_file("boston311-10-boolean-tf.csv");
+
+    let mut cmd = wrk.command("stats");
+    cmd.arg("--infer-boolean")
+        .arg("--boolean-patterns")
+        .arg("true:false,t*:f*,y*:n*")
+        .arg(&"--dataset-stats")
+        .arg(test_file);
+
+    let got: String = wrk.stdout(&mut cmd);
+
+    let expected = wrk.load_test_resource("boston311-10-boolean-tf-stats.csv");
+
+    similar_asserts::assert_eq!(dos2unix(&got), dos2unix(&expected).trim_end());
+}
+
+#[test]
+fn stats_infer_boolean_case_insensitive() {
+    let wrk = Workdir::new("stats_infer_boolean_case_insensitive");
+    let test_file = wrk.load_test_file("boston311-10-boolean-tf.csv");
+
+    let mut cmd = wrk.command("stats");
+    cmd.arg("--infer-boolean")
+        .arg("--boolean-patterns")
+        .arg("TRUE:FALSE")
+        .arg(&"--dataset-stats")
+        .arg(test_file);
+
+    let got: String = wrk.stdout(&mut cmd);
+
+    let expected = wrk.load_test_resource("boston311-10-boolean-tf-stats.csv");
+
+    similar_asserts::assert_eq!(dos2unix(&got), dos2unix(&expected).trim_end());
+}
+
+#[test]
+fn stats_infer_boolean_long_patterns() {
+    let wrk = Workdir::new("stats_infer_boolean_long_patterns");
+
+    // Create test data with values that won't match the truthy:falsy pattern
+    wrk.create(
+        "data.csv",
+        vec![
+            svec!["col1"],
+            svec!["true"],
+            svec!["false"],
+            svec!["true"],
+            svec!["false"],
+        ],
+    );
+
+    let mut cmd = wrk.command("stats");
+    cmd.arg("--infer-boolean")
+        .arg("--boolean-patterns")
+        .arg("truthy:falsy")
+        .arg(&"--dataset-stats")
+        .arg("data.csv");
+
+    let got: String = wrk.stdout(&mut cmd);
+
+    // Should not be inferred as boolean since values don't match pattern
+    assert!(!got.contains("Boolean"));
+    assert!(got.contains("String"));
+}
+
+#[test]
+fn stats_infer_boolean_cardinality_three() {
+    let wrk = Workdir::new("stats_infer_boolean_cardinality_three");
+
+    // Create a test file with 3 distinct values that would match boolean patterns
+    wrk.create(
+        "data.csv",
+        vec![
+            svec!["col1"],
+            svec!["true"],
+            svec!["truthy"],
+            svec!["false"],
+        ],
+    );
+
+    let mut cmd = wrk.command("stats");
+    cmd.arg("--infer-boolean")
+        .arg("--boolean-patterns")
+        .arg("true*:false*")
+        .arg("data.csv");
+
+    let got: String = wrk.stdout(&mut cmd);
+
+    // Should not be inferred as boolean because cardinality is 3
+    assert!(!got.contains("Boolean"));
+    assert!(got.contains("String"));
+}
+
+#[test]
+fn stats_infer_boolean_empty_pattern() {
+    let wrk = Workdir::new("stats_infer_boolean_empty_pattern");
+    let test_file = wrk.load_test_file("boston311-10-boolean-tf.csv");
+
+    let mut cmd = wrk.command("stats");
+    cmd.arg("--infer-boolean")
+        .arg("--boolean-patterns")
+        .arg("")
+        .arg(&"--dataset-stats")
+        .arg(test_file);
+
+    // This should fail with an error
+    wrk.assert_err(&mut cmd);
+}
+
+#[test]
+fn stats_infer_boolean_missing_colon() {
+    let wrk = Workdir::new("stats_infer_boolean_missing_colon");
+    let test_file = wrk.load_test_file("boston311-10-boolean-tf.csv");
+
+    let mut cmd = wrk.command("stats");
+    cmd.arg("--infer-boolean")
+        .arg("--boolean-patterns")
+        .arg("truefalse")
+        .arg(&"--dataset-stats")
+        .arg(test_file);
+
+    // This should fail with an error
+    wrk.assert_err(&mut cmd);
+}
+
+#[test]
+fn stats_infer_boolean_missing_true_pattern() {
+    let wrk = Workdir::new("stats_infer_boolean_missing_true_pattern");
+    let test_file = wrk.load_test_file("boston311-10-boolean-tf.csv");
+
+    let mut cmd = wrk.command("stats");
+    cmd.arg("--infer-boolean")
+        .arg("--boolean-patterns")
+        .arg(":false")
+        .arg(&"--dataset-stats")
+        .arg(test_file);
+
+    // This should fail with an error
+    wrk.assert_err(&mut cmd);
+}
+
+#[test]
+fn stats_infer_boolean_missing_false_pattern() {
+    let wrk = Workdir::new("stats_infer_boolean_missing_false_pattern");
+    let test_file = wrk.load_test_file("boston311-10-boolean-tf.csv");
+
+    let mut cmd = wrk.command("stats");
+    cmd.arg("--infer-boolean")
+        .arg("--boolean-patterns")
+        .arg("true:")
+        .arg(&"--dataset-stats")
+        .arg(test_file);
+
+    // This should fail with an error
+    wrk.assert_err(&mut cmd);
+}
