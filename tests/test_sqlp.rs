@@ -3230,6 +3230,42 @@ fn sqlp_string_to_array() {
     similar_asserts::assert_eq!(got, expected);
 }
 
+#[test]
+fn sqlp_split_part() {
+    let wrk = Workdir::new("sqlp_split_part");
+    wrk.create(
+        "data.csv",
+        vec![
+            svec!["s"],
+            svec!["xx,yy,zz"],
+            svec!["abc,,xyz,???,hmmm"],
+            svec![""],
+        ],
+    );
+
+    let mut cmd = wrk.command("sqlp");
+    cmd.arg("data.csv").arg(
+        r#"
+        SELECT
+          SPLIT_PART(s,',',1) AS "s+1",
+          SPLIT_PART(s,',',3) AS "s+3",
+          SPLIT_PART(s,',',-2) AS "s-2",
+        FROM data
+    "#,
+    );
+
+    wrk.assert_success(&mut cmd);
+
+    let got: Vec<Vec<String>> = wrk.read_stdout(&mut cmd);
+    let expected = vec![
+        svec!["s+1", "s+3", "s-2"],
+        svec!["xx", "zz", "yy"],
+        svec!["abc", "xyz", "???"],
+        svec!["", "", ""],
+    ];
+    similar_asserts::assert_eq!(got, expected);
+}
+
 // #[test]
 // fn sqlp_generate_graphviz_plan() {
 //     let wrk = Workdir::new("sqlp_generate_graphviz_plan");
