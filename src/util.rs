@@ -2632,12 +2632,20 @@ pub fn convert_special_format(
     format: SpecialFormat,
     delim: u8,
 ) -> Result<PathBuf, Box<dyn std::error::Error>> {
-    use polars::prelude::{
-        CsvParseOptions, CsvReadOptions, CsvWriter, IpcReader, JsonLineReader, JsonReader,
-        ParquetReader, SerReader, SerWriter,
+    use polars::{
+        io::avro::AvroReader,
+        prelude::{
+            CsvParseOptions, CsvReadOptions, CsvWriter, IpcReader, JsonLineReader, JsonReader,
+            ParquetReader, SerReader, SerWriter,
+        },
     };
 
     let mut df = match format {
+        SpecialFormat::Avro => {
+            let file = File::open(path)?;
+            let reader = BufReader::new(file);
+            AvroReader::new(reader).finish()?
+        },
         SpecialFormat::Parquet => {
             let file = File::open(path)?;
             let reader = BufReader::new(file);

@@ -44,6 +44,7 @@ pub static TEMP_FILE_DIR: OnceLock<PathBuf> = OnceLock::new();
 #[allow(dead_code)]
 #[derive(Clone, Copy, PartialEq, Eq)]
 pub enum SpecialFormat {
+    Avro,
     Parquet,
     Ipc,
     Json,  // expects JSON Array
@@ -806,6 +807,7 @@ pub fn is_special_format(path: &Path) -> SpecialFormat {
         .to_ascii_lowercase()
         .as_str()
     {
+        "avro" => SpecialFormat::Avro,
         "parquet" => SpecialFormat::Parquet,
         "ipc" | "arrow" => SpecialFormat::Ipc,
         "jsonl" => SpecialFormat::Jsonl,
