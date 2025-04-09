@@ -46,10 +46,11 @@ pub static TEMP_FILE_DIR: OnceLock<PathBuf> = OnceLock::new();
 pub enum SpecialFormat {
     Parquet,
     Ipc,
-    Jsonl,
-    CsvGz,
-    CsvZst,
-    CsvZlib,
+    Json,  // expects JSON Array
+    Jsonl, // expects JSON Lines
+    CompressedCsv,
+    CompressedTsv,
+    CompressedSsv,
     Unknown,
 }
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -797,24 +798,68 @@ pub fn is_special_format(path: &Path) -> SpecialFormat {
     if !path.exists() {
         return SpecialFormat::Unknown;
     }
-    let path_str = path.to_str().unwrap_or_default().to_ascii_lowercase();
 
-    #[allow(clippy::case_sensitive_file_extension_comparisons)]
-    if path_str.ends_with(".parquet") {
-        return SpecialFormat::Parquet;
-    } else if path_str.ends_with(".ipc") || path_str.ends_with(".arrow") {
-        return SpecialFormat::Ipc;
-    } else if path_str.ends_with(".jsonl") || path_str.ends_with(".json") {
-        return SpecialFormat::Jsonl;
-    } else if path_str.ends_with(".csv.gz") {
-        return SpecialFormat::CsvGz;
-    } else if path_str.ends_with(".csv.zst") {
-        return SpecialFormat::CsvZst;
-    } else if path_str.ends_with(".csv.zlib") {
-        return SpecialFormat::CsvZlib;
+    let extension = path.extension().unwrap_or_default();
+    match extension
+        .to_str()
+        .unwrap_or_default()
+        .to_ascii_lowercase()
+        .as_str()
+    {
+        "parquet" => SpecialFormat::Parquet,
+        "ipc" | "arrow" => SpecialFormat::Ipc,
+        "jsonl" => SpecialFormat::Jsonl,
+        "json" => SpecialFormat::Json,
+        "gz" => {
+            let path_str = if let Some(s) = path.to_str() {
+                s.to_ascii_lowercase()
+            } else {
+                return SpecialFormat::Unknown;
+            };
+            if path_str.ends_with(".csv.gz") {
+                SpecialFormat::CompressedCsv
+            } else if path_str.ends_with(".tsv.gz") || path_str.ends_with(".tab.gz") {
+                SpecialFormat::CompressedTsv
+            } else if path_str.ends_with(".ssv.gz") {
+                SpecialFormat::CompressedSsv
+            } else {
+                SpecialFormat::Unknown
+            }
+        },
+        "zst" => {
+            let path_str = if let Some(s) = path.to_str() {
+                s.to_ascii_lowercase()
+            } else {
+                return SpecialFormat::Unknown;
+            };
+            if path_str.ends_with(".csv.zst") {
+                SpecialFormat::CompressedCsv
+            } else if path_str.ends_with(".tsv.zst") || path_str.ends_with(".tab.zst") {
+                SpecialFormat::CompressedTsv
+            } else if path_str.ends_with(".ssv.zst") {
+                SpecialFormat::CompressedSsv
+            } else {
+                SpecialFormat::Unknown
+            }
+        },
+        "zlib" => {
+            let path_str = if let Some(s) = path.to_str() {
+                s.to_ascii_lowercase()
+            } else {
+                return SpecialFormat::Unknown;
+            };
+            if path_str.ends_with(".csv.zlib") {
+                SpecialFormat::CompressedCsv
+            } else if path_str.ends_with(".tsv.zlib") || path_str.ends_with(".tab.zlib") {
+                SpecialFormat::CompressedTsv
+            } else if path_str.ends_with(".ssv.zlib") {
+                SpecialFormat::CompressedSsv
+            } else {
+                SpecialFormat::Unknown
+            }
+        },
+        _ => SpecialFormat::Unknown,
     }
-
-    SpecialFormat::Unknown
 }
 
 #[cfg(test)]
