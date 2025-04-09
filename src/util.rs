@@ -2633,7 +2633,8 @@ pub fn convert_special_format(
     delim: u8,
 ) -> Result<PathBuf, Box<dyn std::error::Error>> {
     use polars::prelude::{
-        CsvReadOptions, CsvWriter, IpcReader, JsonReader, ParquetReader, SerReader, SerWriter,
+        CsvParseOptions, CsvReadOptions, CsvWriter, IpcReader, JsonLineReader, JsonReader,
+        ParquetReader, SerReader, SerWriter,
     };
 
     let mut df = match format {
@@ -2650,11 +2651,30 @@ pub fn convert_special_format(
         SpecialFormat::Jsonl => {
             let file = File::open(path)?;
             let reader = BufReader::new(file);
+            JsonLineReader::new(reader).finish()?
+        },
+        SpecialFormat::Json => {
+            let file = File::open(path)?;
+            let reader = BufReader::new(file);
             JsonReader::new(reader).finish()?
         },
-        SpecialFormat::CsvGz | SpecialFormat::CsvZst | SpecialFormat::CsvZlib => {
-            CsvReadOptions::default()
-                .try_into_reader_with_file_path(Some(path.to_path_buf()))?
+        SpecialFormat::CompressedCsv => CsvReadOptions::default()
+            .try_into_reader_with_file_path(Some(path.to_path_buf()))?
+            .finish()?,
+        SpecialFormat::CompressedTsv => {
+            let tsv_reader = CsvReadOptions::default()
+                .try_into_reader_with_file_path(Some(path.to_path_buf()))?;
+            let csv_parse_options = CsvParseOptions::default().with_separator(b'\t');
+            tsv_reader
+                .with_options(CsvReadOptions::default().with_parse_options(csv_parse_options))
+                .finish()?
+        },
+        SpecialFormat::CompressedSsv => {
+            let ssv_reader = CsvReadOptions::default()
+                .try_into_reader_with_file_path(Some(path.to_path_buf()))?;
+            let csv_parse_options = CsvParseOptions::default().with_separator(b';');
+            ssv_reader
+                .with_options(CsvReadOptions::default().with_parse_options(csv_parse_options))
                 .finish()?
         },
         SpecialFormat::Unknown => return Err("Unknown format".into()),
