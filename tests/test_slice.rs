@@ -461,3 +461,182 @@ fn slice_invert_with_len() {
         false,
     );
 }
+
+#[test]
+#[cfg(feature = "polars")]
+fn slice_from_parquet() {
+    let wrk = Workdir::new("slice_from_parquet");
+    let test_file = wrk.load_test_file("NYC311-5.parquet");
+    let mut cmd = wrk.command("slice");
+    cmd.arg(test_file).arg("--index").arg("2").arg("--json");
+
+    wrk.assert_success(&mut cmd);
+
+    let got: String = wrk.stdout(&mut cmd);
+    let expected = r#"[{"Unique Key":"20520945","Created Date":"05/27/2011 12:00:00 AM","Closed Date":null,"Agency":"HPD","Agency Name":"Department of Housing Preservation and Development","Complaint Type":"PAINT - PLASTER","Descriptor":"WALLS","Location Type":"RESIDENTIAL BUILDING","Incident Zip":"11225","Incident Address":"1700 BEDFORD AVENUE","Street Name":"BEDFORD AVENUE","Cross Street 1":"MONTGOMERY STREET","Cross Street 2":"SULLIVAN PLACE","Intersection Street 1":null,"Intersection Street 2":null,"Address Type":"ADDRESS","City":"BROOKLYN","Landmark":null,"Facility Type":"N/A","Status":"Open","Due Date":null,"Resolution Description":"The following complaint conditions are still open.HPD may attempt to contact you to verify the correction of the condition or may conduct an inspection.","Resolution Action Updated Date":"06/15/2011 12:00:00 AM","Community Board":"09 BROOKLYN","BBL":"3013020001","Borough":"BROOKLYN","X Coordinate (State Plane)":"996197","Y Coordinate (State Plane)":"181752","Open Data Channel Type":"UNKNOWN","Park Facility Name":"Unspecified","Park Borough":"BROOKLYN","Vehicle Type":null,"Taxi Company Borough":null,"Taxi Pick Up Location":null,"Bridge Highway Name":null,"Bridge Highway Direction":null,"Road Ramp":null,"Bridge Highway Segment":null,"Latitude":null,"Longitude":null,"Location":null}]"#;
+    similar_asserts::assert_eq!(got, expected);
+}
+
+#[cfg(feature = "polars")]
+#[test]
+fn slice_from_json() {
+    let wrk = Workdir::new("slice_from_json");
+    let test_file = wrk.load_test_file("NYC311-5.json");
+    let mut cmd = wrk.command("slice");
+    cmd.arg(test_file).arg("--index").arg("2").arg("--json");
+
+    wrk.assert_success(&mut cmd);
+
+    let got: String = wrk.stdout(&mut cmd);
+    let expected = r#""Unique Key":"20520945""#;
+    assert!(got.contains(expected));
+}
+
+#[cfg(feature = "polars")]
+#[test]
+fn slice_from_jsonl() {
+    let wrk = Workdir::new("slice_from_jsonl");
+    let test_file = wrk.load_test_file("NYC311-5.jsonl");
+    let mut cmd = wrk.command("slice");
+    cmd.arg(test_file).arg("--index").arg("2").arg("--json");
+
+    wrk.assert_success(&mut cmd);
+
+    let got: String = wrk.stdout(&mut cmd);
+    let expected = r#""Unique Key":"20520945""#;
+    assert!(got.contains(expected));
+}
+
+#[cfg(feature = "polars")]
+#[test]
+fn slice_from_avro() {
+    let wrk = Workdir::new("slice_from_avro");
+    let test_file = wrk.load_test_file("NYC311-5.avro");
+    let mut cmd = wrk.command("slice");
+    cmd.arg(test_file).arg("--index").arg("2");
+
+    wrk.assert_success(&mut cmd);
+
+    let got: String = wrk.stdout(&mut cmd);
+    let expected = "03/30/2019 04:06:23 AM";
+    assert!(got.contains(expected));
+}
+
+#[cfg(feature = "polars")]
+#[test]
+fn slice_from_arrow() {
+    let wrk = Workdir::new("slice_from_arrow");
+    let test_file = wrk.load_test_file("NYC311-5.arrow");
+    let mut cmd = wrk.command("slice");
+    cmd.arg(test_file).arg("--index").arg("2").arg("--json");
+
+    wrk.assert_success(&mut cmd);
+
+    let got: String = wrk.stdout(&mut cmd);
+    let expected = r#""Unique Key":"20520945""#;
+    assert!(got.contains(expected));
+}
+
+#[cfg(feature = "polars")]
+#[test]
+fn slice_from_csvgz() {
+    let wrk = Workdir::new("slice_from_csvgz");
+    let test_file = wrk.load_test_file("NYC311-5.csv.gz");
+    let mut cmd = wrk.command("slice");
+    cmd.arg(test_file).arg("--index").arg("2").arg("--json");
+
+    wrk.assert_success(&mut cmd);
+
+    let got: String = wrk.stdout(&mut cmd);
+    let expected = "20520945";
+    assert!(got.contains(expected));
+}
+
+#[cfg(feature = "polars")]
+#[test]
+fn slice_from_csvzst() {
+    let wrk = Workdir::new("slice_from_csvzst");
+    let test_file = wrk.load_test_file("NYC311-5.csv.zst");
+    let mut cmd = wrk.command("slice");
+    cmd.arg(test_file).arg("--index").arg("2").arg("--json");
+
+    wrk.assert_success(&mut cmd);
+
+    let got: String = wrk.stdout(&mut cmd);
+    let expected = "20520945";
+    assert!(got.contains(expected));
+}
+
+#[cfg(feature = "polars")]
+#[test]
+fn slice_from_csvzlib() {
+    let wrk = Workdir::new("slice_from_csvzlib");
+    let test_file = wrk.load_test_file("NYC311-5.csv.zlib");
+    let mut cmd = wrk.command("slice");
+    cmd.arg(test_file).arg("--index").arg("2").arg("--json");
+
+    wrk.assert_success(&mut cmd);
+
+    let got: String = wrk.stdout(&mut cmd);
+    let expected = "20520945";
+    assert!(got.contains(expected));
+}
+
+#[cfg(feature = "polars")]
+#[test]
+fn slice_from_tsvgz() {
+    let wrk = Workdir::new("slice_from_tsvgz");
+    let test_file = wrk.load_test_file("NYC311-5.tsv.gz");
+    let mut cmd = wrk.command("slice");
+    cmd.arg(test_file).arg("--index").arg("2").arg("--json");
+
+    wrk.assert_success(&mut cmd);
+
+    let got: String = wrk.stdout(&mut cmd);
+    let expected = "20520945";
+    assert!(got.contains(expected));
+}
+
+#[cfg(feature = "polars")]
+#[test]
+fn slice_from_tsvzst() {
+    let wrk = Workdir::new("slice_from_tsvzst");
+    let test_file = wrk.load_test_file("NYC311-5.tsv.zst");
+    let mut cmd = wrk.command("slice");
+    cmd.arg(test_file).arg("--index").arg("2").arg("--json");
+
+    wrk.assert_success(&mut cmd);
+
+    let got: String = wrk.stdout(&mut cmd);
+    let expected = "20520945";
+    assert!(got.contains(expected));
+}
+
+#[cfg(feature = "polars")]
+#[test]
+fn slice_from_tsvzlib() {
+    let wrk = Workdir::new("slice_from_tsvzlib");
+    let test_file = wrk.load_test_file("NYC311-5.tsv.zlib");
+    let mut cmd = wrk.command("slice");
+    cmd.arg(test_file).arg("--index").arg("2").arg("--json");
+
+    wrk.assert_success(&mut cmd);
+
+    let got: String = wrk.stdout(&mut cmd);
+    let expected = "20520945";
+    assert!(got.contains(expected));
+}
+
+#[test]
+fn slice_from_tsv() {
+    let wrk = Workdir::new("slice_from_tsv");
+    let test_file = wrk.load_test_file("NYC311-5.tsv");
+    let mut cmd = wrk.command("slice");
+    cmd.arg(test_file).arg("--index").arg("2").arg("--json");
+
+    wrk.assert_success(&mut cmd);
+
+    let got: String = wrk.stdout(&mut cmd);
+    let expected = "20520945";
+    assert!(got.contains(expected));
+}
