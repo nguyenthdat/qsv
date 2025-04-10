@@ -3495,6 +3495,15 @@ const completion: Fig.Spec = {
           name: "--pad",
         },
         {
+          name: "--filter",
+        },
+        {
+          name: "--filter-cleanup",
+        },
+        {
+          name: "--filter-ignore-errors",
+        },
+        {
           name: "--no-headers",
         },
         {
@@ -3900,6 +3909,96 @@ const completion: Fig.Spec = {
           ],
         },
         {
+          name: "ods",
+          options: [
+            {
+              name: "--print-package",
+            },
+            {
+              name: "--dump",
+            },
+            {
+              name: "--stats",
+            },
+            {
+              name: "--stats-csv",
+            },
+            {
+              name: "--quiet",
+            },
+            {
+              name: "--schema",
+            },
+            {
+              name: "--drop",
+            },
+            {
+              name: "--evolve",
+            },
+            {
+              name: "--pipe",
+            },
+            {
+              name: "--separator",
+            },
+            {
+              name: "--jobs",
+            },
+            {
+              name: "--delimiter",
+            },
+            {
+              name: ["-h", "--help"],
+              description: "Print help",
+            },
+          ],
+        },
+        {
+          name: "parquet",
+          options: [
+            {
+              name: "--print-package",
+            },
+            {
+              name: "--dump",
+            },
+            {
+              name: "--stats",
+            },
+            {
+              name: "--stats-csv",
+            },
+            {
+              name: "--quiet",
+            },
+            {
+              name: "--schema",
+            },
+            {
+              name: "--drop",
+            },
+            {
+              name: "--evolve",
+            },
+            {
+              name: "--pipe",
+            },
+            {
+              name: "--separator",
+            },
+            {
+              name: "--jobs",
+            },
+            {
+              name: "--delimiter",
+            },
+            {
+              name: ["-h", "--help"],
+              description: "Print help",
+            },
+          ],
+        },
+        {
           name: "datapackage",
           options: [
             {
@@ -3956,6 +4055,12 @@ const completion: Fig.Spec = {
             },
             {
               name: "xlsx",
+            },
+            {
+              name: "ods",
+            },
+            {
+              name: "parquet",
             },
             {
               name: "datapackage",
@@ -4411,6 +4516,12 @@ const completion: Fig.Spec = {
             },
             {
               name: "xlsx",
+            },
+            {
+              name: "ods",
+            },
+            {
+              name: "parquet",
             },
             {
               name: "datapackage",

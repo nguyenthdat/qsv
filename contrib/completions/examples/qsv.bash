@@ -600,6 +600,12 @@ _qsv() {
             qsv__help__to,datapackage)
                 cmd="qsv__help__to__datapackage"
                 ;;
+            qsv__help__to,ods)
+                cmd="qsv__help__to__ods"
+                ;;
+            qsv__help__to,parquet)
+                cmd="qsv__help__to__parquet"
+                ;;
             qsv__help__to,postgres)
                 cmd="qsv__help__to__postgres"
                 ;;
@@ -699,6 +705,12 @@ _qsv() {
             qsv__to,help)
                 cmd="qsv__to__help"
                 ;;
+            qsv__to,ods)
+                cmd="qsv__to__ods"
+                ;;
+            qsv__to,parquet)
+                cmd="qsv__to__parquet"
+                ;;
             qsv__to,postgres)
                 cmd="qsv__to__postgres"
                 ;;
@@ -713,6 +725,12 @@ _qsv() {
                 ;;
             qsv__to__help,help)
                 cmd="qsv__to__help__help"
+                ;;
+            qsv__to__help,ods)
+                cmd="qsv__to__help__ods"
+                ;;
+            qsv__to__help,parquet)
+                cmd="qsv__to__help__parquet"
                 ;;
             qsv__to__help,postgres)
                 cmd="qsv__to__help__postgres"
@@ -2900,7 +2918,7 @@ _qsv() {
             return 0
             ;;
         qsv__help__to)
-            opts="postgres sqlite xlsx datapackage"
+            opts="postgres sqlite xlsx ods parquet datapackage"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -2914,6 +2932,34 @@ _qsv() {
             return 0
             ;;
         qsv__help__to__datapackage)
+            opts=""
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 4 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        qsv__help__to__ods)
+            opts=""
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 4 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        qsv__help__to__parquet)
             opts=""
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 4 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
@@ -3796,7 +3842,7 @@ _qsv() {
             return 0
             ;;
         qsv__split)
-            opts="-h --size --chunks --kb-size --jobs --filename --pad --no-headers --delimiter --quiet --help"
+            opts="-h --size --chunks --kb-size --jobs --filename --pad --filter --filter-cleanup --filter-ignore-errors --no-headers --delimiter --quiet --help"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -3866,7 +3912,7 @@ _qsv() {
             return 0
             ;;
         qsv__to)
-            opts="-h --print-package --dump --stats --stats-csv --quiet --schema --drop --evolve --pipe --separator --jobs --delimiter --help postgres sqlite xlsx datapackage help"
+            opts="-h --print-package --dump --stats --stats-csv --quiet --schema --drop --evolve --pipe --separator --jobs --delimiter --help postgres sqlite xlsx ods parquet datapackage help"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -3894,7 +3940,7 @@ _qsv() {
             return 0
             ;;
         qsv__to__help)
-            opts="postgres sqlite xlsx datapackage help"
+            opts="postgres sqlite xlsx ods parquet datapackage help"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -3922,6 +3968,34 @@ _qsv() {
             return 0
             ;;
         qsv__to__help__help)
+            opts=""
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 4 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        qsv__to__help__ods)
+            opts=""
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 4 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        qsv__to__help__parquet)
             opts=""
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 4 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
@@ -3966,6 +4040,34 @@ _qsv() {
         qsv__to__help__xlsx)
             opts=""
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 4 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        qsv__to__ods)
+            opts="-h --print-package --dump --stats --stats-csv --quiet --schema --drop --evolve --pipe --separator --jobs --delimiter --help"
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        qsv__to__parquet)
+            opts="-h --print-package --dump --stats --stats-csv --quiet --schema --drop --evolve --pipe --separator --jobs --delimiter --help"
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
             fi

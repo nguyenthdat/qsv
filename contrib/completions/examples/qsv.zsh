@@ -1716,6 +1716,9 @@ _arguments "${_arguments_options[@]}" : \
 '--jobs[]' \
 '--filename[]' \
 '--pad[]' \
+'--filter[]' \
+'--filter-cleanup[]' \
+'--filter-ignore-errors[]' \
 '--no-headers[]' \
 '--delimiter[]' \
 '--quiet[]' \
@@ -1899,6 +1902,42 @@ _arguments "${_arguments_options[@]}" : \
 '--help[Print help]' \
 && ret=0
 ;;
+(ods)
+_arguments "${_arguments_options[@]}" : \
+'--print-package[]' \
+'--dump[]' \
+'--stats[]' \
+'--stats-csv[]' \
+'--quiet[]' \
+'--schema[]' \
+'--drop[]' \
+'--evolve[]' \
+'--pipe[]' \
+'--separator[]' \
+'--jobs[]' \
+'--delimiter[]' \
+'-h[Print help]' \
+'--help[Print help]' \
+&& ret=0
+;;
+(parquet)
+_arguments "${_arguments_options[@]}" : \
+'--print-package[]' \
+'--dump[]' \
+'--stats[]' \
+'--stats-csv[]' \
+'--quiet[]' \
+'--schema[]' \
+'--drop[]' \
+'--evolve[]' \
+'--pipe[]' \
+'--separator[]' \
+'--jobs[]' \
+'--delimiter[]' \
+'-h[Print help]' \
+'--help[Print help]' \
+&& ret=0
+;;
 (datapackage)
 _arguments "${_arguments_options[@]}" : \
 '--print-package[]' \
@@ -1938,6 +1977,14 @@ _arguments "${_arguments_options[@]}" : \
 && ret=0
 ;;
 (xlsx)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+(ods)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+(parquet)
 _arguments "${_arguments_options[@]}" : \
 && ret=0
 ;;
@@ -2465,6 +2512,14 @@ _arguments "${_arguments_options[@]}" : \
 && ret=0
 ;;
 (xlsx)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+(ods)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+(parquet)
 _arguments "${_arguments_options[@]}" : \
 && ret=0
 ;;
@@ -3492,6 +3547,8 @@ _qsv__help__to_commands() {
 'postgres:' \
 'sqlite:' \
 'xlsx:' \
+'ods:' \
+'parquet:' \
 'datapackage:' \
     )
     _describe -t commands 'qsv help to commands' commands "$@"
@@ -3500,6 +3557,16 @@ _qsv__help__to_commands() {
 _qsv__help__to__datapackage_commands() {
     local commands; commands=()
     _describe -t commands 'qsv help to datapackage commands' commands "$@"
+}
+(( $+functions[_qsv__help__to__ods_commands] )) ||
+_qsv__help__to__ods_commands() {
+    local commands; commands=()
+    _describe -t commands 'qsv help to ods commands' commands "$@"
+}
+(( $+functions[_qsv__help__to__parquet_commands] )) ||
+_qsv__help__to__parquet_commands() {
+    local commands; commands=()
+    _describe -t commands 'qsv help to parquet commands' commands "$@"
 }
 (( $+functions[_qsv__help__to__postgres_commands] )) ||
 _qsv__help__to__postgres_commands() {
@@ -3878,6 +3945,8 @@ _qsv__to_commands() {
 'postgres:' \
 'sqlite:' \
 'xlsx:' \
+'ods:' \
+'parquet:' \
 'datapackage:' \
 'help:Print this message or the help of the given subcommand(s)' \
     )
@@ -3894,6 +3963,8 @@ _qsv__to__help_commands() {
 'postgres:' \
 'sqlite:' \
 'xlsx:' \
+'ods:' \
+'parquet:' \
 'datapackage:' \
 'help:Print this message or the help of the given subcommand(s)' \
     )
@@ -3909,6 +3980,16 @@ _qsv__to__help__help_commands() {
     local commands; commands=()
     _describe -t commands 'qsv to help help commands' commands "$@"
 }
+(( $+functions[_qsv__to__help__ods_commands] )) ||
+_qsv__to__help__ods_commands() {
+    local commands; commands=()
+    _describe -t commands 'qsv to help ods commands' commands "$@"
+}
+(( $+functions[_qsv__to__help__parquet_commands] )) ||
+_qsv__to__help__parquet_commands() {
+    local commands; commands=()
+    _describe -t commands 'qsv to help parquet commands' commands "$@"
+}
 (( $+functions[_qsv__to__help__postgres_commands] )) ||
 _qsv__to__help__postgres_commands() {
     local commands; commands=()
@@ -3923,6 +4004,16 @@ _qsv__to__help__sqlite_commands() {
 _qsv__to__help__xlsx_commands() {
     local commands; commands=()
     _describe -t commands 'qsv to help xlsx commands' commands "$@"
+}
+(( $+functions[_qsv__to__ods_commands] )) ||
+_qsv__to__ods_commands() {
+    local commands; commands=()
+    _describe -t commands 'qsv to ods commands' commands "$@"
+}
+(( $+functions[_qsv__to__parquet_commands] )) ||
+_qsv__to__parquet_commands() {
+    local commands; commands=()
+    _describe -t commands 'qsv to parquet commands' commands "$@"
 }
 (( $+functions[_qsv__to__postgres_commands] )) ||
 _qsv__to__postgres_commands() {
