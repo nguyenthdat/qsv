@@ -2613,8 +2613,11 @@ pub fn expand_tilde(path: impl AsRef<Path>) -> Option<PathBuf> {
 //     Ok(json_record)
 // }
 
-/// Convert a special format file (Parquet, Arrow IPC, JSONL, or compressed CSV) to a regular CSV
-/// file.
+/// Converts files in special formats (Parquet, Avro, Arrow IPC, JSONL, JSON, or compressed CSV)
+/// into a standard delimited text file. The output file extension will be:
+/// - .tsv for tab-delimited
+/// - .ssv for semicolon-delimited  
+/// - .csv for comma-delimited
 ///
 /// # Arguments
 ///
@@ -2728,5 +2731,10 @@ pub fn convert_special_format(
     format: SpecialFormat,
     delim: u8,
 ) -> Result<PathBuf, Box<dyn std::error::Error>> {
-    Err("Unknown format".into())
+    Err(
+        "This file type cannot be opened with your current version of qsv. You need the full, \
+         polars-enabled version to work with Avro, Arrow, Parquet, JSON/JSONL and gzip/zlib/zst \
+         compressed files. Please download the full version from the qsv website."
+            .into(),
+    )
 }
