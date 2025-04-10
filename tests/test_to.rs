@@ -460,6 +460,97 @@ state       string      string"#
     // TODO: check that the parquet files are valid and contain the correct data
 }
 
+#[test]
+fn to_ods_roundtrip() {
+    let wrk = Workdir::new("to_ods");
+
+    let thedata = vec![
+        svec!["Col1", "Description"],
+        svec![
+            "1",
+            "The quick brown fox jumped over the lazy dog by the zigzag quarry site."
+        ],
+        svec!["2", "Mary had a little lamb"],
+        svec![
+            "3",
+            "I think that I shall never see a poem lovely as a tree."
+        ],
+        svec!["4", "I think, therefore I am."],
+        svec!["5", "I am a leaf on the wind."],
+        svec!["6", "Look at me, I'm the captain now."],
+        svec!["7", "Bazinga!"],
+        svec!["8", "I'm Batman."],
+    ];
+    wrk.create("in.csv", thedata.clone());
+
+    let ods_file = wrk.path("testods.ods").to_string_lossy().to_string();
+    log::info!("ods_file: {}", ods_file);
+
+    let mut cmd = wrk.command("to");
+    cmd.arg("ods").arg(ods_file.clone()).arg("in.csv");
+
+    wrk.assert_success(&mut cmd);
+
+    let mut cmd = wrk.command("excel");
+    cmd.arg(ods_file);
+
+    let got: Vec<Vec<String>> = wrk.read_stdout(&mut cmd);
+    similar_asserts::assert_eq!(got, thedata);
+
+    wrk.assert_success(&mut cmd);
+}
+
+#[test]
+fn to_ods_dir() {
+    let wrk = Workdir::new("to_ods_dir");
+
+    // Create test files
+    let file1_data = vec![
+        svec!["Col1", "Description"],
+        svec!["1", "First file data"],
+        svec!["2", "More data"],
+    ];
+    wrk.create("file1.csv", file1_data.clone());
+
+    let file2_data = vec![
+        svec!["Col1", "Description"],
+        svec!["3", "Second file data"],
+        svec!["4", "Even more data"],
+    ];
+    wrk.create("file2.csv", file2_data.clone());
+
+    // Create a single ODS file that will contain both sheets
+    let ods_file = wrk.path("testods.ods").to_string_lossy().to_string();
+    log::info!("ods_file: {}", ods_file);
+
+    // Convert files to ODS
+    let mut cmd = wrk.command("to");
+    cmd.arg("ods")
+        .arg(ods_file.clone())
+        .arg("file1.csv")
+        .arg("file2.csv");
+
+    wrk.assert_success(&mut cmd);
+
+    // Verify the content of the first sheet
+    let mut cmd = wrk.command("excel");
+    cmd.arg(ods_file.clone()).args(&["--sheet", "file1"]);
+
+    let got: Vec<Vec<String>> = wrk.read_stdout(&mut cmd);
+    similar_asserts::assert_eq!(got, file1_data);
+
+    wrk.assert_success(&mut cmd);
+
+    // Verify the content of the second sheet
+    let mut cmd = wrk.command("excel");
+    cmd.arg(ods_file).args(&["--sheet", "file2"]);
+
+    let got: Vec<Vec<String>> = wrk.read_stdout(&mut cmd);
+    similar_asserts::assert_eq!(got, file2_data);
+
+    wrk.assert_success(&mut cmd);
+}
+
 // #[test]
 // #[ignore = "Testing postgres support requires a running, properly configured postgres server, \
 //             which is not available on CI"]

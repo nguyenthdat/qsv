@@ -1,5 +1,5 @@
 static USAGE: &str = r#"
-Convert CSV files to PostgreSQL, SQLite, Excel XLSX, Parquet and Data Package.
+Convert CSV files to PostgreSQL, SQLite, Excel XLSX, ODS, Parquet and Data Package.
 
 POSTGRESQL
 ==========
@@ -109,6 +109,26 @@ Load files listed in the 'ourdata.infile-list' into xlsx file.
 
     $ qsv to xlsx output.xlsx ourdata.infile-list
 
+ODS
+===
+Convert to new ODS (Open Document Spreadsheet) file.
+
+Example:
+
+Load `file1.csv` and `file2.csv' into ODS file.
+Will create `output.ods`, creating new sheets for each file, with the sheet name being the
+filename without the extension. Note the `output.ods` will be overwritten if it exists.
+
+  $ qsv to ods output.ods file1.csv file2.csv
+
+Load all files in dir1 into ODS file.
+
+    $ qsv to ods output.ods dir1
+
+Load files listed in the 'ourdata.infile-list' into ODS file.
+
+    $ qsv to ods output.ods ourdata.infile-list
+
 PARQUET
 =======
 Convert to directory of parquet files.  Need to select a directory, it will be created if it does not exists.
@@ -168,6 +188,7 @@ Usage:
     qsv to postgres [options] <postgres> [<input>...]
     qsv to sqlite [options] <sqlite> [<input>...]
     qsv to xlsx [options] <xlsx> [<input>...]
+    qsv to ods [options] <ods> [<input>...]
     qsv to parquet [options] <parquet> [<input>...]
     qsv to datapackage [options] <datapackage> [<input>...]
     qsv to --help
@@ -196,8 +217,9 @@ Common options:
 use std::{io::Write, path::PathBuf};
 
 use csvs_convert::{
-    DescribeOptions, Options, csvs_to_parquet_with_options, csvs_to_postgres_with_options,
-    csvs_to_sqlite_with_options, csvs_to_xlsx_with_options, make_datapackage,
+    DescribeOptions, Options, csvs_to_ods_with_options, csvs_to_parquet_with_options,
+    csvs_to_postgres_with_options, csvs_to_sqlite_with_options, csvs_to_xlsx_with_options,
+    make_datapackage,
 };
 use log::debug;
 use serde::Deserialize;
@@ -220,6 +242,8 @@ struct Args {
     arg_parquet:        Option<String>,
     cmd_xlsx:           bool,
     arg_xlsx:           Option<String>,
+    cmd_ods:            bool,
+    arg_ods:            Option<String>,
     cmd_datapackage:    bool,
     arg_datapackage:    Option<String>,
     arg_input:          Vec<PathBuf>,
@@ -315,6 +339,13 @@ pub fn run(argv: &[&str]) -> CliResult<()> {
         output =
             csvs_to_xlsx_with_options(args.arg_xlsx.expect("checked above"), arg_input, options)?;
         debug!("conversion to Excel XLSX complete");
+    } else if args.cmd_ods {
+        debug!("converting to ODS");
+        arg_input = process_input(arg_input, &tmpdir, EMPTY_STDIN_ERRMSG)?;
+
+        output =
+            csvs_to_ods_with_options(args.arg_ods.expect("checked above"), arg_input, options)?;
+        debug!("conversion to ODS complete");
     } else if args.cmd_datapackage {
         debug!("creating Data Package");
         arg_input = process_input(arg_input, &tmpdir, EMPTY_STDIN_ERRMSG)?;
@@ -330,7 +361,7 @@ pub fn run(argv: &[&str]) -> CliResult<()> {
         debug!("Data Package complete");
     } else {
         return fail_clierror!(
-            "Need to supply either xlsx,parquet,postgres,sqlite,datapackage as subcommand"
+            "Need to supply either xlsx, ods, parquet, postgres, sqlite, datapackage as subcommand"
         );
     }
 
