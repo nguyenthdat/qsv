@@ -2690,12 +2690,23 @@ pub fn convert_special_format(
 
     let temp_dir = crate::config::TEMP_FILE_DIR.get_or_init(|| {
         let temp_dir = tempfile::TempDir::new().unwrap();
-        // by turning the tempdir into a pathbuf, we can ensure that the tempdir persists
-        // until the program exits
+        // by turning the tempdir into a pathbuf, we ensure that the tempdir persists
+        // until the program exits in the log_end() helper fn and is not auto-deleted
+        // when it goes out of scope at the end of this function.
         temp_dir.into_path()
     });
+
+    // Set the temporary file extension based on the delimiter (.tsv for tab, .ssv for semicolon,
+    // .csv for comma) This allows qsv to automatically detect the correct delimiter when the
+    // file is piped through other qsv commands, since qsv also auto-infers the delimiter from the
+    // file extension when --delimiter or QSV_DEFAULT_DELIMITER is not set.
+    let tempfile_suffix = match delim {
+        b'\t' => ".tsv",
+        b';' => ".ssv",
+        _ => ".csv",
+    };
     let temp_csv_file = tempfile::Builder::new()
-        .suffix(".csv")
+        .suffix(tempfile_suffix)
         .tempfile_in(temp_dir)?;
 
     let writer = BufWriter::new(&temp_csv_file);
@@ -2704,6 +2715,7 @@ pub fn convert_special_format(
         .finish(&mut df)?;
 
     let temp_csv_file_path = temp_csv_file.path().to_path_buf();
+    // once again, we want the tempfile to persist until qsv exits
     temp_csv_file.keep()?;
 
     Ok(temp_csv_file_path)
