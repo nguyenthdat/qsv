@@ -1336,6 +1336,9 @@ module completions {
     --jobs
     --filename
     --pad
+    --filter
+    --filter-cleanup
+    --filter-ignore-errors
     --no-headers
     --delimiter
     --quiet
@@ -1494,6 +1497,38 @@ module completions {
     --help(-h)                # Print help
   ]
 
+  export extern "qsv to ods" [
+    --print-package
+    --dump
+    --stats
+    --stats-csv
+    --quiet
+    --schema
+    --drop
+    --evolve
+    --pipe
+    --separator
+    --jobs
+    --delimiter
+    --help(-h)                # Print help
+  ]
+
+  export extern "qsv to parquet" [
+    --print-package
+    --dump
+    --stats
+    --stats-csv
+    --quiet
+    --schema
+    --drop
+    --evolve
+    --pipe
+    --separator
+    --jobs
+    --delimiter
+    --help(-h)                # Print help
+  ]
+
   export extern "qsv to datapackage" [
     --print-package
     --dump
@@ -1521,6 +1556,12 @@ module completions {
   ]
 
   export extern "qsv to help xlsx" [
+  ]
+
+  export extern "qsv to help ods" [
+  ]
+
+  export extern "qsv to help parquet" [
   ]
 
   export extern "qsv to help datapackage" [
@@ -1843,6 +1884,12 @@ module completions {
   ]
 
   export extern "qsv help to xlsx" [
+  ]
+
+  export extern "qsv help to ods" [
+  ]
+
+  export extern "qsv help to parquet" [
   ]
 
   export extern "qsv help to datapackage" [

@@ -1430,6 +1430,9 @@ set edit:completion:arg-completer[qsv] = {|@words|
             cand --jobs 'jobs'
             cand --filename 'filename'
             cand --pad 'pad'
+            cand --filter 'filter'
+            cand --filter-cleanup 'filter-cleanup'
+            cand --filter-ignore-errors 'filter-ignore-errors'
             cand --no-headers 'no-headers'
             cand --delimiter 'delimiter'
             cand --quiet 'quiet'
@@ -1542,6 +1545,8 @@ set edit:completion:arg-completer[qsv] = {|@words|
             cand postgres 'postgres'
             cand sqlite 'sqlite'
             cand xlsx 'xlsx'
+            cand ods 'ods'
+            cand parquet 'parquet'
             cand datapackage 'datapackage'
             cand help 'Print this message or the help of the given subcommand(s)'
         }
@@ -1593,6 +1598,38 @@ set edit:completion:arg-completer[qsv] = {|@words|
             cand -h 'Print help'
             cand --help 'Print help'
         }
+        &'qsv;to;ods'= {
+            cand --print-package 'print-package'
+            cand --dump 'dump'
+            cand --stats 'stats'
+            cand --stats-csv 'stats-csv'
+            cand --quiet 'quiet'
+            cand --schema 'schema'
+            cand --drop 'drop'
+            cand --evolve 'evolve'
+            cand --pipe 'pipe'
+            cand --separator 'separator'
+            cand --jobs 'jobs'
+            cand --delimiter 'delimiter'
+            cand -h 'Print help'
+            cand --help 'Print help'
+        }
+        &'qsv;to;parquet'= {
+            cand --print-package 'print-package'
+            cand --dump 'dump'
+            cand --stats 'stats'
+            cand --stats-csv 'stats-csv'
+            cand --quiet 'quiet'
+            cand --schema 'schema'
+            cand --drop 'drop'
+            cand --evolve 'evolve'
+            cand --pipe 'pipe'
+            cand --separator 'separator'
+            cand --jobs 'jobs'
+            cand --delimiter 'delimiter'
+            cand -h 'Print help'
+            cand --help 'Print help'
+        }
         &'qsv;to;datapackage'= {
             cand --print-package 'print-package'
             cand --dump 'dump'
@@ -1613,6 +1650,8 @@ set edit:completion:arg-completer[qsv] = {|@words|
             cand postgres 'postgres'
             cand sqlite 'sqlite'
             cand xlsx 'xlsx'
+            cand ods 'ods'
+            cand parquet 'parquet'
             cand datapackage 'datapackage'
             cand help 'Print this message or the help of the given subcommand(s)'
         }
@@ -1621,6 +1660,10 @@ set edit:completion:arg-completer[qsv] = {|@words|
         &'qsv;to;help;sqlite'= {
         }
         &'qsv;to;help;xlsx'= {
+        }
+        &'qsv;to;help;ods'= {
+        }
+        &'qsv;to;help;parquet'= {
         }
         &'qsv;to;help;datapackage'= {
         }
@@ -1936,6 +1979,8 @@ set edit:completion:arg-completer[qsv] = {|@words|
             cand postgres 'postgres'
             cand sqlite 'sqlite'
             cand xlsx 'xlsx'
+            cand ods 'ods'
+            cand parquet 'parquet'
             cand datapackage 'datapackage'
         }
         &'qsv;help;to;postgres'= {
@@ -1943,6 +1988,10 @@ set edit:completion:arg-completer[qsv] = {|@words|
         &'qsv;help;to;sqlite'= {
         }
         &'qsv;help;to;xlsx'= {
+        }
+        &'qsv;help;to;ods'= {
+        }
+        &'qsv;help;to;parquet'= {
         }
         &'qsv;help;to;datapackage'= {
         }

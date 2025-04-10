@@ -1556,6 +1556,9 @@ Register-ArgumentCompleter -Native -CommandName 'qsv' -ScriptBlock {
             [CompletionResult]::new('--jobs', '--jobs', [CompletionResultType]::ParameterName, 'jobs')
             [CompletionResult]::new('--filename', '--filename', [CompletionResultType]::ParameterName, 'filename')
             [CompletionResult]::new('--pad', '--pad', [CompletionResultType]::ParameterName, 'pad')
+            [CompletionResult]::new('--filter', '--filter', [CompletionResultType]::ParameterName, 'filter')
+            [CompletionResult]::new('--filter-cleanup', '--filter-cleanup', [CompletionResultType]::ParameterName, 'filter-cleanup')
+            [CompletionResult]::new('--filter-ignore-errors', '--filter-ignore-errors', [CompletionResultType]::ParameterName, 'filter-ignore-errors')
             [CompletionResult]::new('--no-headers', '--no-headers', [CompletionResultType]::ParameterName, 'no-headers')
             [CompletionResult]::new('--delimiter', '--delimiter', [CompletionResultType]::ParameterName, 'delimiter')
             [CompletionResult]::new('--quiet', '--quiet', [CompletionResultType]::ParameterName, 'quiet')
@@ -1673,6 +1676,8 @@ Register-ArgumentCompleter -Native -CommandName 'qsv' -ScriptBlock {
             [CompletionResult]::new('postgres', 'postgres', [CompletionResultType]::ParameterValue, 'postgres')
             [CompletionResult]::new('sqlite', 'sqlite', [CompletionResultType]::ParameterValue, 'sqlite')
             [CompletionResult]::new('xlsx', 'xlsx', [CompletionResultType]::ParameterValue, 'xlsx')
+            [CompletionResult]::new('ods', 'ods', [CompletionResultType]::ParameterValue, 'ods')
+            [CompletionResult]::new('parquet', 'parquet', [CompletionResultType]::ParameterValue, 'parquet')
             [CompletionResult]::new('datapackage', 'datapackage', [CompletionResultType]::ParameterValue, 'datapackage')
             [CompletionResult]::new('help', 'help', [CompletionResultType]::ParameterValue, 'Print this message or the help of the given subcommand(s)')
             break
@@ -1728,6 +1733,40 @@ Register-ArgumentCompleter -Native -CommandName 'qsv' -ScriptBlock {
             [CompletionResult]::new('--help', '--help', [CompletionResultType]::ParameterName, 'Print help')
             break
         }
+        'qsv;to;ods' {
+            [CompletionResult]::new('--print-package', '--print-package', [CompletionResultType]::ParameterName, 'print-package')
+            [CompletionResult]::new('--dump', '--dump', [CompletionResultType]::ParameterName, 'dump')
+            [CompletionResult]::new('--stats', '--stats', [CompletionResultType]::ParameterName, 'stats')
+            [CompletionResult]::new('--stats-csv', '--stats-csv', [CompletionResultType]::ParameterName, 'stats-csv')
+            [CompletionResult]::new('--quiet', '--quiet', [CompletionResultType]::ParameterName, 'quiet')
+            [CompletionResult]::new('--schema', '--schema', [CompletionResultType]::ParameterName, 'schema')
+            [CompletionResult]::new('--drop', '--drop', [CompletionResultType]::ParameterName, 'drop')
+            [CompletionResult]::new('--evolve', '--evolve', [CompletionResultType]::ParameterName, 'evolve')
+            [CompletionResult]::new('--pipe', '--pipe', [CompletionResultType]::ParameterName, 'pipe')
+            [CompletionResult]::new('--separator', '--separator', [CompletionResultType]::ParameterName, 'separator')
+            [CompletionResult]::new('--jobs', '--jobs', [CompletionResultType]::ParameterName, 'jobs')
+            [CompletionResult]::new('--delimiter', '--delimiter', [CompletionResultType]::ParameterName, 'delimiter')
+            [CompletionResult]::new('-h', '-h', [CompletionResultType]::ParameterName, 'Print help')
+            [CompletionResult]::new('--help', '--help', [CompletionResultType]::ParameterName, 'Print help')
+            break
+        }
+        'qsv;to;parquet' {
+            [CompletionResult]::new('--print-package', '--print-package', [CompletionResultType]::ParameterName, 'print-package')
+            [CompletionResult]::new('--dump', '--dump', [CompletionResultType]::ParameterName, 'dump')
+            [CompletionResult]::new('--stats', '--stats', [CompletionResultType]::ParameterName, 'stats')
+            [CompletionResult]::new('--stats-csv', '--stats-csv', [CompletionResultType]::ParameterName, 'stats-csv')
+            [CompletionResult]::new('--quiet', '--quiet', [CompletionResultType]::ParameterName, 'quiet')
+            [CompletionResult]::new('--schema', '--schema', [CompletionResultType]::ParameterName, 'schema')
+            [CompletionResult]::new('--drop', '--drop', [CompletionResultType]::ParameterName, 'drop')
+            [CompletionResult]::new('--evolve', '--evolve', [CompletionResultType]::ParameterName, 'evolve')
+            [CompletionResult]::new('--pipe', '--pipe', [CompletionResultType]::ParameterName, 'pipe')
+            [CompletionResult]::new('--separator', '--separator', [CompletionResultType]::ParameterName, 'separator')
+            [CompletionResult]::new('--jobs', '--jobs', [CompletionResultType]::ParameterName, 'jobs')
+            [CompletionResult]::new('--delimiter', '--delimiter', [CompletionResultType]::ParameterName, 'delimiter')
+            [CompletionResult]::new('-h', '-h', [CompletionResultType]::ParameterName, 'Print help')
+            [CompletionResult]::new('--help', '--help', [CompletionResultType]::ParameterName, 'Print help')
+            break
+        }
         'qsv;to;datapackage' {
             [CompletionResult]::new('--print-package', '--print-package', [CompletionResultType]::ParameterName, 'print-package')
             [CompletionResult]::new('--dump', '--dump', [CompletionResultType]::ParameterName, 'dump')
@@ -1749,6 +1788,8 @@ Register-ArgumentCompleter -Native -CommandName 'qsv' -ScriptBlock {
             [CompletionResult]::new('postgres', 'postgres', [CompletionResultType]::ParameterValue, 'postgres')
             [CompletionResult]::new('sqlite', 'sqlite', [CompletionResultType]::ParameterValue, 'sqlite')
             [CompletionResult]::new('xlsx', 'xlsx', [CompletionResultType]::ParameterValue, 'xlsx')
+            [CompletionResult]::new('ods', 'ods', [CompletionResultType]::ParameterValue, 'ods')
+            [CompletionResult]::new('parquet', 'parquet', [CompletionResultType]::ParameterValue, 'parquet')
             [CompletionResult]::new('datapackage', 'datapackage', [CompletionResultType]::ParameterValue, 'datapackage')
             [CompletionResult]::new('help', 'help', [CompletionResultType]::ParameterValue, 'Print this message or the help of the given subcommand(s)')
             break
@@ -1760,6 +1801,12 @@ Register-ArgumentCompleter -Native -CommandName 'qsv' -ScriptBlock {
             break
         }
         'qsv;to;help;xlsx' {
+            break
+        }
+        'qsv;to;help;ods' {
+            break
+        }
+        'qsv;to;help;parquet' {
             break
         }
         'qsv;to;help;datapackage' {
@@ -2168,6 +2215,8 @@ Register-ArgumentCompleter -Native -CommandName 'qsv' -ScriptBlock {
             [CompletionResult]::new('postgres', 'postgres', [CompletionResultType]::ParameterValue, 'postgres')
             [CompletionResult]::new('sqlite', 'sqlite', [CompletionResultType]::ParameterValue, 'sqlite')
             [CompletionResult]::new('xlsx', 'xlsx', [CompletionResultType]::ParameterValue, 'xlsx')
+            [CompletionResult]::new('ods', 'ods', [CompletionResultType]::ParameterValue, 'ods')
+            [CompletionResult]::new('parquet', 'parquet', [CompletionResultType]::ParameterValue, 'parquet')
             [CompletionResult]::new('datapackage', 'datapackage', [CompletionResultType]::ParameterValue, 'datapackage')
             break
         }
@@ -2178,6 +2227,12 @@ Register-ArgumentCompleter -Native -CommandName 'qsv' -ScriptBlock {
             break
         }
         'qsv;help;to;xlsx' {
+            break
+        }
+        'qsv;help;to;ods' {
+            break
+        }
+        'qsv;help;to;parquet' {
             break
         }
         'qsv;help;to;datapackage' {

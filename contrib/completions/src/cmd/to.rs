@@ -20,6 +20,8 @@ pub fn to_cmd() -> Command {
             Command::new("postgres").args(&global_args),
             Command::new("sqlite").args(&global_args),
             Command::new("xlsx").args(&global_args),
+            Command::new("ods").args(&global_args),
+            Command::new("parquet").args(&global_args),
             Command::new("datapackage").args(&global_args),
         ])
         .args(global_args)
