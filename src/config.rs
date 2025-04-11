@@ -1,11 +1,10 @@
+#[cfg(feature = "polars")]
+use std::sync::OnceLock;
 use std::{
     env, fs,
     io::{self, Read},
     path::{Path, PathBuf},
-    sync::{
-        OnceLock,
-        atomic::{AtomicBool, Ordering},
-    },
+    sync::atomic::{AtomicBool, Ordering},
 };
 
 use log::{debug, info, warn};
@@ -39,6 +38,9 @@ Need a UI & more advanced data-wrangling? Upgrade to qsv pro (https://qsvpro.dat
 
 #[cfg(feature = "polars")]
 pub static TEMP_FILE_DIR: OnceLock<PathBuf> = OnceLock::new();
+
+#[cfg(feature = "polars")]
+pub static POLARS_FORMATS_DEFAULT_FLOAT_PRECISION: OnceLock<Option<usize>> = OnceLock::new();
 
 #[allow(unused_variables)]
 #[allow(dead_code)]

@@ -640,3 +640,118 @@ fn slice_from_tsv() {
     let expected = "20520945";
     assert!(got.contains(expected));
 }
+
+// do not run this test on Windows as it doesn't have gzip
+#[cfg(all(feature = "polars", not(target_os = "windows")))]
+#[test]
+fn slice_float_precision() {
+    let wrk = Workdir::new("slice_float_precision");
+
+    // Create a test file with floating-point values
+    let data = vec![
+        svec!["id", "value1", "value2"],
+        svec![
+            "1",
+            "3.1415926535897932384626433",
+            "2.7182818284590452353602874"
+        ],
+        svec![
+            "2",
+            "1.4142135623730950488016887",
+            "1.7320508075688772935274463"
+        ],
+        svec![
+            "3",
+            "0.5772156649015328606065120",
+            "0.2617993877991494365385536"
+        ],
+    ];
+    wrk.create("float_data.csv", data);
+    let test_csv = wrk.path("float_data.csv");
+
+    // Create a schema file for float_data.csv
+    // set value to a Decimal with 20 decimal places
+    let schema_data = r#"{
+        "fields": {
+            "id": "String",
+            "value1": { "Decimal" : [25,20] },
+            "value2": "Float64"
+        }
+    }"#;
+    wrk.create_from_string("float_data.pschema.json", schema_data);
+
+    // Create a parquet file using sqlp command
+    let mut cmd = wrk.command("sqlp");
+    cmd.arg(&test_csv)
+        .arg("select * from float_data")
+        .arg("--cache-schema")
+        .args(["--format", "parquet"])
+        .args(["--output", "float_data.parquet"]);
+    wrk.assert_success(&mut cmd);
+    let parquet_file = wrk.path("float_data.parquet");
+    assert!(parquet_file.exists());
+
+    // gzip float_data.csv, so we go through the polars special format
+    // processing workflow that checks for default precision
+    let mut cmd = std::process::Command::new("gzip");
+    cmd.arg(&test_csv);
+    wrk.assert_success(&mut cmd);
+    // Check if the gzipped file exists
+    let gzipped_file = wrk.path("float_data.csv.gz");
+    assert!(gzipped_file.exists());
+
+    // Test with default precision
+    let mut cmd = wrk.command("slice");
+    cmd.arg(&gzipped_file).arg("--json");
+    wrk.assert_success(&mut cmd);
+    let got_default: String = wrk.stdout(&mut cmd);
+
+    // Test with custom precision (2 decimal places)
+    let mut cmd = wrk.command("slice");
+    cmd.arg(&gzipped_file).arg("--json");
+    cmd.env("QSV_POLARS_FORMATS_FLOAT_PRECISION", "2");
+    wrk.assert_success(&mut cmd);
+    let got_precision_2: String = wrk.stdout(&mut cmd);
+
+    // Test with custom precision (5 decimal places)
+    let mut cmd = wrk.command("slice");
+    cmd.arg(&gzipped_file).arg("--json");
+    cmd.env("QSV_POLARS_FORMATS_FLOAT_PRECISION", "5");
+    wrk.assert_success(&mut cmd);
+    let got_precision_5: String = wrk.stdout(&mut cmd);
+
+    // Test with custom precision (20 decimal places)
+    let mut cmd = wrk.command("slice");
+    cmd.arg(&parquet_file).arg("--json");
+    cmd.env("QSV_POLARS_FORMATS_FLOAT_PRECISION", "20");
+    wrk.assert_success(&mut cmd);
+    let got_precision_20: String = wrk.stdout(&mut cmd);
+
+    // Verify that the precision affects the output
+    // The default precision should be different from precision 2
+    assert_ne!(got_default, got_precision_2);
+
+    // Precision 2 should have fewer decimal places than precision 5
+    assert!(got_precision_2.len() < got_precision_5.len());
+
+    // Precision 5 should have fewer decimal places than precision 20
+    assert!(got_precision_5.len() < got_precision_20.len());
+
+    // Verify that precision 2 has exactly 2 decimal places
+    assert!(got_precision_2.contains("3.14"));
+    assert!(got_precision_2.contains("2.72"));
+    assert!(!got_precision_2.contains("3.141"));
+    assert!(!got_precision_2.contains("2.718"));
+
+    // Verify that precision 5 has exactly 5 decimal places
+    assert!(got_precision_5.contains("3.14159"));
+    assert!(got_precision_5.contains("2.71828"));
+    assert!(!got_precision_5.contains("3.141592"));
+    assert!(!got_precision_5.contains("2.718281"));
+
+    // Verify that precision 20 has exactly 20 decimal places
+    assert!(got_precision_20.contains("3.14159265358979323846"));
+    assert!(got_precision_20.contains("1.41421356237309504880"));
+    assert!(got_precision_20.contains("2.71828182845904509080"));
+    assert!(!got_precision_20.contains("3.141592653589793238462"));
+}
