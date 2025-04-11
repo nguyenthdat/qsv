@@ -2689,7 +2689,7 @@ pub fn convert_special_format(
 
     // Get QSV_POLARS_FORMAT_FLOAT_PRECISION env var
     let precision = crate::config::POLARS_FORMATS_DEFAULT_FLOAT_PRECISION.get_or_init(|| {
-        std::env::var("QSV_POLARS_FORMATS_DEFAULT_FLOAT_PRECISION")
+        std::env::var("QSV_POLARS_FORMATS_FLOAT_PRECISION")
             .ok()
             .and_then(|s| s.parse().ok())
     });
