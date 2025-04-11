@@ -2616,7 +2616,7 @@ pub fn expand_tilde(path: impl AsRef<Path>) -> Option<PathBuf> {
 /// Converts files in special formats (Parquet, Avro, Arrow IPC, JSONL, JSON, or compressed CSV)
 /// into a standard delimited text file. The output file extension will be:
 /// - .tsv for tab-delimited
-/// - .ssv for semicolon-delimited  
+/// - .ssv for semicolon-delimited
 /// - .csv for comma-delimited
 ///
 /// # Arguments
@@ -2643,85 +2643,67 @@ pub fn convert_special_format(
         },
     };
 
+    // Create a reader based on the file format
     let mut df = match format {
-        SpecialFormat::Avro => {
-            let file = File::open(path)?;
-            let reader = BufReader::new(file);
-            AvroReader::new(reader).finish()?
-        },
-        SpecialFormat::Parquet => {
-            let file = File::open(path)?;
-            let reader = BufReader::new(file);
-            ParquetReader::new(reader).finish()?
-        },
-        SpecialFormat::Ipc => {
-            let file = File::open(path)?;
-            let reader = BufReader::new(file);
-            IpcReader::new(reader).finish()?
-        },
-        SpecialFormat::Jsonl => {
-            let file = File::open(path)?;
-            let reader = BufReader::new(file);
-            JsonLineReader::new(reader).finish()?
-        },
-        SpecialFormat::Json => {
-            let file = File::open(path)?;
-            let reader = BufReader::new(file);
-            JsonReader::new(reader).finish()?
-        },
-        SpecialFormat::CompressedCsv => CsvReadOptions::default()
-            .try_into_reader_with_file_path(Some(path.to_path_buf()))?
-            .finish()?,
-        SpecialFormat::CompressedTsv => {
-            let tsv_reader = CsvReadOptions::default()
+        SpecialFormat::Avro => AvroReader::new(BufReader::new(File::open(path)?)).finish()?,
+        SpecialFormat::Parquet => ParquetReader::new(BufReader::new(File::open(path)?)).finish()?,
+        SpecialFormat::Ipc => IpcReader::new(BufReader::new(File::open(path)?)).finish()?,
+        SpecialFormat::Jsonl => JsonLineReader::new(BufReader::new(File::open(path)?)).finish()?,
+        SpecialFormat::Json => JsonReader::new(BufReader::new(File::open(path)?)).finish()?,
+        SpecialFormat::CompressedCsv
+        | SpecialFormat::CompressedTsv
+        | SpecialFormat::CompressedSsv => {
+            let separator = match format {
+                SpecialFormat::CompressedTsv => b'\t',
+                SpecialFormat::CompressedSsv => b';',
+                _ => delim,
+            };
+            let reader = CsvReadOptions::default()
                 .try_into_reader_with_file_path(Some(path.to_path_buf()))?;
-            let csv_parse_options = CsvParseOptions::default().with_separator(b'\t');
-            tsv_reader
-                .with_options(CsvReadOptions::default().with_parse_options(csv_parse_options))
-                .finish()?
-        },
-        SpecialFormat::CompressedSsv => {
-            let ssv_reader = CsvReadOptions::default()
-                .try_into_reader_with_file_path(Some(path.to_path_buf()))?;
-            let csv_parse_options = CsvParseOptions::default().with_separator(b';');
-            ssv_reader
-                .with_options(CsvReadOptions::default().with_parse_options(csv_parse_options))
+            reader
+                .with_options(
+                    CsvReadOptions::default()
+                        .with_parse_options(CsvParseOptions::default().with_separator(separator)),
+                )
                 .finish()?
         },
         SpecialFormat::Unknown => return Err("Unknown format".into()),
     };
 
+    // Get or initialize temp directory that persists until program exit
     let temp_dir = crate::config::TEMP_FILE_DIR.get_or_init(|| {
-        let temp_dir = tempfile::TempDir::new().unwrap();
-        // by turning the tempdir into a pathbuf, we ensure that the tempdir persists
-        // until the program exits in the log_end() helper fn and is not auto-deleted
-        // when it goes out of scope at the end of this function.
-        temp_dir.into_path()
+        tempfile::TempDir::new().unwrap().into_path() // Convert to PathBuf to prevent auto-deletion
     });
 
-    // Set the temporary file extension based on the delimiter (.tsv for tab, .ssv for semicolon,
-    // .csv for comma) This allows qsv to automatically detect the correct delimiter when the
-    // file is piped through other qsv commands, since qsv also auto-infers the delimiter from the
-    // file extension when --delimiter or QSV_DEFAULT_DELIMITER is not set.
-    let tempfile_suffix = match delim {
+    // Choose file extension based on delimiter
+    let extension = match delim {
         b'\t' => ".tsv",
         b';' => ".ssv",
         _ => ".csv",
     };
-    let temp_csv_file = tempfile::Builder::new()
-        .suffix(tempfile_suffix)
+
+    // Create temp file with appropriate extension
+    let temp_file = tempfile::Builder::new()
+        .suffix(extension)
         .tempfile_in(temp_dir)?;
 
-    let writer = BufWriter::new(&temp_csv_file);
-    CsvWriter::new(writer)
+    // Get QSV_POLARS_FORMAT_FLOAT_PRECISION env var
+    let precision = crate::config::POLARS_FORMATS_DEFAULT_FLOAT_PRECISION.get_or_init(|| {
+        std::env::var("QSV_POLARS_FORMATS_DEFAULT_FLOAT_PRECISION")
+            .ok()
+            .and_then(|s| s.parse().ok())
+    });
+
+    // Write DataFrame to CSV with specified delimiter
+    CsvWriter::new(BufWriter::new(&temp_file))
         .with_separator(delim)
+        .with_float_precision(*precision)
         .finish(&mut df)?;
 
-    let temp_csv_file_path = temp_csv_file.path().to_path_buf();
-    // once again, we want the tempfile to persist until qsv exits
-    temp_csv_file.keep()?;
+    let path = temp_file.path().to_path_buf();
+    temp_file.keep()?; // Prevent auto-deletion
 
-    Ok(temp_csv_file_path)
+    Ok(path)
 }
 
 #[cfg(not(feature = "polars"))]
