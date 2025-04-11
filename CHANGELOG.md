@@ -6,46 +6,50 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## What's Changed
-* build(deps): bump log from 0.4.26 to 0.4.27 by @dependabot in https://github.com/dathere/qsv/pull/2622
-* build(deps): bump chrono-tz from 0.10.2 to 0.10.3 by @dependabot in https://github.com/dathere/qsv/pull/2623
-* build(deps): bump governor from 0.8.1 to 0.9.0 by @dependabot in https://github.com/dathere/qsv/pull/2625
-* `contrib(completions)`: update completions to v3.3.0 by @rzmk in https://github.com/dathere/qsv/pull/2626
-* build(deps): bump actions/setup-python from 5.4.0 to 5.5.0 by @dependabot in https://github.com/dathere/qsv/pull/2627
-* fix: correct link to qsv-dateparser accepted date formats by @jqnatividad in https://github.com/dathere/qsv/pull/2632
-* build(deps): bump governor from 0.9.0 to 0.10.0 by @dependabot in https://github.com/dathere/qsv/pull/2631
-* build(deps): bump jsonschema from 0.29.0 to 0.29.1 by @dependabot in https://github.com/dathere/qsv/pull/2635
-* `validate`: add uniqueCombinedWith custom JSON Schema Validation keyword by @jqnatividad in https://github.com/dathere/qsv/pull/2636
-* build(deps): bump sysinfo from 0.34.0 to 0.34.1 by @dependabot in https://github.com/dathere/qsv/pull/2637
-* build(deps): bump qsv-dateparser from 0.12.1 to 0.13.0 by @dependabot in https://github.com/dathere/qsv/pull/2639
-* build(deps): bump qsv-sniffer from 0.10.3 to 0.11.0 by @dependabot in https://github.com/dathere/qsv/pull/2640
+### Added
+* `split`: add `--filter` options https://github.com/dathere/qsv/pull/2660
+* `sqlp`: add decimal type support https://github.com/dathere/qsv/pull/2646
+* `to`: add back `to` parquet support https://github.com/dathere/qsv/pull/2665
+* feat: Extended auto decompression support. In addition to csv, auto-decompress tsv/tab and ssv files as well https://github.com/dathere/qsv/pull/2671
+* `to`: add  ODS support https://github.com/dathere/qsv/pull/2674
+* `validate`: add uniqueCombinedWith custom JSON Schema Validation keyword https://github.com/dathere/qsv/pull/2636
+* feat: add file formats supported when polars feature is enabled https://github.com/dathere/qsv/pull/2667
+* feat: add `QSV_POLARS_FORMATS_FLOAT_PRECISION` env var https://github.com/dathere/qsv/pull/2678
 * `tests`: add tests for https://100.dathere.com/lessons/3 by @rzmk in https://github.com/dathere/qsv/pull/2638
-* build(deps): bump minijinja from 2.8.0 to 2.9.0 by @dependabot in https://github.com/dathere/qsv/pull/2643
-* build(deps): bump minijinja-contrib from 2.8.0 to 2.9.0 by @dependabot in https://github.com/dathere/qsv/pull/2642
-* build(deps): bump pyo3 from 0.24.0 to 0.24.1 by @dependabot in https://github.com/dathere/qsv/pull/2645
-* feat: `sqlp` add decimal type support by @jqnatividad in https://github.com/dathere/qsv/pull/2646
-* build(deps): bump sysinfo from 0.34.1 to 0.34.2 by @dependabot in https://github.com/dathere/qsv/pull/2648
+
+### Changed
+* `contrib(completions)`: update completions to v3.3.0 by @rzmk in https://github.com/dathere/qsv/pull/2626
+* `contrib(completions)`: update completions for qsv v4.0.0 by @rzmk in https://github.com/dathere/qsv/pull/2677
+* deps: bump polars to 0.46.0 at py-1.27.1 tag https://github.com/dathere/qsv/pull/2675 and https://github.com/dathere/qsv/commit/e5d29d7f192bf10f6528d0d423347179d785e40f
+* build(deps): bump actions/setup-python from 5.4.0 to 5.5.0 by @dependabot in https://github.com/dathere/qsv/pull/2627
+* build(deps): bump arboard from 3.4.1 to 3.5.0 by @dependabot in https://github.com/dathere/qsv/pull/2653
+* build(deps): bump chrono-tz from 0.10.2 to 0.10.3 by @dependabot in https://github.com/dathere/qsv/pull/2623
+* build(deps): bump crossbeam-channel from 0.5.14 to 0.5.15 by @dependabot in https://github.com/dathere/qsv/pull/2672
 * build(deps): bump flate2 from 1.1.0 to 1.1.1 by @dependabot in https://github.com/dathere/qsv/pull/2649
 * build(deps): bump flexi_logger from 0.29.8 to 0.30.0 by @dependabot in https://github.com/dathere/qsv/pull/2650
 * build(deps): bump flexi_logger from 0.30.0 to 0.30.1 by @dependabot in https://github.com/dathere/qsv/pull/2651
+* build(deps): bump governor from 0.8.1 to 0.9.0 by @dependabot in https://github.com/dathere/qsv/pull/2625
+* build(deps): bump governor from 0.9.0 to 0.10.0 by @dependabot in https://github.com/dathere/qsv/pull/2631
+* build(deps): bump jsonschema from 0.29.0 to 0.29.1 by @dependabot in https://github.com/dathere/qsv/pull/2635
+* build(deps): bump log from 0.4.26 to 0.4.27 by @dependabot in https://github.com/dathere/qsv/pull/2622
 * build(deps): bump mimalloc from 0.1.44 to 0.1.45 by @dependabot in https://github.com/dathere/qsv/pull/2652
-* build(deps): bump arboard from 3.4.1 to 3.5.0 by @dependabot in https://github.com/dathere/qsv/pull/2653
-* build(deps): bump indexmap from 2.8.0 to 2.9.0 by @dependabot in https://github.com/dathere/qsv/pull/2655
-* build(deps): bump smallvec from 1.14.0 to 1.15.0 by @dependabot in https://github.com/dathere/qsv/pull/2656
-* feat: `split` add `--filter` options by @jqnatividad in https://github.com/dathere/qsv/pull/2660
-* build(deps): bump tokio from 1.44.1 to 1.44.2 by @dependabot in https://github.com/dathere/qsv/pull/2662
+* build(deps): bump minijinja from 2.8.0 to 2.9.0 by @dependabot in https://github.com/dathere/qsv/pull/2643
+* build(deps): bump minijinja-contrib from 2.8.0 to 2.9.0 by @dependabot in https://github.com/dathere/qsv/pull/2642
+* build(deps): bump pyo3 from 0.24.0 to 0.24.1 by @dependabot in https://github.com/dathere/qsv/pull/2645
+* build(deps): bump qsv-dateparser from 0.12.1 to 0.13.0 by @dependabot in https://github.com/dathere/qsv/pull/2639
+* build(deps): bump qsv-sniffer from 0.10.3 to 0.11.0 by @dependabot in https://github.com/dathere/qsv/pull/2640
 * build(deps): bump redis from 0.29.2 to 0.29.4 by @dependabot in https://github.com/dathere/qsv/pull/2663
-* fix: reset SIGPIPE handling by @jqnatividad in https://github.com/dathere/qsv/pull/2664
-* feat: add back `to` parquet support by @jqnatividad in https://github.com/dathere/qsv/pull/2665
 * build(deps): bump redis from 0.29.4 to 0.29.5 by @dependabot in https://github.com/dathere/qsv/pull/2666
-* feat: add file formats supported when polars feature is enabled by @jqnatividad in https://github.com/dathere/qsv/pull/2667
+* build(deps): bump smallvec from 1.14.0 to 1.15.0 by @dependabot in https://github.com/dathere/qsv/pull/2656
+* build(deps): bump sysinfo from 0.34.0 to 0.34.1 by @dependabot in https://github.com/dathere/qsv/pull/2637
+* build(deps): bump sysinfo from 0.34.1 to 0.34.2 by @dependabot in https://github.com/dathere/qsv/pull/2648
 * build(deps): bump titlecase from 3.4.0 to 3.5.0 by @dependabot in https://github.com/dathere/qsv/pull/2669
-* fix: `select` panic when idx is out of bounds by @jqnatividad in https://github.com/dathere/qsv/pull/2670
-* feat: Extended auto decompression support. In addition to csv, auto-decompress tsv/tab and ssv files as well by @jqnatividad in https://github.com/dathere/qsv/pull/2671
-* build(deps): bump crossbeam-channel from 0.5.14 to 0.5.15 by @dependabot in https://github.com/dathere/qsv/pull/2672
-* feat: `to` add  ODS support by @jqnatividad in https://github.com/dathere/qsv/pull/2674
-* deps: bump polars to 0.46.0 at py-1.27.0 tag by @jqnatividad in https://github.com/dathere/qsv/pull/2675
+* build(deps): bump tokio from 1.44.1 to 1.44.2 by @dependabot in https://github.com/dathere/qsv/pull/2662
 
+### Fixed
+* fix: `select` panic when idx is out of bounds https://github.com/dathere/qsv/pull/2670
+* fix: correct link to qsv-dateparser accepted date formats https://github.com/dathere/qsv/pull/2632
+* fix: reset SIGPIPE handling https://github.com/dathere/qsv/pull/2664
 
 **Full Changelog**: https://github.com/dathere/qsv/compare/3.3.0...4.0.0
 
