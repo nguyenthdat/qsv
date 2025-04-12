@@ -39,7 +39,7 @@ pub fn run(argv: &[&str]) -> CliResult<()> {
     // Construct a spatial geometry based on the input format
     let output_string = match input_format.as_str() {
         "geojson" => {
-            let input_string = match input.clone() {
+            let input_string = match input {
                 Some(path) => std::fs::read_to_string(path).unwrap(),
                 _ => return fail_clierror!("Could not identify file path."),
             };
