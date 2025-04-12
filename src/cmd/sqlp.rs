@@ -376,6 +376,11 @@ impl OutputMode {
                 return Ok(());
             }
 
+            let float_precision = std::env::var("QSV_POLARS_FLOAT_PRECISION")
+                .ok()
+                .and_then(|s| s.parse().ok())
+                .or(args.flag_float_precision);
+
             let w = match args.flag_output {
                 Some(path) => {
                     delim = tsvssv_delim(path.clone(), delim);
@@ -391,7 +396,7 @@ impl OutputMode {
                     .with_datetime_format(args.flag_datetime_format)
                     .with_date_format(args.flag_date_format)
                     .with_time_format(args.flag_time_format)
-                    .with_float_precision(args.flag_float_precision)
+                    .with_float_precision(float_precision)
                     .with_null_value(args.flag_wnull_value)
                     .include_bom(util::get_envvar_flag("QSV_OUTPUT_BOM"))
                     .finish(&mut df),
