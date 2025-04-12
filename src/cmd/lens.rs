@@ -26,19 +26,13 @@ Common options:
     -h, --help      Display this message
 "#;
 
-use std::path::{Path, PathBuf};
+use std::path::PathBuf;
 
 use csvlens::{CsvlensOptions, run_csvlens_with_options};
 use serde::Deserialize;
 use tempfile;
 
-#[cfg(feature = "polars")]
-use crate::config::SpecialFormat;
-use crate::{
-    CliError, CliResult,
-    config::{Config, is_special_format},
-    util,
-};
+use crate::{CliError, CliResult, config::Config, util};
 
 #[derive(Deserialize)]
 struct Args {
@@ -73,30 +67,16 @@ pub fn run(argv: &[&str]) -> CliResult<()> {
     )?;
     let input = work_input[0].to_string_lossy().to_string();
 
-    // we do config here to get the delimiter, just in case
-    // QSV_SNIFF_DELIMITER or QSV_DELIMITER is set
-    let config: Config = Config::new(Some(input.clone()).as_ref());
+    // Create a Config to:
+    // 1. Get the delimiter (from QSV_DEFAULT_DELIMITER env var if set)
+    // 2. Check if delimiter sniffing is enabled (via QSV_SNIFF_DELIMITER)
+    // 3. Handle special file formats like Parquet/Avro if polars is enabled
+    let config: Config = Config::new(Some(input).as_ref());
 
-    // if polars is enabled, check if the input is a special format
-    // and convert it to a csv file if so
-    #[cfg(feature = "polars")]
-    let input = {
-        let special_format = is_special_format(Path::new(&input));
-        if special_format == SpecialFormat::Unknown {
-            input
-        } else {
-            let converted = util::convert_special_format(
-                Path::new(&input),
-                special_format,
-                config.get_delimiter(),
-            )
-            .map_err(|e| CliError::Other(format!("csvlens error: {e}")))?;
-            converted.to_string_lossy().to_string()
-        }
-    };
+    let input = config.path.clone().map(|p| p.to_string_lossy().to_string());
 
     let options = CsvlensOptions {
-        filename:           Some(input),
+        filename:           input,
         delimiter:          if let Some(delimiter) = args.flag_delimiter {
             Some(delimiter)
         } else {

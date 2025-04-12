@@ -12,7 +12,7 @@ use std::{
     io::{BufRead, BufReader, BufWriter, Read, Write},
     path::{Path, PathBuf},
     str,
-    sync::OnceLock,
+    sync::{Arc, OnceLock},
     time::SystemTime,
 };
 
@@ -23,6 +23,8 @@ use human_panic::setup_panic;
 #[cfg(any(feature = "feature_capable", feature = "lite"))]
 use indicatif::{HumanCount, ProgressBar, ProgressDrawTarget, ProgressStyle};
 use log::{info, log_enabled};
+#[cfg(feature = "polars")]
+use polars::prelude::Schema;
 use reqwest::Client;
 use serde::de::DeserializeOwned;
 #[cfg(any(feature = "feature_capable", feature = "lite"))]
@@ -2613,6 +2615,42 @@ pub fn expand_tilde(path: impl AsRef<Path>) -> Option<PathBuf> {
 //     Ok(json_record)
 // }
 
+/// Loads a Polars schema from a pschema.json file if it exists.
+///
+/// # Arguments
+///
+/// * `path` - The path to the input file
+///
+/// # Returns
+///
+/// * `Option<Arc<Schema>>` - The loaded schema if the file exists and can be parsed, None otherwise
+#[cfg(feature = "polars")]
+fn load_schema_from_file(path: &Path) -> Result<Option<Arc<Schema>>, Box<dyn std::error::Error>> {
+    // Use only the input file prefix to create the schema file path
+    // e.g. data.tsv.gz, data.parquet, data.ssv should look for a schema file
+    // named data.pschema.json
+    // TODO: replace this with std::path::file_prefix once its stabilized
+    // https://github.com/rust-lang/rust/pull/129114
+    let fileprefix = path
+        .file_name()
+        .and_then(|fname| fname.to_str())
+        .map(|s| s.split('.').next().unwrap_or(""))
+        .unwrap_or_default();
+    let schema_file = path.with_file_name(format!("{fileprefix}.pschema.json"));
+
+    if schema_file.exists() {
+        // Load the schema from the pschema.json file
+        let file = File::open(&schema_file)?;
+        let mut buf_reader = BufReader::new(file);
+        let mut schema_json = String::with_capacity(100);
+        buf_reader.read_to_string(&mut schema_json)?;
+        let schema: Schema = serde_json::from_str(&schema_json)?;
+        Ok(Some(Arc::new(schema)))
+    } else {
+        Ok(None)
+    }
+}
+
 /// Converts files in special formats (Parquet, Avro, Arrow IPC, JSONL, JSON, or compressed CSV)
 /// into a standard delimited text file. The output file extension will be:
 /// - .tsv for tab-delimited
@@ -2643,29 +2681,80 @@ pub fn convert_special_format(
         },
     };
 
-    // Create a reader based on the file format
+    // Check if there's a pschema.json file with the same filestem
+    // the Polars schema will be used in parsing
+    // JSON/JSONL and compressed CSV files only
+    let schema = if let SpecialFormat::Avro | SpecialFormat::Parquet | SpecialFormat::Ipc = format {
+        None
+    } else {
+        load_schema_from_file(path)?
+    };
+
+    let mut extension = ".csv";
+    // Create a reader based on the file format and convert to DataFrame
     let mut df = match format {
         SpecialFormat::Avro => AvroReader::new(BufReader::new(File::open(path)?)).finish()?,
         SpecialFormat::Parquet => ParquetReader::new(BufReader::new(File::open(path)?)).finish()?,
         SpecialFormat::Ipc => IpcReader::new(BufReader::new(File::open(path)?)).finish()?,
-        SpecialFormat::Jsonl => JsonLineReader::new(BufReader::new(File::open(path)?)).finish()?,
-        SpecialFormat::Json => JsonReader::new(BufReader::new(File::open(path)?)).finish()?,
+        SpecialFormat::Jsonl => {
+            let df = JsonLineReader::new(BufReader::new(File::open(path)?));
+            if let Some(schema) = schema {
+                df.with_schema(schema).finish()?
+            } else {
+                df.finish()?
+            }
+        },
+        SpecialFormat::Json => {
+            let df = JsonReader::new(BufReader::new(File::open(path)?));
+            if let Some(schema) = schema {
+                df.with_schema(schema).finish()?
+            } else {
+                df.finish()?
+            }
+        },
         SpecialFormat::CompressedCsv
         | SpecialFormat::CompressedTsv
         | SpecialFormat::CompressedSsv => {
             let separator = match format {
-                SpecialFormat::CompressedTsv => b'\t',
-                SpecialFormat::CompressedSsv => b';',
+                SpecialFormat::CompressedTsv => {
+                    extension = ".tsv";
+                    b'\t'
+                },
+                SpecialFormat::CompressedSsv => {
+                    extension = ".ssv";
+                    b';'
+                },
                 _ => delim,
             };
+
+            // Create base CSV read options with the appropriate separator
+            let base_options = CsvReadOptions::default()
+                .with_parse_options(CsvParseOptions::default().with_separator(separator));
+
+            // Try reading the compressed file with a schema if available
             let reader = CsvReadOptions::default()
-                .try_into_reader_with_file_path(Some(path.to_path_buf()))?;
-            reader
-                .with_options(
+                .try_into_reader_with_file_path(Some(path.to_path_buf()))?
+                .with_options(if let Some(schema) = schema {
+                    base_options.clone().with_schema(Some(schema))
+                } else {
+                    base_options.clone().with_infer_schema_length(Some(1000))
+                });
+
+            match reader.finish() {
+                Ok(df) => df,
+                Err(e) => {
+                    // Try again without schema if first attempt failed
+                    wwarn!(
+                        "Falling back to reading file \"{}\" without a schema. Schema parsing \
+                         error: {e}",
+                        path.display()
+                    );
                     CsvReadOptions::default()
-                        .with_parse_options(CsvParseOptions::default().with_separator(separator)),
-                )
-                .finish()?
+                        .try_into_reader_with_file_path(Some(path.to_path_buf()))?
+                        .with_options(base_options.with_infer_schema_length(Some(1000)))
+                        .finish()?
+                },
+            }
         },
         SpecialFormat::Unknown => return Err("Unknown format".into()),
     };
@@ -2675,26 +2764,19 @@ pub fn convert_special_format(
         tempfile::TempDir::new().unwrap().into_path() // Convert to PathBuf to prevent auto-deletion
     });
 
-    // Choose file extension based on delimiter
-    let extension = match delim {
-        b'\t' => ".tsv",
-        b';' => ".ssv",
-        _ => ".csv",
-    };
-
     // Create temp file with appropriate extension
     let temp_file = tempfile::Builder::new()
         .suffix(extension)
         .tempfile_in(temp_dir)?;
 
     // Get QSV_POLARS_FORMAT_FLOAT_PRECISION env var
-    let precision = crate::config::POLARS_FORMATS_DEFAULT_FLOAT_PRECISION.get_or_init(|| {
-        std::env::var("QSV_POLARS_FORMATS_FLOAT_PRECISION")
+    let precision = crate::config::POLARS_FLOAT_PRECISION.get_or_init(|| {
+        std::env::var("QSV_POLARS_FLOAT_PRECISION")
             .ok()
             .and_then(|s| s.parse().ok())
     });
 
-    // Write DataFrame to CSV with specified delimiter
+    // Write DataFrame to CSV with specified delimiter/separator
     CsvWriter::new(BufWriter::new(&temp_file))
         .with_separator(delim)
         .with_float_precision(*precision)

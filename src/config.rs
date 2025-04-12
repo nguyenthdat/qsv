@@ -40,7 +40,7 @@ Need a UI & more advanced data-wrangling? Upgrade to qsv pro (https://qsvpro.dat
 pub static TEMP_FILE_DIR: OnceLock<PathBuf> = OnceLock::new();
 
 #[cfg(feature = "polars")]
-pub static POLARS_FORMATS_DEFAULT_FLOAT_PRECISION: OnceLock<Option<usize>> = OnceLock::new();
+pub static POLARS_FLOAT_PRECISION: OnceLock<Option<usize>> = OnceLock::new();
 
 #[allow(unused_variables)]
 #[allow(dead_code)]
