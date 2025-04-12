@@ -1522,7 +1522,6 @@ pub fn load_dotenv() -> CliResult<()> {
     // whatever manually set environment variables are present.
 
     if let Ok(dotenv_path) = std::env::var("QSV_DOTENV_PATH") {
-
         // <NONE> is a sentinel value to disable dotenv processing
         if dotenv_path == "<NONE>" {
             log::warn!("dotenv processing disabled with QSV_DOTENV_PATH=<NONE>");
