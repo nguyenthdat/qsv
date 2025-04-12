@@ -39,9 +39,9 @@ pub mod fmt;
 #[cfg(all(feature = "foreach", not(feature = "lite")))]
 pub mod foreach;
 pub mod frequency;
-#[cfg(all(feature = "geocode", feature = "feature_capable"))]
+#[cfg(feature = "geocode")]
 pub mod geocode;
-#[cfg(feature = "feature_capable")]
+#[cfg(feature = "geocode")]
 pub mod geoconvert;
 pub mod headers;
 pub mod index;
