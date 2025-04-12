@@ -13,12 +13,10 @@ Common options:
     -h, --help             Display this message
 "#;
 
-use std::path::PathBuf;
-
 use geozero::{ProcessToCsv, ProcessToSvg, csv::CsvWriter, geojson::GeoJsonWriter};
 use serde::Deserialize;
 
-use crate::{CliResult, config::Config, util};
+use crate::{CliResult, util};
 
 #[derive(Deserialize)]
 struct Args {
