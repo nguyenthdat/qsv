@@ -41,6 +41,8 @@ pub mod foreach;
 pub mod frequency;
 #[cfg(all(feature = "geocode", feature = "feature_capable"))]
 pub mod geocode;
+#[cfg(feature = "feature_capable")]
+pub mod geoconvert;
 pub mod headers;
 pub mod index;
 pub mod input;
