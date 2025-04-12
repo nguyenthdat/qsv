@@ -15,15 +15,15 @@ Common options:
 
 use std::path::PathBuf;
 
-use geozero::{csv::CsvWriter, geojson::GeoJsonWriter, ProcessToCsv, ProcessToSvg};
+use geozero::{ProcessToCsv, ProcessToSvg, csv::CsvWriter, geojson::GeoJsonWriter};
 use serde::Deserialize;
 
 use crate::{CliResult, config::Config, util};
 
 #[derive(Deserialize)]
 struct Args {
-    arg_input: Option<String>,
-    arg_input_format: String,
+    arg_input:         Option<String>,
+    arg_input_format:  String,
     arg_output_format: String,
     // flag_output:   Option<String>,
 }
@@ -41,13 +41,13 @@ pub fn run(argv: &[&str]) -> CliResult<()> {
         "geojson" => {
             let input_string = match input.clone() {
                 Some(path) => std::fs::read_to_string(path).unwrap(),
-                _ => return fail_clierror!("Could not identify file path.")
+                _ => return fail_clierror!("Could not identify file path."),
             };
             let mut geometry = geozero::geojson::GeoJson(&input_string);
             match output_format.as_str() {
                 "csv" => geometry.to_csv().unwrap(),
                 "svg" => geometry.to_svg().unwrap(),
-                _ => return fail_clierror!("Could not identify valid output format.")
+                _ => return fail_clierror!("Could not identify valid output format."),
             }
         },
         "shp" => {
@@ -55,7 +55,9 @@ pub fn run(argv: &[&str]) -> CliResult<()> {
             match output_format.as_str() {
                 "geojson" => {
                     let mut json: Vec<u8> = Vec::new();
-                    reader.iter_features(&mut GeoJsonWriter::new(&mut json)).unwrap();
+                    reader
+                        .iter_features(&mut GeoJsonWriter::new(&mut json))
+                        .unwrap();
                     String::from_utf8(json).unwrap()
                 },
                 "csv" => {
@@ -63,13 +65,13 @@ pub fn run(argv: &[&str]) -> CliResult<()> {
                     reader.iter_features(&mut CsvWriter::new(&mut csv)).unwrap();
                     String::from_utf8(csv).unwrap()
                 },
-                _ => return fail_clierror!("Could not identify valid output format.")
+                _ => return fail_clierror!("Could not identify valid output format."),
             }
         },
-        _ => return fail_clierror!("Could not identify valid input format.")
+        _ => return fail_clierror!("Could not identify valid input format."),
     };
 
     print!("{output_string}");
-    
+
     Ok(())
 }
