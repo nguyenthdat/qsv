@@ -27,9 +27,9 @@ prompt options:
                            When using --fd-output, the default is "Save File As".
     -F, --filters <arg>    The filter to use for the INPUT file dialog. Set to "None" to
                            disable filters. Filters are comma-delimited file extensions.
-                           Defaults to csv,tsv,tab,ssv,xls,xlsx,ods.
+                           Defaults to csv,tsv,tab,ssv,xls,xlsx,xlsm,xlsb,ods.
                            If the polars feature is enabled, it adds avro,arrow,ipc,parquet,
-                           json,jsonl,ndjson & gz,zst & zlib compressed files
+                           json,jsonl,ndjson & gz,zst,zlib compressed files to the filter.
     -d, --workdir <dir>    The directory to start the file dialog in.
                            [default: .]
     -f, --fd-output        Write output to a file by using a save file dialog.

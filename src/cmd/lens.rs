@@ -1,6 +1,10 @@
 static USAGE: &str = r#"
 Explore a CSV file interactively using the csvlens (https://github.com/YS-L/csvlens) engine.
 
+If the polars feature is enabled, lens can also browse Arrow, Avro/IPC, Parquet, JSON (JSON Array)
+and JSONL files. It also automatically decompresses csv/tsv/tab/ssv files using the gz,zlib & zst
+compression formats (e.g. data.csv.gz, data.tsv.zlib, data.tab.gz & data.ssv.zst).
+
 Press 'q' to exit. Press '?' for help.
 
 Usage:
