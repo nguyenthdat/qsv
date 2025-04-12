@@ -812,7 +812,7 @@ pub fn is_special_format(path: &Path) -> SpecialFormat {
         "avro" => SpecialFormat::Avro,
         "parquet" => SpecialFormat::Parquet,
         "ipc" | "arrow" => SpecialFormat::Ipc,
-        "jsonl" => SpecialFormat::Jsonl,
+        "jsonl" | "ndjson" => SpecialFormat::Jsonl,
         "json" => SpecialFormat::Json,
         "gz" => {
             let path_str = if let Some(s) = path.to_str() {
