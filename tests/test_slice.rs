@@ -740,13 +740,17 @@ fn slice_float_precision() {
     // Verify that precision 2 has exactly 2 decimal places
     assert!(got_precision_2.contains("3.14"));
     assert!(got_precision_2.contains("2.72"));
-    assert!(!got_precision_2.contains("3.141"));
+
+    // since we use a polar schema declaring value1 as decimal,
+    // QSV_POLARS_FLOAT_PRECISION does not apply
+    assert!(got_precision_2.contains("3.14159265358979323846"));
+    // it does apply to the value2 column though since its a Float64
     assert!(!got_precision_2.contains("2.718"));
 
     // Verify that precision 5 has exactly 5 decimal places
     assert!(got_precision_5.contains("3.14159"));
     assert!(got_precision_5.contains("2.71828"));
-    assert!(!got_precision_5.contains("3.141592"));
+    assert!(got_precision_5.contains("3.14159265358979323846"));
     assert!(!got_precision_5.contains("2.718281"));
 
     // Verify that precision 20 has exactly 20 decimal places
