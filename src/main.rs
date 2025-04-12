@@ -141,7 +141,8 @@ fn main() -> QsvExitCode {
         .push_str("    geocode     Geocodes a location against the Geonames cities database.\n");
 
     enabled_commands.push_str(
-        "    headers     Show header names
+        "    geoconvert  Convert between spatial formats and CSV, including GeoJSON, SHP, and more
+    headers     Show header names
     help        Show this usage message
     index       Create CSV index for faster access
     input       Read CSVs w/ special quoting, skipping, trimming & transcoding rules
@@ -368,6 +369,7 @@ enum Command {
     Frequency,
     #[cfg(all(feature = "geocode", feature = "feature_capable"))]
     Geocode,
+    Geoconvert,
     Headers,
     Help,
     Index,
@@ -464,6 +466,7 @@ impl Command {
             Command::Frequency => cmd::frequency::run(argv),
             #[cfg(all(feature = "geocode", feature = "feature_capable"))]
             Command::Geocode => cmd::geocode::run(argv),
+            Command::Geoconvert => cmd::geoconvert::run(argv),
             Command::Headers => cmd::headers::run(argv),
             Command::Help => {
                 wout!("{USAGE}\n\n{SPONSOR_MESSAGE}");
