@@ -8,6 +8,36 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [4.0.0] - 2025-04-13
 
+## Highlights:
+This is a major release with numerous improvements!
+- qsv can now read multiple file formats by leveraging the Polars engine:
+  - Arrow
+  - Avro/IPC 
+  - Parquet
+  - JSON (JSON array)
+  - JSONL
+- Automatic decompression support for compressed files:
+  - gzip (.gz)
+  - zlib (.zlib) 
+  - zstd (.zst)
+  Works with CSV, TSV/TAB and SSV files (e.g. data.csv.gz, data.tsv.zst, data.ssv.zlib)
+- New `geoconvert` command for converting spatial formats to CSV:
+  - GeoJSON
+  - Shapefile (SHP)
+- Enhanced `split` command with new `--filter` option:
+  - Similar to [GNU split](https://www.gnu.org/software/coreutils/manual/html_node/split-invocation.html)
+  - Spawns a subprocess for each chunk
+  - Example: compress each chunk with `qsv split outdir input.csv --filter "gzip {}.csv"`
+- Re-enabled Parquet file creation in `to` command:
+  - Now uses Arrow library instead of DuckDB
+  - More efficient and reliable Parquet generation
+- New `uniqueCombinedWith` custom keyword in `validate` command:
+  - Allows validating uniqueness across multiple columns
+  - Useful for composite key validation
+- QSV_DOTENV_PATH now supports the sentinel value "\<NONE\>" -
+  suppressing dotenv processing altogether.
+
+
 ### Added
 * `geoconvert`: new command to convert spatial formats to CSV by @rzmk in https://github.com/dathere/qsv/pull/2681 & https://github.com/dathere/qsv/pull/2688
 * `split`: add `--filter` options https://github.com/dathere/qsv/pull/2660
@@ -54,6 +84,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * build(deps): bump sysinfo from 0.34.1 to 0.34.2 by @dependabot in https://github.com/dathere/qsv/pull/2648
 * build(deps): bump titlecase from 3.4.0 to 3.5.0 by @dependabot in https://github.com/dathere/qsv/pull/2669
 * build(deps): bump tokio from 1.44.1 to 1.44.2 by @dependabot in https://github.com/dathere/qsv/pull/2662
+* applied select clippy lint suggestions
+* bumped indirect dependencies to latest version
 
 ### Fixed
 * fix: `select` panic when idx is out of bounds https://github.com/dathere/qsv/pull/2670
