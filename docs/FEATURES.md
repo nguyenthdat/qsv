@@ -7,7 +7,7 @@
 * `apply` - enable `apply` command. This swiss-army knife of CSV transformations is very powerful, but it has a lot of dependencies that increases both compile time and binary size.
 * `fetch` - enables the `fetch` & `fetchpost` commands.
 * `foreach` - enable `foreach` command.
-* `geocode` - enable `geocode` command.
+* `geocode` - enable `geocode` & `geoconvert` commands.
 * `lens` - enable `lens` command.
 * `luau` - enable `luau` command. Embeds a [Luau](https://luau-lang.org) interpreter into qsv. [Luau has type-checking, sandboxing, additional language operators, increased performance & other improvements](https://luau-lang.org/2022/11/04/luau-origins-and-evolution.html) over Lua. Luau is the DSL of qsv - as its statically linked, has a MUCH smaller footprint (in both file size and memory without having to deal with Python's infamous [Global Interpreter Lock](https://wiki.python.org/moin/GlobalInterpreterLock)) & is faster (in both startup & execution time) than Python.
 * `polars` - enables all [Polars](https://pola.rs)-powered commands (currently, `joinp`, `pivotp` and `sqlp` and enables polars mode in `count`). It also enables support for reading `.parquet`, `.ipc`/`.arrow` and `.json`/`.jsonl` formats as well as `.csv.gz`, `.csv.zst` and `.csv.zlib` compressed files.<br />Note that Polars is a very powerful library, but it has a lot of dependencies that drastically increases both compile time and binary size.
