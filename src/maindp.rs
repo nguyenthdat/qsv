@@ -62,14 +62,14 @@ static COMMAND_LIST: &str = r#"
     exclude     Excludes the records in one CSV from another
     extdedup    Remove duplicates rows from an arbitrarily large text file
     frequency   Show frequency tables
-    geocode     Geocodes a location against the Geonames cities database 🌐
-    geoconvert  Convert between spatial formats & CSV, including GeoJSON, SHP & more 🌐
+    geocode     Geocodes a location against the Geonames cities database 🌎
+    geoconvert  Convert between spatial formats & CSV, including GeoJSON, SHP & more 🌎mess
     headers     Show header names
     help        Show this usage message
     index       Create CSV index for faster access
     input       Read CSVs w/ special quoting, skipping, trimming & transcoding rules
     joinp       Join CSV files using the Pola.rs engine 🐻‍❄️
-    luau        Execute Luau script on CSV data
+    luau        Execute Luau script on CSV data 🍍
     pivotp      Pivot CSV data 🐻‍❄️
     pseudo      Pseudonymise the values of a column
     rename      Rename the columns of CSV data efficiently
@@ -91,8 +91,9 @@ static COMMAND_LIST: &str = r#"
     validate    Validate CSV data for RFC4180-compliance or with JSON Schema
 
     NOTE: qsvdp ignores the --progressbar option for all commands.
-          🐻‍❄️ - available with polars feature
-          🌐 - available with the geocode feature"#;
+          🌎 - requires geocode feature
+          🍍 - requires luau feature
+          🐻‍❄️ - requires polars feature"#;
 
 mod clitypes;
 mod cmd;
