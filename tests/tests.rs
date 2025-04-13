@@ -77,7 +77,7 @@ mod test_fmt;
 #[cfg(all(feature = "foreach"))]
 mod test_foreach;
 mod test_frequency;
-#[cfg(all(feature = "feature_capable", feature = "geocode"))]
+#[cfg(feature = "geocode")]
 mod test_geocode;
 mod test_headers;
 mod test_index;
