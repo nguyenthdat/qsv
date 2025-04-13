@@ -289,9 +289,8 @@ with ~520 tests.
 */
 
 use std::{
-    default::Default,
-    fmt, fs, io,
-    io::Write,
+    fmt, fs,
+    io::{self, BufRead, Seek, Write},
     iter::repeat_n,
     path::{Path, PathBuf},
     str,
@@ -738,19 +737,67 @@ pub fn run(argv: &[&str]) -> CliResult<()> {
     if let Some(format_error) = rconfig.format_error {
         return fail_incorrectusage_clierror!("{format_error}");
     }
-    let mut stdin_tempfile_path = None;
 
+    // infer delimiter when we're getting input from stdin
+    // as the stats engine needs to know the delimiter or it will panic
+    let mut stdin_tempfile_path = None;
     if rconfig.is_stdin() {
         // read from stdin and write to a temp file
         log::info!("Reading from stdin");
-        let mut stdin_file = NamedTempFile::new()?;
+
+        let temp_dir = crate::config::TEMP_FILE_DIR.get_or_init(|| {
+            // Convert to PathBuf to prevent auto-deletion
+            tempfile::TempDir::new().unwrap().into_path()
+        });
+
+        let mut stdin_file = tempfile::Builder::new().tempfile_in(temp_dir)?;
+
         let stdin = std::io::stdin();
         let mut stdin_handle = stdin.lock();
         std::io::copy(&mut stdin_handle, &mut stdin_file)?;
         drop(stdin_handle);
-        let (_file, tempfile_path) = stdin_file
+        let (mut preview_file, tempfile_path) = stdin_file
             .keep()
             .or(Err("Cannot keep temporary file".to_string()))?;
+
+        // Only infer delimiter if QSV_DEFAULT_DELIMITER is not set
+        if std::env::var("QSV_DEFAULT_DELIMITER").is_err() {
+            // Seek to start of file before reading
+            preview_file.seek(std::io::SeekFrom::Start(0))?;
+
+            // Read first line to infer delimiter
+            let mut first_line = String::new();
+            let mut reader = io::BufReader::new(&preview_file);
+            reader.read_line(&mut first_line)?;
+
+            // Count occurrences of each potential delimiter
+            let tab_count = first_line.matches('\t').count();
+            let semicolon_count = first_line.matches(';').count();
+            let comma_count = first_line.matches(',').count();
+
+            // Special case: if we see multiple consecutive spaces but no tabs,
+            // those spaces might actually be tabs in the original file
+            let space_groups = first_line
+                .split(|c: char| !c.is_whitespace())
+                .filter(|s| !s.is_empty())
+                .count();
+
+            // Infer delimiter by finding the most frequent one
+            let inferred = if tab_count > 0
+                || (space_groups > 2 && comma_count == 0 && semicolon_count == 0)
+            {
+                "\t"
+            } else if semicolon_count > 0 && semicolon_count >= comma_count {
+                ";"
+            } else {
+                ","
+            };
+
+            // Set QSV_DEFAULT_DELIMITER environment variable
+            // this is only for the current process. When qsv exits, it will not persist
+            unsafe { std::env::set_var("QSV_DEFAULT_DELIMITER", inferred) };
+        }
+
         stdin_tempfile_path = Some(tempfile_path.clone());
         args.arg_input = Some(tempfile_path.to_string_lossy().to_string());
         rconfig.path = Some(tempfile_path);
