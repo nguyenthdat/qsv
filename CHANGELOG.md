@@ -6,7 +6,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [4.0.0] - 2025-04-13
+
 ### Added
+* `geoconvert`: new command to convert spatial formats to CSV by @rzmk in https://github.com/dathere/qsv/pull/2681 & https://github.com/dathere/qsv/pull/2688
 * `split`: add `--filter` options https://github.com/dathere/qsv/pull/2660
 * `sqlp`: add decimal type support https://github.com/dathere/qsv/pull/2646
 * `to`: add back `to` parquet support https://github.com/dathere/qsv/pull/2665
@@ -14,10 +17,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * `to`: add  ODS support https://github.com/dathere/qsv/pull/2674
 * `validate`: add uniqueCombinedWith custom JSON Schema Validation keyword https://github.com/dathere/qsv/pull/2636
 * feat: add file formats supported when polars feature is enabled https://github.com/dathere/qsv/pull/2667
-* feat: add `QSV_POLARS_FORMATS_FLOAT_PRECISION` env var https://github.com/dathere/qsv/pull/2678
+* feat: add `QSV_POLARS_FLOAT_PRECISION` env var https://github.com/dathere/qsv/pull/2678
 * `tests`: add tests for https://100.dathere.com/lessons/3 by @rzmk in https://github.com/dathere/qsv/pull/2638
 
 ### Changed
+* `qsvdp` binary variant can now use the `geocode` & `geoconvert` commands https://github.com/dathere/qsv/commit/50f004608d396602b8f6eb048a72dcc56630d26a
+* `geocode` feature now gates the `geocode` & `geoconvert` command https://github.com/dathere/qsv/commit/9d046e8da107c088f1e0b3bb20e64ab79fde05d8
+* feat: setting QSV_DOTENV_PATH to sentinel value "\<NONE>\" disables dotenv processing https://github.com/dathere/qsv/pull/2684
+* refactor: polars special formats support by @jqnatividad in https://github.com/dathere/qsv/pull/2683
 * `contrib(completions)`: update completions to v3.3.0 by @rzmk in https://github.com/dathere/qsv/pull/2626
 * `contrib(completions)`: update completions for qsv v4.0.0 by @rzmk in https://github.com/dathere/qsv/pull/2677
 * deps: bump polars to 0.46.0 at py-1.27.1 tag https://github.com/dathere/qsv/pull/2675 and https://github.com/dathere/qsv/commit/e5d29d7f192bf10f6528d0d423347179d785e40f
@@ -25,6 +32,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * build(deps): bump arboard from 3.4.1 to 3.5.0 by @dependabot in https://github.com/dathere/qsv/pull/2653
 * build(deps): bump chrono-tz from 0.10.2 to 0.10.3 by @dependabot in https://github.com/dathere/qsv/pull/2623
 * build(deps): bump crossbeam-channel from 0.5.14 to 0.5.15 by @dependabot in https://github.com/dathere/qsv/pull/2672
+* build(deps): bump csvs_convert from 0.11.0 to 0.11.1 by @dependabot in https://github.com/dathere/qsv/pull/2686
+* build(deps): bump data-encoding from 2.8.0 to 2.9.0 by @dependabot in https://github.com/dathere/qsv/pull/2685
 * build(deps): bump flate2 from 1.1.0 to 1.1.1 by @dependabot in https://github.com/dathere/qsv/pull/2649
 * build(deps): bump flexi_logger from 0.29.8 to 0.30.0 by @dependabot in https://github.com/dathere/qsv/pull/2650
 * build(deps): bump flexi_logger from 0.30.0 to 0.30.1 by @dependabot in https://github.com/dathere/qsv/pull/2651
@@ -50,6 +59,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * fix: `select` panic when idx is out of bounds https://github.com/dathere/qsv/pull/2670
 * fix: correct link to qsv-dateparser accepted date formats https://github.com/dathere/qsv/pull/2632
 * fix: reset SIGPIPE handling https://github.com/dathere/qsv/pull/2664
+* docs: fix typo it's -> its by @rzmk in https://github.com/dathere/qsv/pull/2680
 
 **Full Changelog**: https://github.com/dathere/qsv/compare/3.3.0...4.0.0
 
