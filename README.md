@@ -52,7 +52,8 @@
 | [fmt](/src/cmd/fmt.rs#L2) | Reformat a CSV with different delimiters, record terminators or quoting rules. (Supports ASCII delimited data.)  |
 | [foreach](/src/cmd/foreach.rs#L2)✨<br>📇 | Execute a shell command once per line in given CSV file. |
 | [frequency](/src/cmd/frequency.rs#L2)<br>📇😣🏎️👆🪄 | Build [frequency tables](https://statisticsbyjim.com/basics/frequency-table/) of each column. Uses multithreading to go faster if an index is present. |
-| [geocode](/src/cmd/geocode.rs#L2)✨<br>📇🧠🌐🚀🔣👆 | Geocodes a location against an updatable local copy of the [Geonames](https://www.geonames.org/) cities database. With caching and multi-threading, it geocodes up to 360,000 records/sec! |
+| [geocode](/src/cmd/geocode.rs#L2)✨<br>📇🧠🌐🚀🔣👆🌎 | Geocodes a location against an updatable local copy of the [Geonames](https://www.geonames.org/) cities database. With caching and multi-threading, it geocodes up to 360,000 records/sec! |
+| [geoconvert](/src/cmd/geoconvert.rs#L2)✨<br>🌎 | Convert between various spatial formats and CSV/SVG including GeoJSON, SHP, and more. |
 | [headers](/src/cmd/headers.rs#L2)<br>🗄️ | Show the headers of a CSV. Or show the intersection of all headers between many CSV files. |
 | [index](/src/cmd/index.rs#L2) | Create an index (📇) for a CSV. This is very quick (even the 15gb, 28m row NYC 311 dataset takes all of 14 seconds to index) & provides constant time indexing/random access into the CSV. With an index, `count`, `sample` & `slice` work instantaneously; random access mode is enabled in `luau`; and multithreading (🏎️) is enabled for the `frequency`, `split`, `stats`, `schema` & `tojsonl` commands. |
 | [input](/src/cmd/input.rs#L2) | Read CSV data with special commenting, quoting, trimming, line-skipping & non-UTF8 encoding handling rules. Typically used to "normalize" a CSV for further processing with other qsv commands. |
@@ -109,7 +110,8 @@
 🔣: requires UTF-8 encoded input.  
 👆: has powerful column selector support. See [`select`](https://github.com/dathere/qsv/blob/master/src/cmd/select.rs#L2) for syntax.  
 🪄: "automagical" commands that uses stats and/or frequency tables to work "smarter" & "faster".  
-📚: has lookup table support, enabling runtime "lookups" against local or remote reference CSVs.
+📚: has lookup table support, enabling runtime "lookups" against local or remote reference CSVs.  
+🌎: has geospatial capabilities.
 
 [^1]: see [`validate_index` benchmark](https://qsv.dathere.com/benchmarks)
 
@@ -512,7 +514,7 @@ Dual-licensed under MIT or the [UNLICENSE](https://unlicense.org).
 
 ## Origins
 
-qsv is a fork of the popular [xsv](https://github.com/BurntSushi/xsv) utility, merging several pending PRs [since xsv 0.13.0's May 2018 release](https://github.com/BurntSushi/xsv/issues/267). On top of xsv's 20 commands, it adds numerous new features; 44 additional commands; 4 `apply` subcommands & 38 operations; 4 `to` subcommands; 3 `cat` subcommands; 7 `geocode` subcommands & 4 index operations; and 4 `snappy` subcommands.
+qsv is a fork of the popular [xsv](https://github.com/BurntSushi/xsv) utility, merging several pending PRs [since xsv 0.13.0's May 2018 release](https://github.com/BurntSushi/xsv/issues/267). On top of xsv's 20 commands, it adds numerous new features; 45 additional commands; 4 `apply` subcommands & 38 operations; 4 `to` subcommands; 3 `cat` subcommands; 7 `geocode` subcommands & 4 index operations; and 4 `snappy` subcommands.
 See [FAQ](https://github.com/dathere/qsv/discussions/categories/faq) for more details.
 
 ## Sponsor
