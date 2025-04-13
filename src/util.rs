@@ -20,7 +20,6 @@ use csv::ByteRecord;
 use docopt::Docopt;
 use filetime::FileTime;
 use human_panic::setup_panic;
-#[cfg(any(feature = "feature_capable", feature = "lite"))]
 use indicatif::{HumanCount, ProgressBar, ProgressDrawTarget, ProgressStyle};
 use log::{info, log_enabled};
 #[cfg(feature = "polars")]
@@ -583,7 +582,6 @@ pub fn count_lines_in_file(file: &str) -> Result<u64, CliError> {
     Ok(line_count)
 }
 
-#[cfg(any(feature = "feature_capable", feature = "lite"))]
 pub fn prep_progress(progress: &ProgressBar, record_count: u64) {
     progress.set_style(
         ProgressStyle::default_bar()
@@ -598,7 +596,6 @@ pub fn prep_progress(progress: &ProgressBar, record_count: u64) {
     log::info!("Progress started... {record_count} records");
 }
 
-#[cfg(any(feature = "feature_capable", feature = "lite"))]
 pub fn finish_progress(progress: &ProgressBar) {
     progress.set_style(
         ProgressStyle::default_bar()

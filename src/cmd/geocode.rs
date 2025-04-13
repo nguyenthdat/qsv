@@ -732,7 +732,11 @@ async fn geocode_main(args: Args) -> CliResult<()> {
         .delimiter(args.flag_delimiter)
         .select(SelectColumns::parse(&args.arg_column)?);
 
+    #[cfg(feature = "datapusher_plus")]
+    let show_progress = false;
+
     // prep progress bar
+    #[cfg(any(feature = "feature_capable", feature = "lite"))]
     let show_progress =
         (args.flag_progressbar || util::get_envvar_flag("QSV_PROGRESSBAR")) && !rconfig.is_stdin();
 
