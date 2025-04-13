@@ -1487,3 +1487,43 @@ fn geocode_countryinfonow_formatstr_pretty_json() {
 }"######;
     similar_asserts::assert_eq!(got, expected);
 }
+
+#[test]
+fn geoconvert_geojson_to_csv() {
+    let wrk = Workdir::new("geoconvert_geojson_to_csv");
+    let txcities_geojson = wrk.load_test_file("TX_Cities.geojson");
+    let txcities_csv = wrk.path("TX_cities.csv").to_string_lossy().to_string();
+
+    let mut cmd = wrk.command("geoconvert");
+    cmd.arg(txcities_geojson)
+        .arg("geojson")
+        .arg("csv")
+        .args(["--output", &txcities_csv]);
+
+    wrk.assert_success(&mut cmd);
+
+    let txcities_csv_first5 = wrk
+        .path("TX_cities-first5.csv")
+        .to_string_lossy()
+        .to_string();
+
+    let mut cmd = wrk.command("slice");
+    cmd.arg(txcities_csv)
+        .args(["--len", "5"])
+        .args(["--output", &txcities_csv_first5]);
+
+    wrk.assert_success(&mut cmd);
+
+    let mut cmd = wrk.command("select");
+    cmd.args(&["name,Shape_Length,Shape_Area"])
+        .arg(&txcities_csv_first5);
+
+    let got: String = wrk.stdout(&mut cmd);
+    let expected = r#"name,Shape_Length,Shape_Area
+Abbott,0,0
+Abernathy,0,0
+Abilene,0,0
+Ackerly,0,0
+Addison,0,0"#;
+    similar_asserts::assert_eq!(got, expected);
+}
