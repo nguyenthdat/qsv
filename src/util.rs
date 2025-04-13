@@ -2768,7 +2768,7 @@ pub fn convert_special_format(
     });
 
     // Create temp file with appropriate extension
-    let temp_file = tempfile::Builder::new()
+    let mut temp_file = tempfile::Builder::new()
         .suffix(extension)
         .tempfile_in(temp_dir)?;
 
@@ -2784,6 +2784,7 @@ pub fn convert_special_format(
         .with_separator(delim)
         .with_float_precision(*precision)
         .finish(&mut df)?;
+    temp_file.flush()?;
 
     let path = temp_file.path().to_path_buf();
     temp_file.keep()?; // Prevent auto-deletion
