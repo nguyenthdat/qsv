@@ -1,10 +1,11 @@
-#[cfg(feature = "polars")]
-use std::sync::OnceLock;
 use std::{
     env, fs,
     io::{self, Read},
     path::{Path, PathBuf},
-    sync::atomic::{AtomicBool, Ordering},
+    sync::{
+        OnceLock,
+        atomic::{AtomicBool, Ordering},
+    },
 };
 
 use log::{debug, info, warn};
@@ -36,7 +37,6 @@ pub static SPONSOR_MESSAGE: &str = r#"sponsored by datHere - Data Infrastructure
 Need a UI & more advanced data-wrangling? Upgrade to qsv pro (https://qsvpro.datHere.com)
 "#;
 
-#[cfg(feature = "polars")]
 pub static TEMP_FILE_DIR: OnceLock<PathBuf> = OnceLock::new();
 
 #[cfg(feature = "polars")]

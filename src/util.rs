@@ -4,6 +4,8 @@ use std::borrow::Cow;
 use std::fmt::Write as _;
 #[cfg(target_family = "unix")]
 use std::os::unix::process::ExitStatusExt;
+#[cfg(feature = "polars")]
+use std::sync::Arc;
 use std::{
     cmp::min,
     collections::HashMap,
@@ -12,7 +14,7 @@ use std::{
     io::{BufRead, BufReader, BufWriter, Read, Write},
     path::{Path, PathBuf},
     str,
-    sync::{Arc, OnceLock},
+    sync::OnceLock,
     time::SystemTime,
 };
 
