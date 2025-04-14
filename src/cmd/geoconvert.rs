@@ -162,24 +162,33 @@ pub fn run(argv: &[&str]) -> CliResult<()> {
         //     };
         // },
         InputFormat::Shp => {
-            let reader = geozero::shp::ShpReader::from_path(&input_path)
-                .map_err(|e| CliError::Other(format!("Failed to read SHP file: {e}")))?;
+            let mut reader = geozero::shp::ShpReader::new(&mut buf_reader)?;
+            let mut input_reader = BufReader::new(File::open(input_path.replace(".shp", ".shx"))?);
+            let mut dbf_reader = BufReader::new(File::open(input_path.replace(".shp", ".dbf"))?);
+            reader.add_index_source(&mut input_reader)?;
+            reader.add_dbf_source(&mut dbf_reader)?;
             let output_string = match args.arg_output_format {
                 OutputFormat::Geojson => {
                     let mut json: Vec<u8> = Vec::new();
-                    reader.iter_features(&mut GeoJsonWriter::new(&mut json))?;
+                    let _ = reader
+                        .iter_features(&mut GeoJsonWriter::new(&mut json))?
+                        .collect::<Vec<_>>();
                     String::from_utf8(json)
                         .map_err(|e| CliError::Other(format!("Invalid UTF-8 in output: {e}")))?
                 },
                 OutputFormat::Geojsonl => {
                     let mut json: Vec<u8> = Vec::new();
-                    reader.iter_features(&mut GeoJsonLineWriter::new(&mut json))?;
+                    let _ = reader
+                        .iter_features(&mut GeoJsonLineWriter::new(&mut json))?
+                        .collect::<Vec<_>>();
                     String::from_utf8(json)
                         .map_err(|e| CliError::Other(format!("Invalid UTF-8 in output: {e}")))?
                 },
                 OutputFormat::Csv => {
                     let mut csv: Vec<u8> = Vec::new();
-                    reader.iter_features(&mut CsvWriter::new(&mut csv))?;
+                    let _ = reader
+                        .iter_features(&mut CsvWriter::new(&mut csv))?
+                        .collect::<Vec<_>>();
                     String::from_utf8(csv)
                         .map_err(|e| CliError::Other(format!("Invalid UTF-8 in output: {e}")))?
                 },
