@@ -5,29 +5,43 @@ For example to convert a GeoJSON file into CSV data:
 
 qsv geoconvert file.geojson geojson csv
 
+To convert a CSV file into GeoJSON data, specify the WKT geometry column with the --geometry flag:
+
+qsv geoconvert file.csv csv geojson --geometry geometry
+
 Usage:
     qsv geoconvert [options] (<input>) (<input-format>) (<output-format>)
     qsv geoconvert --help
 
 geoconvert REQUIRED arguments:
     <input>           The spatial file to convert. Does not support stdin.
-    <input-format>    Valid values are "geojson" and "shp"
+    <input-format>    Valid values are "geojson", "shp", and "csv"
     <output-format>   Valid values are:
-                      - For GeoJSON input: "csv" and "svg"
-                      - For SHP input: "csv" and "geojson"
+                      - For GeoJSON input: "csv", "svg", and "geojsonl"
+                      - For SHP input: "csv", "geojson", and "geojsonl"
+                      - For CSV input: "geojson", "geojsonl", and "svg"
+
+geoconvert options:
+                                 REQUIRED FOR CSV INPUT:
+    -g, --geometry <geometry>    The name of the column that has WKT geometry.
 
 Common options:
-    -h, --help             Display this message
-    -o, --output <file>    Write output to <file> instead of stdout.
+    -h, --help                   Display this message
+    -o, --output <file>          Write output to <file> instead of stdout.
 "#;
 
 use std::{
     fs::File,
-    io::{self, BufWriter, Write},
+    io::{self, BufReader, BufWriter, Write},
     path::Path,
 };
 
-use geozero::{ProcessToCsv, ProcessToSvg, csv::CsvWriter, geojson::GeoJsonWriter};
+use geozero::{
+    GeozeroDatasource,
+    csv::CsvWriter,
+    geojson::{GeoJsonLineWriter, GeoJsonWriter},
+    svg::SvgWriter,
+};
 use serde::Deserialize;
 
 use crate::{CliError, CliResult, util};
@@ -37,7 +51,9 @@ use crate::{CliError, CliResult, util};
 #[serde(rename_all = "lowercase")]
 enum InputFormat {
     Geojson,
+    // Geojsonl,
     Shp,
+    Csv,
 }
 
 /// Supported output formats for spatial data conversion
@@ -47,6 +63,7 @@ enum OutputFormat {
     Csv,
     Svg,
     Geojson,
+    Geojsonl,
 }
 
 #[derive(Deserialize)]
@@ -54,6 +71,7 @@ struct Args {
     arg_input:         Option<String>,
     arg_input_format:  InputFormat,
     arg_output_format: OutputFormat,
+    flag_geometry:     Option<String>,
     flag_output:       Option<String>,
 }
 
@@ -93,27 +111,62 @@ pub fn run(argv: &[&str]) -> CliResult<()> {
     } else {
         Box::new(BufWriter::new(stdout.lock()))
     };
-
+    let mut buf_reader = BufReader::new(File::open(&input_path)?);
     // Construct a spatial geometry based on the input format
-    let output_string = match args.arg_input_format {
+    match args.arg_input_format {
         InputFormat::Geojson => {
-            let input_string = std::fs::read_to_string(&input_path)?;
-            let mut geometry = geozero::geojson::GeoJson(&input_string);
+            let mut geometry = geozero::geojson::GeoJsonReader(&mut buf_reader);
             match args.arg_output_format {
-                OutputFormat::Csv => geometry.to_csv()?,
-                OutputFormat::Svg => geometry.to_svg()?,
+                OutputFormat::Csv => {
+                    let mut processor = CsvWriter::new(&mut wtr);
+                    geometry.process(&mut processor)?
+                },
+                OutputFormat::Svg => {
+                    let mut processor = SvgWriter::new(&mut wtr, false);
+                    geometry.process(&mut processor)?
+                },
+                OutputFormat::Geojsonl => {
+                    let mut processor = GeoJsonLineWriter::new(&mut wtr);
+                    geometry.process(&mut processor)?
+                },
                 OutputFormat::Geojson => {
                     return fail_clierror!("Converting GeoJSON to GeoJSON is not supported");
                 },
-            }
+            };
         },
+        // InputFormat::Geojsonl => {
+        //     let mut geometry = geozero::geojson::GeoJsonLineReader::new(&mut buf_reader);
+        //     match args.arg_output_format {
+        //         OutputFormat::Csv => {
+        //             let mut processor = CsvWriter::new(&mut wtr);
+        //             geometry.process(&mut processor)?
+        //         },
+        //         OutputFormat::Svg => {
+        //             let mut processor = SvgWriter::new(&mut wtr, false);
+        //             geometry.process(&mut processor)?
+        //         },
+        //         OutputFormat::Geojson => {
+        //             let mut processor = GeoJsonWriter::new(&mut wtr);
+        //             geometry.process(&mut processor)?
+        //         },
+        //         OutputFormat::Geojsonl => {
+        //             return fail_clierror!("Converting GeoJSON Lines to GeoJSON Lines is not
+        // supported");         }
+        //     };
+        // },
         InputFormat::Shp => {
             let reader = geozero::shp::ShpReader::from_path(&input_path)
                 .map_err(|e| CliError::Other(format!("Failed to read SHP file: {e}")))?;
-            match args.arg_output_format {
+            let output_string = match args.arg_output_format {
                 OutputFormat::Geojson => {
                     let mut json: Vec<u8> = Vec::new();
                     reader.iter_features(&mut GeoJsonWriter::new(&mut json))?;
+                    String::from_utf8(json)
+                        .map_err(|e| CliError::Other(format!("Invalid UTF-8 in output: {e}")))?
+                },
+                OutputFormat::Geojsonl => {
+                    let mut json: Vec<u8> = Vec::new();
+                    reader.iter_features(&mut GeoJsonLineWriter::new(&mut json))?;
                     String::from_utf8(json)
                         .map_err(|e| CliError::Other(format!("Invalid UTF-8 in output: {e}")))?
                 },
@@ -126,10 +179,38 @@ pub fn run(argv: &[&str]) -> CliResult<()> {
                 OutputFormat::Svg => {
                     return fail_clierror!("Converting SHP to SVG is not supported");
                 },
+            };
+            wtr.write_all(output_string.as_bytes())?;
+        },
+        InputFormat::Csv => {
+            let input_string = std::fs::read_to_string(&input_path)?;
+            if let Some(geometry_col) = args.flag_geometry {
+                let mut csv = geozero::csv::Csv::new(&geometry_col, input_string.as_str());
+                match args.arg_output_format {
+                    OutputFormat::Geojson => {
+                        let mut processor = GeoJsonWriter::new(&mut wtr);
+                        csv.process(&mut processor)?;
+                    },
+                    OutputFormat::Geojsonl => {
+                        let mut processor = GeoJsonLineWriter::new(&mut wtr);
+                        csv.process(&mut processor)?
+                    },
+                    OutputFormat::Svg => {
+                        let mut processor = SvgWriter::new(&mut wtr, false);
+                        csv.process(&mut processor)?;
+                    },
+                    OutputFormat::Csv => {
+                        return fail_clierror!("Converting CSV to CSV is not supported");
+                    },
+                };
+            } else {
+                return fail_clierror!(
+                    "Please specify a geometry column with the --geometry option"
+                );
             }
         },
     };
 
-    wtr.write_all(output_string.as_bytes())?;
+    // wtr.write_all(output_string.as_bytes())?;
     Ok(wtr.flush()?)
 }
