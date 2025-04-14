@@ -164,8 +164,8 @@ sqlp arguments:
                            Column headers are required. Use 'qsv rename _all_generic --no-headers'
                            to add generic column names (_col_N) to a CSV with no headers.
                            If you are using Polars SQL's table functions like read_csv() & read_parquet()
-                           to read input files directly, you can use the special value 'SKIP_INPUT'
-                           to skip input preprocessing.
+                           to read input files directly in the SQL statement, you can use the sentinel value
+                           'SKIP_INPUT' to skip input preprocessing.
 
     sql                    The SQL query/ies to run. Each input file will be available as a table
                            named after the file name (without the extension), or as "_t_N"
