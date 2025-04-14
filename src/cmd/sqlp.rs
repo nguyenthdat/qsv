@@ -797,9 +797,10 @@ pub fn run(argv: &[&str]) -> CliResult<()> {
 
                 let schema_file = table.canonicalize()?.with_extension("pschema.json");
 
-                //  check if the pschema.json file exists and is newer than the table file
+                // check if the pschema.json file exists and is newer or created at the same time
+                // as the table file
                 let mut valid_schema_exists = schema_file.exists()
-                    && schema_file.metadata()?.modified()? > table.metadata()?.modified()?;
+                    && schema_file.metadata()?.modified()? >= table.metadata()?.modified()?;
 
                 if !valid_schema_exists {
                     // we don't have a valid pschema.json file,
