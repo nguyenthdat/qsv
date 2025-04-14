@@ -112,6 +112,13 @@ pub fn run(argv: &[&str]) -> CliResult<()> {
         Box::new(BufWriter::new(stdout.lock()))
     };
     let mut buf_reader = BufReader::new(File::open(&input_path)?);
+    // let mut buf_reader = if let Some(input_path) = args.arg_input {
+    //     if input_path == "-"  {
+    //         BufReader::new(std::io::stdin())
+    //     }
+    // } else {
+    //     BufReader::new(std::io::stdin())
+    // };
     // Construct a spatial geometry based on the input format
     match args.arg_input_format {
         InputFormat::Geojson => {
@@ -183,9 +190,8 @@ pub fn run(argv: &[&str]) -> CliResult<()> {
             wtr.write_all(output_string.as_bytes())?;
         },
         InputFormat::Csv => {
-            let input_string = std::fs::read_to_string(&input_path)?;
             if let Some(geometry_col) = args.flag_geometry {
-                let mut csv = geozero::csv::Csv::new(&geometry_col, input_string.as_str());
+                let mut csv = geozero::csv::CsvReader::new(&geometry_col, buf_reader);
                 match args.arg_output_format {
                     OutputFormat::Geojson => {
                         let mut processor = GeoJsonWriter::new(&mut wtr);
