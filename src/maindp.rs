@@ -62,14 +62,14 @@ static COMMAND_LIST: &str = r#"
     exclude     Excludes the records in one CSV from another
     extdedup    Remove duplicates rows from an arbitrarily large text file
     frequency   Show frequency tables
-    geocode     Geocodes a location against the Geonames cities database 🌎
-    geoconvert  Convert between spatial formats & CSV, including GeoJSON, SHP & more 🌎mess
+    geocode     Geocodes a location against the Geonames cities database
+    geoconvert  Convert between spatial formats & CSV, including GeoJSON, SHP & more
     headers     Show header names
     help        Show this usage message
     index       Create CSV index for faster access
     input       Read CSVs w/ special quoting, skipping, trimming & transcoding rules
     joinp       Join CSV files using the Pola.rs engine 🐻‍❄️
-    luau        Execute Luau script on CSV data 🍍
+    luau        Execute Luau script on CSV data
     pivotp      Pivot CSV data 🐻‍❄️
     pseudo      Pseudonymise the values of a column
     rename      Rename the columns of CSV data efficiently
@@ -91,8 +91,6 @@ static COMMAND_LIST: &str = r#"
     validate    Validate CSV data for RFC4180-compliance or with JSON Schema
 
     NOTE: qsvdp ignores the --progressbar option for all commands.
-          🌎 - requires geocode feature
-          🍍 - requires luau feature
           🐻‍❄️ - requires polars feature"#;
 
 mod clitypes;
@@ -257,9 +255,7 @@ enum Command {
     Exclude,
     ExtDedup,
     Frequency,
-    #[cfg(feature = "geocode")]
     Geocode,
-    #[cfg(feature = "geocode")]
     Geoconvert,
     Headers,
     Help,
@@ -267,7 +263,6 @@ enum Command {
     Input,
     #[cfg(feature = "polars")]
     JoinP,
-    #[cfg(feature = "luau")]
     Luau,
     #[cfg(feature = "polars")]
     PivotP,
@@ -317,9 +312,7 @@ impl Command {
             Command::Exclude => cmd::exclude::run(argv),
             Command::ExtDedup => cmd::extdedup::run(argv),
             Command::Frequency => cmd::frequency::run(argv),
-            #[cfg(feature = "geocode")]
             Command::Geocode => cmd::geocode::run(argv),
-            #[cfg(feature = "geocode")]
             Command::Geoconvert => cmd::geoconvert::run(argv),
             Command::Headers => cmd::headers::run(argv),
             Command::Help => {
@@ -331,7 +324,6 @@ impl Command {
             Command::Input => cmd::input::run(argv),
             #[cfg(feature = "polars")]
             Command::JoinP => cmd::joinp::run(argv),
-            #[cfg(feature = "luau")]
             Command::Luau => cmd::luau::run(argv),
             #[cfg(feature = "polars")]
             Command::PivotP => cmd::pivotp::run(argv),
