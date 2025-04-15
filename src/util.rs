@@ -2742,23 +2742,39 @@ pub fn convert_special_format(
                 .with_options(if let Some(schema) = schema {
                     base_options.clone().with_schema(Some(schema))
                 } else {
-                    base_options.clone().with_infer_schema_length(Some(1000))
+                    // no schema, try to infer it with 1,000 rows
+                    base_options.clone().with_infer_schema_length(Some(1_000))
                 });
 
-            match reader.finish() {
-                Ok(df) => df,
-                Err(e) => {
-                    // Try again without schema if first attempt failed
-                    wwarn!(
-                        "Falling back to reading file \"{}\" without a schema. Schema parsing \
-                         error: {e}",
-                        path.display()
+            if let Ok(df) = reader.finish() {
+                df
+            } else {
+                // Got an error. Try again with a larger infer schema length of 10,000 rows
+                log::warn!(
+                    "Falling back to reading file \"{}\" without a schema. Second try with an \
+                     infer schema length of 10,000 rows.",
+                    path.display()
+                );
+
+                let reader_2ndtry = CsvReadOptions::default()
+                    .try_into_reader_with_file_path(Some(path.to_path_buf()))?
+                    .with_options(base_options.clone().with_infer_schema_length(Some(10_000)));
+
+                if let Ok(df) = reader_2ndtry.finish() {
+                    df
+                } else {
+                    log::warn!(
+                        "Still failing to read file. Third try and now scanning the whole file to \
+                         infer schema."
                     );
-                    CsvReadOptions::default()
+
+                    // Try one last time without an infer schema length, scanning the whole file
+                    let reader_3rdtry = CsvReadOptions::default()
                         .try_into_reader_with_file_path(Some(path.to_path_buf()))?
-                        .with_options(base_options.with_infer_schema_length(Some(1000)))
-                        .finish()?
-                },
+                        .with_options(base_options.with_infer_schema_length(None));
+
+                    reader_3rdtry.finish()?
+                }
             }
         },
         SpecialFormat::Unknown => return Err("Unknown format".into()),
