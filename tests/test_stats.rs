@@ -615,8 +615,8 @@ fn stats_prefer_dmy() {
     let mut cmd = wrk.command("stats");
     cmd.arg("--infer-dates")
         .arg("--prefer-dmy")
-        .arg(&"--dataset-stats")
-        .args(&["--dates-whitelist", "_dT"])
+        .arg("--dataset-stats")
+        .args(["--dates-whitelist", "_dT"])
         .arg(test_file);
 
     let got: Vec<Vec<String>> = wrk.read_stdout(&mut cmd);
@@ -642,8 +642,8 @@ fn stats_prefer_mdy() {
 
     let mut cmd = wrk.command("stats");
     cmd.arg("--infer-dates")
-        .arg(&"--dataset-stats")
-        .args(&["--dates-whitelist", "_dt"])
+        .arg("--dataset-stats")
+        .args(["--dates-whitelist", "_dt"])
         .arg(test_file);
 
     let got: Vec<Vec<String>> = wrk.read_stdout(&mut cmd);
@@ -744,8 +744,8 @@ fn stats_with_date_inference() {
     cmd.arg("--everything")
         .arg(test_file)
         .arg("--infer-dates")
-        .arg(&"--dataset-stats")
-        .args(&["--dates-whitelist", "all"]);
+        .arg("--dataset-stats")
+        .args(["--dates-whitelist", "all"]);
 
     let got: Vec<Vec<String>> = wrk.read_stdout(&mut cmd);
 
@@ -799,8 +799,8 @@ fn stats_with_date_inference_variance_stddev() {
     cmd.arg("--everything")
         .arg(test_file)
         .arg("--infer-dates")
-        .args(&["--dates-whitelist", "all"])
-        .arg(&"--dataset-stats");
+        .args(["--dates-whitelist", "all"])
+        .arg("--dataset-stats");
 
     wrk.assert_success(&mut cmd);
 
@@ -824,8 +824,8 @@ fn stats_with_date_type() {
     cmd.arg("--everything")
         .arg(test_file)
         .arg("--infer-dates")
-        .args(&["--dates-whitelist", "all"])
-        .arg(&"--dataset-stats");
+        .args(["--dates-whitelist", "all"])
+        .arg("--dataset-stats");
 
     let got: Vec<Vec<String>> = wrk.read_stdout(&mut cmd);
 
@@ -849,7 +849,7 @@ fn stats_typesonly() {
     let test_file = wrk.load_test_file("boston311-100.csv");
 
     let mut cmd = wrk.command("stats");
-    cmd.args(&["--typesonly", "--dataset-stats"]).arg(test_file);
+    cmd.args(["--typesonly", "--dataset-stats"]).arg(test_file);
 
     let got: String = wrk.stdout(&mut cmd);
 
@@ -864,9 +864,9 @@ fn stats_typesonly_with_dates() {
     let test_file = wrk.load_test_file("boston311-100.csv");
 
     let mut cmd = wrk.command("stats");
-    cmd.args(&["--typesonly", "--dataset-stats"])
+    cmd.args(["--typesonly", "--dataset-stats"])
         .arg("--infer-dates")
-        .args(&["--dates-whitelist", "all"])
+        .args(["--dates-whitelist", "all"])
         .arg(test_file);
 
     let got: String = wrk.stdout(&mut cmd);
@@ -884,9 +884,9 @@ fn stats_typesonly_cache_threshold_zero() {
     let test_file = wrk.load_test_file("boston311-100.csv");
 
     let mut cmd = wrk.command("stats");
-    cmd.args(&["--typesonly", "--dataset-stats"])
+    cmd.args(["--typesonly", "--dataset-stats"])
         .arg("--infer-dates")
-        .args(&["--dates-whitelist", "all"])
+        .args(["--dates-whitelist", "all"])
         .args(&["--cache-threshold", "0"])
         .arg(test_file);
 
@@ -907,9 +907,9 @@ fn stats_typesonly_cache() {
     let test_file = wrk.load_test_file("boston311-100.csv");
 
     let mut cmd = wrk.command("stats");
-    cmd.args(&["--typesonly", "--dataset-stats"])
+    cmd.args(["--typesonly", "--dataset-stats"])
         .arg("--infer-dates")
-        .args(&["--dates-whitelist", "all"])
+        .args(["--dates-whitelist", "all"])
         .arg(test_file);
 
     let got: String = wrk.stdout(&mut cmd);
@@ -928,8 +928,8 @@ fn stats_cache() {
 
     let mut cmd = wrk.command("stats");
     cmd.arg("--infer-dates")
-        .args(&["--dates-whitelist", "all"])
-        .arg(&"--dataset-stats")
+        .args(["--dates-whitelist", "all"])
+        .arg("--dataset-stats")
         // set cache threshold to 1 to force cache creation
         .args(&["--cache-threshold", "1"])
         .arg(test_file);
@@ -1001,8 +1001,8 @@ fn stats_cache_negative_threshold_unmet() {
 
     let mut cmd = wrk.command("stats");
     cmd.arg("--infer-dates")
-        .args(&["--dates-whitelist", "all"])
-        .arg(&"--dataset-stats")
+        .args(["--dates-whitelist", "all"])
+        .arg("--dataset-stats")
         // set cache threshold to -51200 to set autoindex_size to 50 kb
         // and to force cache creation
         .args(&["--cache-threshold", "-51200"])
@@ -1095,7 +1095,7 @@ fn stats_infer_boolean_1_0() {
 
     let mut cmd = wrk.command("stats");
     cmd.arg("--infer-boolean")
-        .arg(&"--dataset-stats")
+        .arg("--dataset-stats")
         .arg(test_file);
 
     let got: String = wrk.stdout(&mut cmd);
@@ -1112,7 +1112,7 @@ fn stats_infer_boolean_t_f() {
 
     let mut cmd = wrk.command("stats");
     cmd.arg("--infer-boolean")
-        .arg(&"--dataset-stats")
+        .arg("--dataset-stats")
         .arg(test_file);
 
     let got: String = wrk.stdout(&mut cmd);
@@ -1131,7 +1131,7 @@ fn stats_infer_boolean_true_false() {
     cmd.arg("--infer-boolean")
         .arg("--boolean-patterns")
         .arg("true:false")
-        .arg(&"--dataset-stats")
+        .arg("--dataset-stats")
         .arg(test_file);
 
     let got: String = wrk.stdout(&mut cmd);
@@ -1150,7 +1150,7 @@ fn stats_infer_boolean_true_false_error() {
     cmd.arg("--infer-boolean")
         .arg("--boolean-patterns")
         .arg("true:falsy")
-        .arg(&"--dataset-stats")
+        .arg("--dataset-stats")
         .arg(test_file);
 
     let got: String = wrk.stdout(&mut cmd);
@@ -1169,7 +1169,7 @@ fn stats_infer_boolean_true_false_error_pattern_mismatch() {
     cmd.arg("--infer-boolean")
         .arg("--boolean-patterns")
         .arg("true:no")
-        .arg(&"--dataset-stats")
+        .arg("--dataset-stats")
         .arg(test_file);
 
     let got: String = wrk.stdout(&mut cmd);
@@ -1187,7 +1187,7 @@ fn stats_typesonly_infer_boolean_t_f() {
     let mut cmd = wrk.command("stats");
     cmd.arg("--typesonly")
         .arg("--infer-boolean")
-        .arg(&"--dataset-stats")
+        .arg("--dataset-stats")
         .arg(test_file);
 
     let got: String = wrk.stdout(&mut cmd);
@@ -1206,7 +1206,7 @@ fn stats_infer_boolean_invalid_pattern() {
     cmd.arg("--infer-boolean")
         .arg("--boolean-patterns")
         .arg(":false,yep:,1:0")
-        .arg(&"--dataset-stats")
+        .arg("--dataset-stats")
         .arg(test_file);
 
     wrk.assert_err(&mut cmd);
@@ -1217,7 +1217,7 @@ fn stats_is_ascii() {
     let wrk = Workdir::new("stats_is_ascii");
     let test_file = wrk.load_test_file("boston311-100-with-nonascii.csv");
     let mut cmd = wrk.command("stats");
-    cmd.arg(test_file).arg(&"--dataset-stats").arg("--force");
+    cmd.arg(test_file).arg("--dataset-stats").arg("--force");
 
     let got: Vec<Vec<String>> = wrk.read_stdout(&mut cmd);
 
@@ -1271,7 +1271,7 @@ fn stats_leading_zero_handling() {
 
     let mut cmd = wrk.command("stats");
     cmd.arg("--typesonly")
-        .arg(&"--dataset-stats")
+        .arg("--dataset-stats")
         .arg("data.csv");
 
     let got: Vec<Vec<String>> = wrk.read_stdout(&mut cmd);
@@ -1309,7 +1309,7 @@ fn stats_zero_cv() {
     );
 
     let mut cmd = wrk.command("stats");
-    cmd.arg("data.csv").arg(&"--dataset-stats");
+    cmd.arg("data.csv").arg("--dataset-stats");
 
     let got: Vec<Vec<String>> = wrk.read_stdout(&mut cmd);
     let expected = vec![
@@ -1575,7 +1575,7 @@ fn stats_output_tab_delimited() {
     let mut cmd = wrk.command("stats");
     cmd.arg("data.csv")
         .args(&["--output", &out_file])
-        .arg(&"--dataset-stats");
+        .arg("--dataset-stats");
 
     wrk.assert_success(&mut cmd);
 
@@ -1613,7 +1613,7 @@ fn stats_output_ssv_delimited() {
     let mut cmd = wrk.command("stats");
     cmd.arg("data.csv")
         .args(&["--output", &out_file])
-        .arg(&"--dataset-stats");
+        .arg("--dataset-stats");
 
     wrk.assert_success(&mut cmd);
 
@@ -1651,7 +1651,7 @@ fn stats_output_csvsz_delimited() {
     let mut cmd = wrk.command("stats");
     cmd.arg("data.csv")
         .args(&["--output", &out_file])
-        .arg(&"--dataset-stats");
+        .arg("--dataset-stats");
 
     wrk.assert_success(&mut cmd);
 
@@ -1739,7 +1739,7 @@ fn stats_vis_whitespace() {
     let mut cmd = wrk.command("stats");
     cmd.arg("--vis-whitespace")
         .arg("--everything")
-        .arg(&"--dataset-stats")
+        .arg("--dataset-stats")
         .arg("data.csv");
 
     let got: Vec<Vec<String>> = wrk.read_stdout(&mut cmd);
@@ -2482,7 +2482,7 @@ fn stats_infer_boolean_prefix_pattern() {
     cmd.arg("--infer-boolean")
         .arg("--boolean-patterns")
         .arg("t*:f*")
-        .arg(&"--dataset-stats")
+        .arg("--dataset-stats")
         .arg(test_file);
 
     let got: String = wrk.stdout(&mut cmd);
@@ -2501,7 +2501,7 @@ fn stats_infer_boolean_multiple_patterns() {
     cmd.arg("--infer-boolean")
         .arg("--boolean-patterns")
         .arg("true:false,t*:f*,y*:n*")
-        .arg(&"--dataset-stats")
+        .arg("--dataset-stats")
         .arg(test_file);
 
     let got: String = wrk.stdout(&mut cmd);
@@ -2520,7 +2520,7 @@ fn stats_infer_boolean_case_insensitive() {
     cmd.arg("--infer-boolean")
         .arg("--boolean-patterns")
         .arg("TRUE:FALSE")
-        .arg(&"--dataset-stats")
+        .arg("--dataset-stats")
         .arg(test_file);
 
     let got: String = wrk.stdout(&mut cmd);
@@ -2550,7 +2550,7 @@ fn stats_infer_boolean_long_patterns() {
     cmd.arg("--infer-boolean")
         .arg("--boolean-patterns")
         .arg("truthy:falsy")
-        .arg(&"--dataset-stats")
+        .arg("--dataset-stats")
         .arg("data.csv");
 
     let got: String = wrk.stdout(&mut cmd);
@@ -2597,7 +2597,7 @@ fn stats_infer_boolean_empty_pattern() {
     cmd.arg("--infer-boolean")
         .arg("--boolean-patterns")
         .arg("")
-        .arg(&"--dataset-stats")
+        .arg("--dataset-stats")
         .arg(test_file);
 
     // This should fail with an error
@@ -2613,7 +2613,7 @@ fn stats_infer_boolean_missing_colon() {
     cmd.arg("--infer-boolean")
         .arg("--boolean-patterns")
         .arg("truefalse")
-        .arg(&"--dataset-stats")
+        .arg("--dataset-stats")
         .arg(test_file);
 
     // This should fail with an error
@@ -2629,7 +2629,7 @@ fn stats_infer_boolean_missing_true_pattern() {
     cmd.arg("--infer-boolean")
         .arg("--boolean-patterns")
         .arg(":false")
-        .arg(&"--dataset-stats")
+        .arg("--dataset-stats")
         .arg(test_file);
 
     // This should fail with an error
@@ -2645,7 +2645,7 @@ fn stats_infer_boolean_missing_false_pattern() {
     cmd.arg("--infer-boolean")
         .arg("--boolean-patterns")
         .arg("true:")
-        .arg(&"--dataset-stats")
+        .arg("--dataset-stats")
         .arg(test_file);
 
     // This should fail with an error

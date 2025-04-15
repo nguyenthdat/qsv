@@ -2268,5 +2268,5 @@ fn test_dyn_enum_validator() {
         _ => {
             unreachable!("Expected an error, but validation succeeded.");
         },
-    };
+    }
 }

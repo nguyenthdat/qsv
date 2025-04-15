@@ -126,20 +126,20 @@ pub fn run(argv: &[&str]) -> CliResult<()> {
             match args.arg_output_format {
                 OutputFormat::Csv => {
                     let mut processor = CsvWriter::new(&mut wtr);
-                    geometry.process(&mut processor)?
+                    geometry.process(&mut processor)?;
                 },
                 OutputFormat::Svg => {
                     let mut processor = SvgWriter::new(&mut wtr, false);
-                    geometry.process(&mut processor)?
+                    geometry.process(&mut processor)?;
                 },
                 OutputFormat::Geojsonl => {
                     let mut processor = GeoJsonLineWriter::new(&mut wtr);
-                    geometry.process(&mut processor)?
+                    geometry.process(&mut processor)?;
                 },
                 OutputFormat::Geojson => {
                     return fail_clierror!("Converting GeoJSON to GeoJSON is not supported");
                 },
-            };
+            }
         },
         // InputFormat::Geojsonl => {
         //     let mut geometry = geozero::geojson::GeoJsonLineReader::new(&mut buf_reader);
@@ -208,7 +208,7 @@ pub fn run(argv: &[&str]) -> CliResult<()> {
                     },
                     OutputFormat::Geojsonl => {
                         let mut processor = GeoJsonLineWriter::new(&mut wtr);
-                        csv.process(&mut processor)?
+                        csv.process(&mut processor)?;
                     },
                     OutputFormat::Svg => {
                         let mut processor = SvgWriter::new(&mut wtr, false);
@@ -217,14 +217,14 @@ pub fn run(argv: &[&str]) -> CliResult<()> {
                     OutputFormat::Csv => {
                         return fail_clierror!("Converting CSV to CSV is not supported");
                     },
-                };
+                }
             } else {
                 return fail_clierror!(
                     "Please specify a geometry column with the --geometry option"
                 );
             }
         },
-    };
+    }
 
     // wtr.write_all(output_string.as_bytes())?;
     Ok(wtr.flush()?)
