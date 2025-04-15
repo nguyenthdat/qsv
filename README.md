@@ -224,6 +224,8 @@ To install different [variants](#variants) and enable optional features, use car
 cargo install qsv --locked --bin qsv --features feature_capable,apply,fetch,foreach,geocode,luau,polars,python,self_update,to,ui
 # or shorthand
 cargo install qsv --locked --bin qsv -F all_features
+# enable all CPU optimizations for the current CPU (warning: creates non-portable binary)
+CARGO_BUILD_RUSTFLAGS='-C target-cpu=native' cargo install qsv --locked --bin qsv -F all_features
 
 # or enable only the apply and polars features
 cargo install qsv --locked --bin qsv -F feature_capable,apply,polars
@@ -256,6 +258,8 @@ To compile different [variants](#variants) and enable optional [features](#featu
 cargo build --release --locked --bin qsv --features feature_capable,apply,fetch,foreach,geocode,luau,polars,python,self_update,to,ui
 # shorthand
 cargo build --release --locked --bin qsv -F all_features
+# enable all CPU optimizations for the current CPU (warning: creates non-portable binary)
+CARGO_BUILD_RUSTFLAGS='-C target-cpu=native' cargo build --release --locked --bin qsv -F all_features
 
 # or build qsv with only the fetch and foreach features enabled
 cargo build --release --locked --bin qsv -F feature_capable,fetch,foreach
