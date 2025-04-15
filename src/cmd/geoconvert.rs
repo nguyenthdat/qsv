@@ -5,6 +5,10 @@ For example to convert a GeoJSON file into CSV data:
 
 qsv geoconvert file.geojson geojson csv
 
+To use stdin as input instead of a file path, use a dash "-":
+
+qsv prompt -m "Choose a GeoJSON file" -F geojson | qsv geoconvert - geojson csv
+
 To convert a CSV file into GeoJSON data, specify the WKT geometry column with the --geometry flag:
 
 qsv geoconvert file.csv csv geojson --geometry geometry
@@ -14,7 +18,8 @@ Usage:
     qsv geoconvert --help
 
 geoconvert REQUIRED arguments:
-    <input>           The spatial file to convert. Does not support stdin.
+    <input>           The spatial file to convert. To use stdin instead, use a dash "-".
+                      Note: SHP input must be a path to a .shp file and cannot use stdin.
     <input-format>    Valid values are "geojson", "shp", and "csv"
     <output-format>   Valid values are:
                       - For GeoJSON input: "csv", "svg", and "geojsonl"
@@ -32,7 +37,7 @@ Common options:
 
 use std::{
     fs::File,
-    io::{self, BufReader, BufWriter, Write},
+    io::{self, BufRead, BufReader, BufWriter, Write},
     path::Path,
 };
 
@@ -98,12 +103,16 @@ fn validate_input_file(path: &str) -> CliResult<()> {
 pub fn run(argv: &[&str]) -> CliResult<()> {
     let args: Args = util::get_args(USAGE, argv)?;
 
-    let input_path = args
-        .arg_input
-        .ok_or_else(|| CliError::Other("No input file specified".to_string()))?;
-
-    validate_input_file(&input_path)?;
-
+    let mut buf_reader: Box<dyn BufRead> = if let Some(input_path) = args.arg_input.clone() {
+        if &input_path == "-" {
+            Box::new(BufReader::new(std::io::stdin()))
+        } else {
+            validate_input_file(&input_path)?;
+            Box::new(BufReader::new(File::open(&input_path)?))
+        }
+    } else {
+        Box::new(BufReader::new(std::io::stdin()))
+    };
     // Create buffered writer for output
     let stdout = io::stdout();
     let mut wtr: Box<dyn Write> = if let Some(output_path) = args.flag_output {
@@ -111,15 +120,7 @@ pub fn run(argv: &[&str]) -> CliResult<()> {
     } else {
         Box::new(BufWriter::new(stdout.lock()))
     };
-    let mut buf_reader = BufReader::new(File::open(&input_path)?);
-    // let mut buf_reader = if let Some(input_path) = args.arg_input {
-    //     if input_path == "-"  {
-    //         BufReader::new(std::io::stdin())
-    //     }
-    // } else {
-    //     BufReader::new(std::io::stdin())
-    // };
-    // Construct a spatial geometry based on the input format
+    // Convert the input data to the specified output format
     match args.arg_input_format {
         InputFormat::Geojson => {
             let mut geometry = geozero::geojson::GeoJsonReader(&mut buf_reader);
@@ -162,9 +163,20 @@ pub fn run(argv: &[&str]) -> CliResult<()> {
         //     };
         // },
         InputFormat::Shp => {
+            let shp_input_path = if let Some(shp_input_path) = args.arg_input {
+                if shp_input_path == "-" {
+                    return fail_clierror!("SHP input argument must be a path to a .shp file.");
+                }
+                shp_input_path
+            } else {
+                return fail_clierror!("SHP input argument must be a path to a .shp file.");
+            };
+            let mut buf_reader = BufReader::new(File::open(&shp_input_path)?);
             let mut reader = geozero::shp::ShpReader::new(&mut buf_reader)?;
-            let mut input_reader = BufReader::new(File::open(input_path.replace(".shp", ".shx"))?);
-            let mut dbf_reader = BufReader::new(File::open(input_path.replace(".shp", ".dbf"))?);
+            let mut input_reader =
+                BufReader::new(File::open(shp_input_path.replace(".shp", ".shx"))?);
+            let mut dbf_reader =
+                BufReader::new(File::open(shp_input_path.replace(".shp", ".dbf"))?);
             reader.add_index_source(&mut input_reader)?;
             reader.add_dbf_source(&mut dbf_reader)?;
             let output_string = match args.arg_output_format {
