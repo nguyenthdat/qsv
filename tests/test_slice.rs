@@ -988,8 +988,6 @@ fn slice_from_jsonl_with_decimal_precision() {
     // Verify the output - value should maintain all decimal places
     let got: String = wrk.stdout(&mut cmd);
 
-    eprintln!("got: {got}");
-
     // Check that the high precision values are preserved
     // The output format is different than expected, so we need to adjust our assertions
     // We're checking for the presence of the high precision values in the output
