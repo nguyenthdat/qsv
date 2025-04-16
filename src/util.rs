@@ -2742,7 +2742,7 @@ pub fn convert_special_format(
                 .with_options(if let Some(schema) = schema {
                     base_options.clone().with_schema(Some(schema))
                 } else {
-                    // no schema, try to infer it with 1,000 rows
+                    // it failed, try to infer it with 1,000 rows
                     base_options.clone().with_infer_schema_length(Some(1_000))
                 });
 
@@ -2751,8 +2751,8 @@ pub fn convert_special_format(
             } else {
                 // Got an error. Try again with a larger infer schema length of 10,000 rows
                 log::warn!(
-                    "Falling back to reading file \"{}\" without a schema. Second try with an \
-                     infer schema length of 10,000 rows.",
+                    "Falling back to reading file \"{}\" without a schema. 2nd try using infer \
+                     schema length of 10,000 rows.",
                     path.display()
                 );
 
@@ -2763,10 +2763,7 @@ pub fn convert_special_format(
                 if let Ok(df) = reader_2ndtry.finish() {
                     df
                 } else {
-                    log::warn!(
-                        "Still failing to read file. Third try and now scanning the whole file to \
-                         infer schema."
-                    );
+                    log::warn!("Still failing. 3rd try - scanning the whole file to infer schema.");
 
                     // Try one last time without an infer schema length, scanning the whole file
                     let reader_3rdtry = CsvReadOptions::default()
