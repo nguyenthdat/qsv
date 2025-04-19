@@ -16,6 +16,9 @@ Usage:
 pivotp arguments:
     <on-cols>     The column(s) to pivot on (creates new columns).
     <input>       is the input CSV file. The file must have headers.
+                  If the file has a pschema.json file, it will be used to
+                  inform the pivot operation unless --infer-len is explicitly
+                  set to a value other than the default of 10,000 rows.
                   Stdin is not supported.
 
 
@@ -62,7 +65,14 @@ Common options:
     -q, --quiet             Do not return smart aggregation chosen nor pivot result shape to stderr.
 "#;
 
-use std::{collections::HashMap, fs::File, io, io::Write, path::Path, sync::OnceLock};
+use std::{
+    collections::HashMap,
+    fs::File,
+    io,
+    io::{BufReader, Read, Write},
+    path::Path,
+    sync::OnceLock,
+};
 
 use csv::ByteRecord;
 use indicatif::HumanCount;
@@ -100,6 +110,10 @@ struct Args {
     flag_quiet:          bool,
 }
 
+// IMPORTANT: This must be kept in sync with the default value
+// of the --infer-len option in the USAGE string above.
+const DEFAULT_INFER_LEN: usize = 10000;
+
 /// Structure to hold pivot operation metadata
 struct PivotMetadata {
     estimated_columns:    u64,
@@ -123,6 +137,7 @@ fn calculate_pivot_metadata(
         flag_force:           false,
         flag_stdout:          false,
         flag_jobs:            None,
+        flag_polars:          false,
         flag_no_headers:      false,
         flag_delimiter:       args.flag_delimiter,
         arg_input:            Some(args.arg_input.clone()),
@@ -227,6 +242,7 @@ fn suggest_agg_function(
         flag_force:           false,
         flag_stdout:          false,
         flag_jobs:            None,
+        flag_polars:          false,
         flag_no_headers:      false,
         flag_delimiter:       args.flag_delimiter,
         arg_input:            Some(args.arg_input.clone()),
@@ -519,13 +535,33 @@ pub fn run(argv: &[&str]) -> CliResult<()> {
     }
 
     // Create CSV reader config
-    let csv_reader = LazyCsvReader::new(&args.arg_input)
+    let mut csv_reader = LazyCsvReader::new(&args.arg_input)
         .with_has_header(true)
         .with_try_parse_dates(args.flag_try_parsedates)
         .with_decimal_comma(args.flag_decimal_comma)
         .with_separator(delim)
-        .with_ignore_errors(args.flag_ignore_errors)
-        .with_infer_schema_length(Some(args.flag_infer_len));
+        .with_ignore_errors(args.flag_ignore_errors);
+
+    // check if the pschema.json file exists and is newer or created at the same time
+    // as the table file
+    let input_path = Path::new(&args.arg_input);
+    let schema_file = input_path.canonicalize()?.with_extension("pschema.json");
+    let valid_schema_exists = schema_file.exists()
+        && schema_file.metadata()?.modified()? >= input_path.metadata()?.modified()?;
+
+    if valid_schema_exists && args.flag_infer_len == DEFAULT_INFER_LEN {
+        // Use schema from pschema.json file if it exists and is valid
+        // and the user did not specify a custom inference length
+        let file = File::open(&schema_file)?;
+        let mut buf_reader = BufReader::new(file);
+        let mut schema_json = String::with_capacity(100);
+        buf_reader.read_to_string(&mut schema_json)?;
+        let schema: Schema = serde_json::from_str(&schema_json)?;
+        csv_reader = csv_reader.with_schema(Some(Arc::new(schema)));
+    } else {
+        // Otherwise we infer the schema using inference length (default or user-specified)
+        csv_reader = csv_reader.with_infer_schema_length(Some(args.flag_infer_len));
+    }
 
     // Read the CSV into a DataFrame
     let df = csv_reader.finish()?.collect()?;
