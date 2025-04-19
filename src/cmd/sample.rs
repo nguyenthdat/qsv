@@ -342,6 +342,7 @@ fn check_stats_cache(
         flag_no_headers:      args.flag_no_headers,
         flag_delimiter:       args.flag_delimiter,
         flag_jobs:            None,
+        flag_polars:          false,
         flag_memcheck:        false,
         flag_force:           args.flag_force,
         flag_prefer_dmy:      false,

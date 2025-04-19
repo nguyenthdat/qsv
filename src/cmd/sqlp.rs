@@ -130,10 +130,6 @@ Example queries:
    qsv sqlp SKIP_INPUT "select * from read_csv('data.csv.zst')"
    qsv sqlp SKIP_INPUT "select * from read_csv('data.csv.zlib')"
 
-  Note that sqlp will automatically use the "fast path" read_csv() optimization when there 
-  is only one input CSV file, no CSV parsing options are used, its not a SQL script and the
-  `--no-optimizations` flag is not set.
-
   # apart from using Polar's table functions, you can also use SKIP_INPUT when the SELECT
   # statement doesn't require an input file
    qsv sqlp SKIP_INPUT "SELECT 1 AS one, '2' AS two, 3.0 AS three"
@@ -166,6 +162,8 @@ sqlp arguments:
                            If you are using Polars SQL's table functions like read_csv() & read_parquet()
                            to read input files directly in the SQL statement, you can use the sentinel value
                            'SKIP_INPUT' to skip input preprocessing.
+                           If pschema.json file/s exists for the input file/s, they will automatically be
+                           used to optimize the query even if --cache-schema is not set.
 
     sql                    The SQL query/ies to run. Each input file will be available as a table
                            named after the file name (without the extension), or as "_t_N"
@@ -222,10 +220,7 @@ sqlp options:
     --no-optimizations        Disable non-default query optimizations. This will make queries slower.
                               Use this when you get query errors or to force CSV parsing when there
                               is only one input file, no CSV parsing options are used and its not
-                              a SQL script. Otherwise, the CSV will be read directly into a LazyFrame
-                              using the fast path with the multithreaded, mem-mapped read_csv()
-                              Polars SQL function which is much faster though not as configurable than
-                              the regular CSV parser.
+                              a SQL script.
     --truncate-ragged-lines   Truncate ragged lines when parsing CSVs. If set, rows with more
                               columns than the header will be truncated. If not set, the query
                               will fail. Use this only when you get an error about ragged lines.
@@ -689,73 +684,36 @@ pub fn run(argv: &[&str]) -> CliResult<()> {
         );
     }
 
+    // if there is only one input file, check if the pschema.json file exists and is newer or
+    // created at the same time as the table file, if so, we can enable the cache schema flag
+    if args.arg_input.len() == 1 {
+        let schema_file = args.arg_input[0]
+            .canonicalize()?
+            .with_extension("pschema.json");
+        if schema_file.exists()
+            && schema_file.metadata()?.modified()? >= args.arg_input[0].metadata()?.modified()?
+        {
+            args.flag_cache_schema = true;
+        }
+    }
+
     let mut ctx = SQLContext::new();
     let mut table_aliases = HashMap::with_capacity(args.arg_input.len());
     let mut lossy_table_name = Cow::default();
     let mut table_name;
 
-    // if there is only one input file and its a CSV and no CSV parsing options are used,
-    // we can use the fast path to read the CSV directly into a LazyFrame without having to
-    // parse and register it as a table in the SQL context using Polars SQL's read_csv function
-    // The user can also skip all these heuristics and force the fast path by using the special
-    // value '<SKIP_INPUT>' as the input file.
+    // <SKIP_INPUT> is a sentinel value that tells sqlp to skip all input processing,
+    // Use it when you want to use Polars SQL's table functions directly in the SQL query
+    // e.g. SELECT read_csv('<input_file>')...; read_parquet(); read_ipc(); read_json()
     if skip_input {
         // we don't need to do anything here, as we are skipping input
         if debuglog_flag {
-            // Using the slow path to read and parse the CSV/s into tables in the SQL context.
             log::debug!("Skipping input processing...");
         }
-    } else if args.arg_input.len() == 1
-        && !is_sql_script
-        && delim == b','
-        && !args.flag_no_optimizations
-        && !args.flag_try_parsedates
-        && args.flag_infer_len == 10_000 // make sure this matches the usage text default
-        && !args.flag_cache_schema
-        && !args.flag_streaming
-        && !args.flag_low_memory
-        && !args.flag_truncate_ragged_lines
-        && !args.flag_ignore_errors
-        && rnull_values == vec![PlSmallStr::EMPTY]
-        && !args.flag_decimal_comma
-        && comment_char.is_none()
-        && std::path::Path::new(&args.arg_input[0])
-            .extension()
-            .is_some_and(|ext| ext.eq_ignore_ascii_case("csv"))
-    {
-        // replace all instances of the FROM clause case-insensitive in the SQL query with the
-        // read_csv function using a regex
-        let input = &args.arg_input[0];
-        let table_name = Path::new(input)
-            .file_stem()
-            .and_then(std::ffi::OsStr::to_str)
-            .unwrap_or_else(|| {
-                lossy_table_name = input.to_string_lossy();
-                &lossy_table_name
-            });
-        let sql = args.arg_sql.clone();
-        // the regex is case-insensitive and allows for the table name to be enclosed in single or
-        // double quotes or not enclosed at all. It also allows for the table name to be
-        // aliased as _t_1.
-        let from_clause_regex =
-            Regex::new(&format!(r#"(?i)FROM\s+['"]?({table_name}|_t_1)['"]?"#))?;
-        let modified_query = from_clause_regex.replace_all(
-            &sql,
-            format!("FROM read_csv('{}')", input.to_string_lossy()),
-        );
-        args.arg_sql = modified_query.to_string();
-        if debuglog_flag {
-            log::debug!("Using fast path - Modified Query: {modified_query}");
-        }
     } else {
-        // --------------------------------------------
-        // we have more than one input and/or we are using CSV parsing options, so we need to
         // parse the CSV first, and register the input files as tables in the SQL context
-        // AKA the "slow path"
-        // --------------------------------------------
-
         if debuglog_flag {
-            log::debug!("Using the slow path...");
+            log::debug!("Parsing input files and registering tables in the SQL context...");
         }
 
         let cache_schemas = args.flag_cache_schema;
@@ -782,7 +740,15 @@ pub fn run(argv: &[&str]) -> CliResult<()> {
 
             // we build the lazyframe, accounting for the --cache-schema flag
             let mut create_schema = cache_schemas;
-            let mut lf = if cache_schemas {
+
+            let schema_file = table.canonicalize()?.with_extension("pschema.json");
+
+            // check if the pschema.json file exists and is newer or created at the same time
+            // as the table file
+            let mut valid_schema_exists = schema_file.exists()
+                && schema_file.metadata()?.modified()? >= table.metadata()?.modified()?;
+
+            let mut lf = if cache_schemas || valid_schema_exists {
                 let mut work_lf = LazyCsvReader::new(table)
                     .with_has_header(true)
                     .with_missing_is_null(true)
@@ -794,13 +760,6 @@ pub fn run(argv: &[&str]) -> CliResult<()> {
                     .with_truncate_ragged_lines(args.flag_truncate_ragged_lines)
                     .with_decimal_comma(args.flag_decimal_comma)
                     .with_low_memory(args.flag_low_memory);
-
-                let schema_file = table.canonicalize()?.with_extension("pschema.json");
-
-                // check if the pschema.json file exists and is newer or created at the same time
-                // as the table file
-                let mut valid_schema_exists = schema_file.exists()
-                    && schema_file.metadata()?.modified()? >= table.metadata()?.modified()?;
 
                 if !valid_schema_exists {
                     // we don't have a valid pschema.json file,
@@ -833,8 +792,9 @@ pub fn run(argv: &[&str]) -> CliResult<()> {
                 }
                 work_lf.finish()?
             } else {
-                // --cache-schema is not enabled, we always --infer-len schema
-                LazyCsvReader::new(table)
+                // Read input file robustly
+                // First try, as --cache-schema is not enabled, try using the --infer-len length
+                let reader = LazyCsvReader::new(table)
                     .with_has_header(true)
                     .with_missing_is_null(true)
                     .with_comment_prefix(comment_char.clone())
@@ -845,8 +805,64 @@ pub fn run(argv: &[&str]) -> CliResult<()> {
                     .with_ignore_errors(args.flag_ignore_errors)
                     .with_truncate_ragged_lines(args.flag_truncate_ragged_lines)
                     .with_decimal_comma(args.flag_decimal_comma)
-                    .with_low_memory(args.flag_low_memory)
-                    .finish()?
+                    .with_low_memory(args.flag_low_memory);
+
+                if let Ok(lf) = reader.finish() {
+                    lf
+                } else {
+                    // First try didn't work.
+                    // Second try, infer a schema and try again
+                    valid_schema_exists = infer_polars_schema(
+                        args.flag_delimiter,
+                        debuglog_flag,
+                        table,
+                        &schema_file,
+                    )?;
+
+                    if valid_schema_exists {
+                        let file = File::open(&schema_file)?;
+                        let mut buf_reader = BufReader::new(file);
+                        let mut schema_json = String::with_capacity(100);
+                        buf_reader.read_to_string(&mut schema_json)?;
+                        let schema: Schema = serde_json::from_str(&schema_json)?;
+
+                        // Second try, using the inferred schema
+                        let reader_2ndtry = LazyCsvReader::new(table)
+                            .with_schema(Some(Arc::new(schema)))
+                            .with_try_parse_dates(args.flag_try_parsedates)
+                            .with_ignore_errors(args.flag_ignore_errors)
+                            .with_truncate_ragged_lines(args.flag_truncate_ragged_lines)
+                            .with_decimal_comma(args.flag_decimal_comma)
+                            .with_low_memory(args.flag_low_memory);
+
+                        if let Ok(lf) = reader_2ndtry.finish() {
+                            lf
+                        } else {
+                            // Second try didn't work.
+                            // Try one last time without an infer schema length, scanning the whole
+                            // file
+                            LazyCsvReader::new(table)
+                                .with_infer_schema_length(None)
+                                .with_try_parse_dates(args.flag_try_parsedates)
+                                .with_ignore_errors(args.flag_ignore_errors)
+                                .with_truncate_ragged_lines(args.flag_truncate_ragged_lines)
+                                .with_decimal_comma(args.flag_decimal_comma)
+                                .with_low_memory(args.flag_low_memory)
+                                .finish()?
+                        }
+                    } else {
+                        // Ok, we failed to infer a schema, try without an infer schema length
+                        // and scan the whole file to get the schema
+                        LazyCsvReader::new(table)
+                            .with_infer_schema_length(None)
+                            .with_try_parse_dates(args.flag_try_parsedates)
+                            .with_ignore_errors(args.flag_ignore_errors)
+                            .with_truncate_ragged_lines(args.flag_truncate_ragged_lines)
+                            .with_decimal_comma(args.flag_decimal_comma)
+                            .with_low_memory(args.flag_low_memory)
+                            .finish()?
+                    }
+                }
             };
             ctx.register(table_name, lf.clone().with_optimizations(optflags));
 
@@ -945,7 +961,7 @@ pub fn run(argv: &[&str]) -> CliResult<()> {
     Ok(())
 }
 
-fn infer_polars_schema(
+pub fn infer_polars_schema(
     delimiter: Option<Delimiter>,
     debuglog_flag: bool,
     table: &Path,
@@ -962,6 +978,7 @@ fn infer_polars_schema(
         flag_force:           false,
         flag_stdout:          false,
         flag_jobs:            Some(util::njobs(None)),
+        flag_polars:          false,
         flag_no_headers:      false,
         flag_delimiter:       delimiter,
         arg_input:            Some(table.to_string_lossy().into_owned()),

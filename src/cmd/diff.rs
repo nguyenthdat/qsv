@@ -321,6 +321,7 @@ fn check_stats_cache(args: &Args) -> Result<bool, CliError> {
         flag_no_headers:      false,
         flag_delimiter:       args.flag_delimiter,
         flag_jobs:            None,
+        flag_polars:          false,
         flag_memcheck:        false,
         flag_force:           args.flag_force,
         flag_prefer_dmy:      false,

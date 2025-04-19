@@ -91,6 +91,7 @@ pub struct SchemaArgs {
     pub flag_force:           bool,
     pub flag_stdout:          bool,
     pub flag_jobs:            Option<usize>,
+    pub flag_polars:          bool,
     pub flag_no_headers:      bool,
     pub flag_delimiter:       Option<Delimiter>,
     pub arg_input:            Option<String>,

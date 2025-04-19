@@ -130,6 +130,9 @@ joinp options:
                                   and cache the result
                                 Schema files use the same name as input with .pschema.json extension
                                 (e.g., data.csv -> data.pschema.json)
+                           NOTE: If the input files have pschema.json files that are newer or created
+                           at the same time as the input files, they will be used to inform the join
+                           operation regardless of the value of --cache-schema unless --infer-len is 0.
                            [default: 0]
     --low-memory           Use low memory mode when parsing CSVs. This will use less memory
                            but will be slower. It will also process the join in streaming mode.
@@ -323,6 +326,10 @@ struct Args {
     flag_ignore_leading_zeros: bool,
     flag_norm_unicode:         Option<String>,
 }
+
+// IMPORTANT: This must be kept in sync with the default value
+// of the --infer-len option in the USAGE string above.
+const DEFAULT_INFER_LEN: usize = 10000;
 
 #[derive(PartialEq, Eq)]
 enum SpecialJoin {
@@ -880,6 +887,7 @@ impl Args {
                 flag_force:           false,
                 flag_stdout:          false,
                 flag_jobs:            Some(util::njobs(None)),
+                flag_polars:          false,
                 flag_no_headers:      false,
                 flag_delimiter:       args.flag_delimiter,
                 arg_input:            Some(input_path.to_string_lossy().into_owned()),
@@ -948,6 +956,13 @@ impl Args {
         /// * `-1` - Use string schema for all columns without caching
         /// * `-2` - Use string schema for all columns and cache it
         ///
+        /// # Notes
+        /// * If the pschema.json file exists and is newer or created at the same time as the table
+        ///   file, we enable the cache schema flag even if --cache-schema is 0 (not set)
+        /// * Unless --infer-len is explicitly set to a non-default value (10000) and --cache-schema
+        ///   is not set to -1 or -2, we enable the cache schema flag even if --cache-schema is 0
+        ///   (not set)
+        ///
         /// # Errors
         /// Returns error if:
         /// * File operations fail
@@ -960,12 +975,29 @@ impl Args {
             delim: u8,
             debuglog_flag: bool,
         ) -> CliResult<(LazyFrame, bool)> {
-            let schema_file = input_path.canonicalize()?.with_extension("pschema.json");
             let mut create_schema = false;
-            let cache_schema = if args.flag_infer_len == 0 {
+
+            // First, check if the pschema.json file exists and is newer or created at the same time
+            // as the table file
+            let schema_file = input_path.canonicalize()?.with_extension("pschema.json");
+            let mut valid_schema_exists = schema_file.exists()
+                && schema_file.metadata()?.modified()? >= input_path.metadata()?.modified()?;
+
+            let cache_schema: i8 = if args.flag_infer_len == 0 {
                 0
             } else {
-                args.flag_cache_schema
+                // if the pschema.json file exists and is newer or created at the same time as the
+                // table file, we enable the cache schema flag, so long as
+                // --cache-schema is not set to -1 or -2, and
+                // --infer-len is not explicitly set to a non-default value
+                if valid_schema_exists
+                    && args.flag_infer_len != DEFAULT_INFER_LEN
+                    && args.flag_cache_schema >= 0
+                {
+                    1
+                } else {
+                    args.flag_cache_schema
+                }
             };
 
             let mut reader =
@@ -980,10 +1012,6 @@ impl Args {
                     });
                 },
                 1 => {
-                    let mut valid_schema_exists = schema_file.exists()
-                        && schema_file.metadata()?.modified()?
-                            > input_path.metadata()?.modified()?;
-
                     if !valid_schema_exists {
                         let schema = create_schema_from_stats(input_path, args)?;
                         let stats_schema = Arc::new(schema);
