@@ -516,6 +516,7 @@ impl Args {
             flag_force:           false,
             flag_stdout:          false,
             flag_jobs:            Some(util::njobs(self.flag_jobs)),
+            flag_polars:          false,
             flag_no_headers:      self.flag_no_headers,
             flag_delimiter:       self.flag_delimiter,
             arg_input:            self.arg_input.clone(),

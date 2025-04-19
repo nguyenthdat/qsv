@@ -147,6 +147,7 @@ pub fn run(argv: &[&str]) -> CliResult<()> {
         flag_force:           false,
         flag_stdout:          false,
         flag_jobs:            Some(util::njobs(args.flag_jobs)),
+        flag_polars:          false,
         flag_no_headers:      false,
         flag_delimiter:       args.flag_delimiter,
         arg_input:            Some(input_filename.clone()),
