@@ -326,8 +326,8 @@ grex = { git = "https://github.com/jqnatividad/grex", branch = "bumped-dependenc
 sled = { git = "https://github.com/dathere/sled", branch = "v0.34.7-bumped-parking_lot_to_0.12" }
 
 # use our patched fork of spreadsheet-ods to resolve the quick-xml encoding issue
-# see https://github.com/thscharler/spreadsheet-ods/pull/59
-spreadsheet-ods = { git = "https://github.com/jqnatividad/spreadsheet-ods", branch = "48-quick-xml-encoding-workaround" }
+# to replace unmaintained get-size and color-rs crates until our PRs are merged
+spreadsheet-ods = { git = "https://github.com/jqnatividad/spreadsheet-ods", branch = "qsv-combined-fixes" }
 
 # Polars has a much higher release tempo for its Python bindings compared
 # to its underlying Rust library. See https://github.com/pola-rs/polars/releases
