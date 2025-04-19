@@ -138,6 +138,12 @@ pub fn run(argv: &[&str]) -> CliResult<()> {
         }
         return fail_clierror!("Input file is required when using the --polars option.");
     }
+    #[cfg(not(feature = "polars"))]
+    if args.flag_polars {
+        return fail_clierror!(
+            "The --polars option is only available if the `polars` feature is enabled."
+        );
+    }
 
     // if using stdin, we create a stdin.csv file as stdin is not seekable and we need to
     // open the file multiple times to compile stats/unique values, etc.
