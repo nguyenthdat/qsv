@@ -31,9 +31,9 @@ and then use that to generate the schema file.
 
 Polars Schema:
 ==============
-The `--polars` option will generate a Polars schema instead of a JSON Schema.
-The generated Polars schema will be written to a file with the `.pschema.json` suffix appended
-to the input file stem.
+When the "polars" feature is enabled, the `--polars` option will generate a Polars schema
+instead of a JSON Schema. The generated Polars schema will be written to a file with the
+`.pschema.json` suffix appended to the input file stem.
 
 The Polars schema is a JSON object that describes the schema of a CSV file. When present,
 the `sqlp`, `joinp`, and `pivotp` commands will use the Polars schema to read the CSV file
@@ -109,19 +109,16 @@ use rayon::slice::ParallelSliceMut;
 use serde_json::{Map, Value, json, value::Number};
 use stats::Frequencies;
 
-use crate::{
-    CliResult,
-    cmd::{sqlp::infer_polars_schema, stats::StatsData},
-    config::Config,
-    util,
-    util::StatsMode,
-};
+#[cfg(feature = "polars")]
+use crate::cmd::sqlp::infer_polars_schema;
+use crate::{CliResult, cmd::stats::StatsData, config::Config, util, util::StatsMode};
 
 const STDIN_CSV: &str = "stdin.csv";
 
 pub fn run(argv: &[&str]) -> CliResult<()> {
     let mut args: util::SchemaArgs = util::get_args(USAGE, argv)?;
 
+    #[cfg(feature = "polars")]
     if args.flag_polars {
         if let Some(input) = args.arg_input {
             let input_path = Path::new(&input);
