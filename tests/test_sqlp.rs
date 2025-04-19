@@ -1784,6 +1784,7 @@ fn sqlp_binary_functions() {
 }
 
 #[test]
+
 fn sqlp_length_fns() {
     let wrk = Workdir::new("sqlp_sql_length_fns");
     wrk.create(
@@ -1813,6 +1814,49 @@ fn sqlp_length_fns() {
             "words", "n_chrs1", "n_chrs2", "n_chrs3", "n_bytes", "n_bits"
         ],
         svec!["Cafe", "4", "4", "4", "4", "32"],
+        // as the rnull-values is not set, the empty string is not converted to NULL
+        // so the output is all empty strings
+        svec!["", "", "", "", "", ""],
+        svec!["東京", "2", "2", "2", "6", "48"],
+    ];
+
+    similar_asserts::assert_eq!(got, expected);
+}
+
+#[test]
+fn sqlp_length_fns_rnull_set_to_null() {
+    let wrk = Workdir::new("sqlp_sql_length_fns_rnull_set_to_null");
+    wrk.create(
+        "test.csv",
+        vec![svec!["words"], svec!["Cafe"], svec![""], svec!["東京"]],
+    );
+
+    let mut cmd = wrk.command("sqlp");
+    cmd.arg("test.csv")
+        .arg(
+            r#"
+        SELECT
+              words,
+              LENGTH(words) AS n_chrs1,
+              CHAR_LENGTH(words) AS n_chrs2,
+              CHARACTER_LENGTH(words) AS n_chrs3,
+              OCTET_LENGTH(words) AS n_bytes,
+              BIT_LENGTH(words) AS n_bits
+            FROM test
+"#,
+        )
+        .args(["--rnull-values", "NULL"]);
+
+    wrk.assert_success(&mut cmd);
+
+    let got: Vec<Vec<String>> = wrk.read_stdout(&mut cmd);
+    let expected = vec![
+        svec![
+            "words", "n_chrs1", "n_chrs2", "n_chrs3", "n_bytes", "n_bits"
+        ],
+        svec!["Cafe", "4", "4", "4", "4", "32"],
+        // as the rnull-values is set to NULL, the empty string is converted to NULL
+        // so the output of all the length functions is zero
         svec!["", "0", "0", "0", "0", "0"],
         svec!["東京", "2", "2", "2", "6", "48"],
     ];
@@ -1929,8 +1973,9 @@ fn sqlp_string_replace() {
     );
 
     let mut cmd = wrk.command("sqlp");
-    cmd.arg("test.csv").arg(
-        r#"
+    cmd.arg("test.csv")
+        .arg(
+            r#"
         SELECT
         REPLACE(
           REPLACE(words, 'coffee', 'tea'),
@@ -1939,7 +1984,8 @@ fn sqlp_string_replace() {
         )
         FROM test
 "#,
-    );
+        )
+        .args(["--rnull-values", "NULL"]);
 
     wrk.assert_success(&mut cmd);
 
