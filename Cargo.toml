@@ -246,6 +246,7 @@ rust_decimal = { version = "1.37", default-features = false }
 ryu = "1"
 sanitize-filename = { version = "0.6", optional = true }
 sha256 = "1.5"
+signal-hook-registry = "=1.4.3"
 simd-json = "0.15"
 self_update = { version = "0.42", features = [
     "archive-zip",

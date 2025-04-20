@@ -5651,6 +5651,7 @@ dependencies = [
  "serde_urlencoded",
  "serial_test",
  "sha256",
+ "signal-hook-registry",
  "simd-json 0.15.1",
  "simdutf8",
  "similar-asserts",
@@ -6804,9 +6805,9 @@ dependencies = [
 
 [[package]]
 name = "signal-hook-registry"
-version = "1.4.4"
+version = "1.4.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a1ee1aca2bc74ef9589efa7ccaa0f3752751399940356209b3fd80c078149b5e"
+checksum = "c28b4eafe8a2d82f83559ef5941afff1ccba3da8e375c8f148efd75df181bf4f"
 dependencies = [
  "libc",
 ]
