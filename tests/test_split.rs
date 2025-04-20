@@ -1,4 +1,4 @@
-use std::borrow::ToOwned;
+use std::{borrow::ToOwned, io::Write};
 
 use crate::workdir::Workdir;
 
@@ -1550,4 +1550,112 @@ fn split_filter_windows_long_paths() {
     assert!(deep_dir.join("0.bak").exists());
     assert!(deep_dir.join("2.bak").exists());
     assert!(deep_dir.join("4.bak").exists());
+}
+
+#[test]
+fn split_stdin_100_rows() {
+    let wrk = Workdir::new("split_stdin_100_rows");
+
+    // Create a 100 row CSV with headers
+    let mut rows = vec![svec!["id", "name", "value"]];
+
+    // Add 100 rows of data
+    for i in 0..100 {
+        rows.push(vec![
+            i.to_string(),
+            format!("item_{}", i),
+            format!("value_{}", i),
+        ]);
+    }
+
+    // Create a temporary file with the CSV data
+    wrk.create("stdin_data.csv", rows);
+
+    // Run the split command with stdin input
+    let mut cmd = wrk.command("split");
+    cmd.args(["--size", "20"])
+        .arg(&wrk.path("."))
+        .arg("--quiet")
+        .arg("-"); // Use "-" to indicate stdin
+
+    // Set up stdin for the command
+    let stdin_data = wrk.read_to_string("stdin_data.csv").unwrap();
+    cmd.stdin(std::process::Stdio::piped());
+
+    // Run the command
+    let mut child = cmd.spawn().unwrap();
+    let mut stdin = child.stdin.take().unwrap();
+    std::thread::spawn(move || {
+        stdin.write_all(stdin_data.as_bytes()).unwrap();
+    });
+
+    // Wait for the command to complete
+    let status = child.wait().unwrap();
+    assert!(status.success());
+
+    // Verify that 5 files were created (100 rows / 20 rows per file = 5 files)
+    assert!(wrk.path("0.csv").exists());
+    assert!(wrk.path("20.csv").exists());
+    assert!(wrk.path("40.csv").exists());
+    assert!(wrk.path("60.csv").exists());
+    assert!(wrk.path("80.csv").exists());
+    assert!(!wrk.path("100.csv").exists());
+
+    // Verify the content of the first file
+    split_eq!(
+        wrk,
+        "0.csv",
+        "\
+id,name,value
+0,item_0,value_0
+1,item_1,value_1
+2,item_2,value_2
+3,item_3,value_3
+4,item_4,value_4
+5,item_5,value_5
+6,item_6,value_6
+7,item_7,value_7
+8,item_8,value_8
+9,item_9,value_9
+10,item_10,value_10
+11,item_11,value_11
+12,item_12,value_12
+13,item_13,value_13
+14,item_14,value_14
+15,item_15,value_15
+16,item_16,value_16
+17,item_17,value_17
+18,item_18,value_18
+19,item_19,value_19
+"
+    );
+
+    // Verify the content of the last file
+    split_eq!(
+        wrk,
+        "80.csv",
+        "\
+id,name,value
+80,item_80,value_80
+81,item_81,value_81
+82,item_82,value_82
+83,item_83,value_83
+84,item_84,value_84
+85,item_85,value_85
+86,item_86,value_86
+87,item_87,value_87
+88,item_88,value_88
+89,item_89,value_89
+90,item_90,value_90
+91,item_91,value_91
+92,item_92,value_92
+93,item_93,value_93
+94,item_94,value_94
+95,item_95,value_95
+96,item_96,value_96
+97,item_97,value_97
+98,item_98,value_98
+99,item_99,value_99
+"
+    );
 }
