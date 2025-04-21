@@ -91,13 +91,21 @@ struct Args {
 
 impl From<geozero::error::GeozeroError> for CliError {
     fn from(err: geozero::error::GeozeroError) -> CliError {
-        CliError::Other(format!("Geozero error: {err:?}"))
+        match err {
+            geozero::error::GeozeroError::GeometryFormat => {
+                CliError::IncorrectUsage("Invalid geometry format".to_string())
+            },
+            geozero::error::GeozeroError::Dataset(msg) => {
+                CliError::Other(format!("Dataset error: {msg}"))
+            },
+            _ => CliError::Other(format!("Geozero error: {err:?}")),
+        }
     }
 }
 
 impl From<geozero::shp::Error> for CliError {
     fn from(err: geozero::shp::Error) -> CliError {
-        CliError::Other(format!("Geozero SHP error: {err:?}"))
+        CliError::Other(format!("Geozero Shapefile error: {err:?}"))
     }
 }
 
