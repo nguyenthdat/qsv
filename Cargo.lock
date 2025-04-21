@@ -1235,7 +1235,7 @@ checksum = "ade8366b8bd5ba243f0a58f036cc0ca8a2f069cff1a2351ef1cac6b083e16fc0"
 [[package]]
 name = "calamine"
 version = "0.26.1"
-source = "git+https://github.com/tafia/calamine?rev=5cda5c7#5cda5c734661f656bdfb7ac7a1b95e77bf89aa09"
+source = "git+https://github.com/tafia/calamine?rev=7e60cf7#7e60cf75d576f523886603bd308882a9b76aa6cd"
 dependencies = [
  "atoi_simd",
  "byteorder",
