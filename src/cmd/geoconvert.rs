@@ -80,13 +80,13 @@ enum OutputFormat {
 
 #[derive(Deserialize)]
 struct Args {
-    arg_input: Option<String>,
-    arg_input_format: InputFormat,
+    arg_input:         Option<String>,
+    arg_input_format:  InputFormat,
     arg_output_format: OutputFormat,
-    flag_latitude: Option<String>,
-    flag_longitude: Option<String>,
-    flag_geometry: Option<String>,
-    flag_output: Option<String>,
+    flag_latitude:     Option<String>,
+    flag_longitude:    Option<String>,
+    flag_geometry:     Option<String>,
+    flag_output:       Option<String>,
 }
 
 impl From<geozero::error::GeozeroError> for CliError {
@@ -220,8 +220,12 @@ pub fn run(argv: &[&str]) -> CliResult<()> {
             wtr.write_all(output_string.as_bytes())?;
         },
         InputFormat::Csv => {
-            if args.flag_geometry.is_some() && (args.flag_latitude.is_some() || args.flag_longitude.is_some()) {
-                return fail_clierror!("Cannot use --geometry flag with --latitude or --longitude.");
+            if args.flag_geometry.is_some()
+                && (args.flag_latitude.is_some() || args.flag_longitude.is_some())
+            {
+                return fail_clierror!(
+                    "Cannot use --geometry flag with --latitude or --longitude."
+                );
             }
             if let Some(geometry_col) = args.flag_geometry {
                 let mut csv = geozero::csv::CsvReader::new(&geometry_col, buf_reader);
@@ -247,22 +251,37 @@ pub fn run(argv: &[&str]) -> CliResult<()> {
                     if let Some(x_col) = args.flag_longitude {
                         let mut rdr = csv::Reader::from_reader(buf_reader);
                         let headers = rdr.headers()?.clone();
-                        let mut feature_collection = serde_json::json!({"type": "FeatureCollection", "features": []});
-                        
+                        let mut feature_collection =
+                            serde_json::json!({"type": "FeatureCollection", "features": []});
+
                         for result in rdr.records() {
                             let record = result?;
                             let mut feature = serde_json::json!({"type": "Feature", "geometry": {}, "properties": {}});
 
                             // Add lat/lon coordinates geometry
-                            let latitude_col_index = headers.iter().position(|y| y == y_col).unwrap();
-                            let longitude_col_index = headers.iter().position(|x| x == x_col).unwrap();
-                            let latitude_value = record.get(latitude_col_index).unwrap().parse::<f64>().unwrap();
-                            let longitude_value = record.get(longitude_col_index).unwrap().parse::<f64>().unwrap();
+                            let latitude_col_index =
+                                headers.iter().position(|y| y == y_col).unwrap();
+                            let longitude_col_index =
+                                headers.iter().position(|x| x == x_col).unwrap();
+                            let latitude_value = record
+                                .get(latitude_col_index)
+                                .unwrap()
+                                .parse::<f64>()
+                                .unwrap();
+                            let longitude_value = record
+                                .get(longitude_col_index)
+                                .unwrap()
+                                .parse::<f64>()
+                                .unwrap();
                             let geometry = feature.get_mut("geometry").unwrap();
                             let geometry_obj = geometry.as_object_mut().unwrap();
-                            geometry_obj.insert("type".to_string(), serde_json::Value::from("Point"));
-                            geometry_obj.insert("coordinates".to_string(), serde_json::Value::from(vec![latitude_value, longitude_value]));
-                            
+                            geometry_obj
+                                .insert("type".to_string(), serde_json::Value::from("Point"));
+                            geometry_obj.insert(
+                                "coordinates".to_string(),
+                                serde_json::Value::from(vec![latitude_value, longitude_value]),
+                            );
+
                             // Add properties
                             for (index, value) in record.iter().enumerate() {
                                 if index != longitude_col_index && index != latitude_col_index {
@@ -304,7 +323,8 @@ pub fn run(argv: &[&str]) -> CliResult<()> {
                     }
                 }
                 return fail_clierror!(
-                    "Please specify a geometry column with the --geometry option or longitude/latitude with the --latitude and --longitude options."
+                    "Please specify a geometry column with the --geometry option or \
+                     longitude/latitude with the --latitude and --longitude options."
                 );
             }
         },
