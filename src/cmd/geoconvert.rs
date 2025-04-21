@@ -262,27 +262,49 @@ pub fn run(argv: &[&str]) -> CliResult<()> {
                         let mut feature_collection =
                             serde_json::json!({"type": "FeatureCollection", "features": []});
 
+                        let latitude_col_index =
+                            headers.iter().position(|y| y == y_col).ok_or_else(|| {
+                                CliError::IncorrectUsage(format!(
+                                    "Latitude column '{y_col}' not found"
+                                ))
+                            })?;
+                        let longitude_col_index =
+                            headers.iter().position(|x| x == x_col).ok_or_else(|| {
+                                CliError::IncorrectUsage(format!(
+                                    "Longitude column '{x_col}' not found"
+                                ))
+                            })?;
+
                         for result in rdr.records() {
                             let record = result?;
                             let mut feature = serde_json::json!({"type": "Feature", "geometry": {}, "properties": {}});
 
                             // Add lat/lon coordinates geometry
-                            let latitude_col_index =
-                                headers.iter().position(|y| y == y_col).unwrap();
-                            let longitude_col_index =
-                                headers.iter().position(|x| x == x_col).unwrap();
                             let latitude_value = record
                                 .get(latitude_col_index)
-                                .unwrap()
+                                .ok_or_else(|| {
+                                    CliError::Other("Missing latitude value".to_string())
+                                })?
                                 .parse::<f64>()
-                                .unwrap();
+                                .map_err(|e| {
+                                    CliError::Other(format!("Invalid latitude value: {e}"))
+                                })?;
                             let longitude_value = record
                                 .get(longitude_col_index)
-                                .unwrap()
+                                .ok_or_else(|| {
+                                    CliError::Other("Missing longitude value".to_string())
+                                })?
                                 .parse::<f64>()
-                                .unwrap();
-                            let geometry = feature.get_mut("geometry").unwrap();
-                            let geometry_obj = geometry.as_object_mut().unwrap();
+                                .map_err(|e| {
+                                    CliError::Other(format!("Invalid longitude value: {e}"))
+                                })?;
+
+                            let geometry = feature.get_mut("geometry").ok_or_else(|| {
+                                CliError::IncorrectUsage("Missing geometry object".to_string())
+                            })?;
+                            let geometry_obj = geometry.as_object_mut().ok_or_else(|| {
+                                CliError::IncorrectUsage("Invalid geometry object".to_string())
+                            })?;
                             geometry_obj
                                 .insert("type".to_string(), serde_json::Value::from("Point"));
                             geometry_obj.insert(
@@ -293,17 +315,35 @@ pub fn run(argv: &[&str]) -> CliResult<()> {
                             // Add properties
                             for (index, value) in record.iter().enumerate() {
                                 if index != longitude_col_index && index != latitude_col_index {
-                                    let properties = feature.get_mut("properties").unwrap();
-                                    let properties_obj = properties.as_object_mut().unwrap();
-                                    let new_key = headers.get(index).unwrap().to_string();
+                                    let properties =
+                                        feature.get_mut("properties").ok_or_else(|| {
+                                            CliError::Other("Missing properties object".to_string())
+                                        })?;
+                                    let properties_obj =
+                                        properties.as_object_mut().ok_or_else(|| {
+                                            CliError::Other("Invalid properties object".to_string())
+                                        })?;
+                                    let new_key = headers
+                                        .get(index)
+                                        .ok_or_else(|| {
+                                            CliError::Other(format!(
+                                                "Missing header at index {index}"
+                                            ))
+                                        })?
+                                        .to_string();
                                     let new_value = serde_json::Value::from(value);
                                     properties_obj.insert(new_key, new_value);
                                 }
                             }
 
                             // Add Feature to FeatureCollection
-                            let features = feature_collection.get_mut("features").unwrap();
-                            let features_array = features.as_array_mut().unwrap();
+                            let features =
+                                feature_collection.get_mut("features").ok_or_else(|| {
+                                    CliError::Other("Missing features array".to_string())
+                                })?;
+                            let features_array = features.as_array_mut().ok_or_else(|| {
+                                CliError::Other("Invalid features array".to_string())
+                            })?;
                             features_array.push(feature);
                         }
 
