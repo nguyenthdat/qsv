@@ -992,9 +992,9 @@ dependencies = [
 
 [[package]]
 name = "blake3"
-version = "1.8.1"
+version = "1.8.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "389a099b34312839e16420d499a9cad9650541715937ffbdd40d36f49e77eeb3"
+checksum = "3888aaa89e4b2a40fca9848e400f6a658a5a3978de7be858e209cafa8be9a4a0"
 dependencies = [
  "arrayref",
  "arrayvec",
@@ -1778,7 +1778,7 @@ dependencies = [
 [[package]]
 name = "csvlens"
 version = "0.12.0"
-source = "git+https://github.com/jqnatividad/csvlens?branch=2024-edition#b464abfbdd4d0b858483121de0c027a77edda8c1"
+source = "git+https://github.com/YS-L/csvlens?rev=a1af5ca#a1af5ca71bb14a3ee7315a4012b0cf79a6113867"
 dependencies = [
  "anyhow",
  "arboard",
