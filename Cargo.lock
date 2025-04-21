@@ -5672,7 +5672,6 @@ dependencies = [
  "uuid",
  "whatlang",
  "xxhash-rust",
- "zip",
 ]
 
 [[package]]
