@@ -107,15 +107,10 @@ fn main() -> QsvExitCode {
         "    count       Count records
     datefmt     Format date/datetime strings
     dedup       Remove redundant rows
-    describegpt Infer extended metadata using a LLM
     diff        Find the difference between two CSVs
     edit        Replace a cell's value specified by row and column
     enum        Add a new column enumerating CSV lines
-    excel       Exports an Excel sheet to a CSV
-    exclude     Excludes the records in one CSV from another
-    explode     Explode rows based on some column separator
-    extdedup    Remove duplicates rows from an arbitrarily large text file
-    extsort     Sort arbitrarily large text file\n",
+    excel       Exports an Excel sheet to a CSV\n"
     );
 
     #[cfg(all(feature = "fetch", feature = "feature_capable"))]
@@ -125,8 +120,7 @@ fn main() -> QsvExitCode {
     );
 
     enabled_commands.push_str(
-        "    fill        Fill empty values
-    fixlengths  Makes all records have same length
+"    fixlengths  Makes all records have same length
     flatten     Show one field per line
     fmt         Format CSV output (change field delimiter)\n",
     );
@@ -143,9 +137,7 @@ fn main() -> QsvExitCode {
     );
 
     enabled_commands.push_str(
-        "    headers     Show header names
-    help        Show this usage message
-    index       Create CSV index for faster access
+"    help        Show this usage message
     input       Read CSVs w/ special quoting, skipping, trimming & transcoding rules
     join        Join CSV files\n",
     );
@@ -153,18 +145,11 @@ fn main() -> QsvExitCode {
     #[cfg(all(feature = "polars", feature = "feature_capable"))]
     enabled_commands.push_str("    joinp       Join CSV files using the Pola.rs engine\n");
 
-    enabled_commands.push_str(
-        "    json        Convert JSON to CSV
-    jsonl       Convert newline-delimited JSON files to CSV\n",
-    );
-
     #[cfg(all(feature = "lens", feature = "feature_capable"))]
     enabled_commands.push_str("    lens        View a CSV file interactively\n");
 
     #[cfg(all(feature = "luau", feature = "feature_capable"))]
     enabled_commands.push_str("    luau        Execute Luau script on CSV data\n");
-
-    enabled_commands.push_str("    partition   Partition CSV data based on a column value\n");
 
     #[cfg(all(feature = "polars", feature = "feature_capable"))]
     enabled_commands.push_str("    pivotp      Pivots CSV files using the Pola.rs engine\n");
@@ -180,8 +165,7 @@ fn main() -> QsvExitCode {
     enabled_commands.push_str("    py          Evaluate a Python expression on CSV data\n");
 
     enabled_commands.push_str(
-        "    rename      Rename the columns of CSV data efficiently
-    replace     Replace patterns in CSV data
+        "    replace     Replace patterns in CSV data
     reverse     Reverse rows of CSV data
     safenames   Modify a CSV's header names to db-safe names
     sample      Randomly sample CSV data
@@ -190,11 +174,9 @@ fn main() -> QsvExitCode {
     searchset   Search CSV data with a regex set
     select      Select, re-order, duplicate or drop columns
     slice       Slice records from CSV
-    snappy      Compress/decompress data using the Snappy algorithm
     sniff       Quickly sniff CSV metadata
     sort        Sort CSV data in alphabetical, numerical, reverse or random order
-    sortcheck   Check if a CSV is sorted
-    split       Split CSV data into many files\n",
+    sortcheck   Check if a CSV is sorted\n",
     );
 
     #[cfg(all(feature = "polars", feature = "feature_capable"))]
@@ -205,7 +187,6 @@ fn main() -> QsvExitCode {
     enabled_commands.push_str(
         "    stats       Infer data types and compute summary statistics
     table       Align CSV data into columns
-    template    Render templates using CSV data
     tojsonl     Convert CSV to newline-delimited JSON\n",
     );
 
@@ -348,20 +329,10 @@ enum Command {
     Count,
     Datefmt,
     Dedup,
-    Describegpt,
     Diff,
     Edit,
     Enum,
     Excel,
-    Exclude,
-    Explode,
-    ExtDedup,
-    ExtSort,
-    #[cfg(all(feature = "fetch", feature = "feature_capable"))]
-    Fetch,
-    #[cfg(all(feature = "fetch", feature = "feature_capable"))]
-    FetchPost,
-    Fill,
     FixLengths,
     Flatten,
     Fmt,
@@ -372,29 +343,21 @@ enum Command {
     Geocode,
     #[cfg(all(feature = "geocode", feature = "feature_capable"))]
     Geoconvert,
-    Headers,
     Help,
-    Index,
     Input,
     Join,
     #[cfg(all(feature = "polars", feature = "feature_capable"))]
     JoinP,
-    Json,
-    Jsonl,
     #[cfg(all(feature = "lens", feature = "feature_capable"))]
     Lens,
     #[cfg(all(feature = "luau", feature = "feature_capable"))]
     Luau,
-    Partition,
     #[cfg(all(feature = "polars", feature = "feature_capable"))]
     PivotP,
-    Pro,
     #[cfg(all(feature = "prompt", feature = "feature_capable"))]
     Prompt,
-    Pseudo,
     #[cfg(all(feature = "python", feature = "feature_capable"))]
     Py,
-    Rename,
     Replace,
     Reverse,
     Safenames,
@@ -404,16 +367,13 @@ enum Command {
     SearchSet,
     Select,
     Slice,
-    Snappy,
     Sniff,
     Sort,
     SortCheck,
-    Split,
     #[cfg(all(feature = "polars", feature = "feature_capable"))]
     SqlP,
     Stats,
     Table,
-    Template,
     Transpose,
     #[cfg(all(feature = "to", feature = "feature_capable"))]
     To,
@@ -446,57 +406,39 @@ impl Command {
             Command::Count => cmd::count::run(argv),
             Command::Datefmt => cmd::datefmt::run(argv),
             Command::Dedup => cmd::dedup::run(argv),
-            Command::Describegpt => cmd::describegpt::run(argv),
             Command::Diff => cmd::diff::run(argv),
             Command::Edit => cmd::edit::run(argv),
             Command::Enum => cmd::enumerate::run(argv),
             Command::Excel => cmd::excel::run(argv),
-            Command::Exclude => cmd::exclude::run(argv),
-            Command::Explode => cmd::explode::run(argv),
-            Command::ExtDedup => cmd::extdedup::run(argv),
-            Command::ExtSort => cmd::extsort::run(argv),
-            #[cfg(all(feature = "fetch", feature = "feature_capable"))]
-            Command::Fetch => cmd::fetch::run(argv),
-            #[cfg(all(feature = "fetch", feature = "feature_capable"))]
-            Command::FetchPost => cmd::fetchpost::run(argv),
-            #[cfg(all(feature = "foreach", not(feature = "lite")))]
-            Command::ForEach => cmd::foreach::run(argv),
-            Command::Fill => cmd::fill::run(argv),
             Command::FixLengths => cmd::fixlengths::run(argv),
             Command::Flatten => cmd::flatten::run(argv),
             Command::Fmt => cmd::fmt::run(argv),
+            #[cfg(all(feature = "foreach", feature = "feature_capable"))]
+            Command::Foreach => cmd::foreach::run(argv),
             Command::Frequency => cmd::frequency::run(argv),
             #[cfg(all(feature = "geocode", feature = "feature_capable"))]
             Command::Geocode => cmd::geocode::run(argv),
             #[cfg(all(feature = "geocode", feature = "feature_capable"))]
             Command::Geoconvert => cmd::geoconvert::run(argv),
-            Command::Headers => cmd::headers::run(argv),
             Command::Help => {
                 wout!("{USAGE}\n\n{SPONSOR_MESSAGE}");
                 util::qsv_check_for_update(true, false)?;
                 Ok(())
             },
-            Command::Index => cmd::index::run(argv),
             Command::Input => cmd::input::run(argv),
             Command::Join => cmd::join::run(argv),
             #[cfg(all(feature = "polars", feature = "feature_capable"))]
             Command::JoinP => cmd::joinp::run(argv),
-            Command::Json => cmd::json::run(argv),
-            Command::Jsonl => cmd::jsonl::run(argv),
             #[cfg(all(feature = "lens", feature = "feature_capable"))]
             Command::Lens => cmd::lens::run(argv),
             #[cfg(all(feature = "luau", feature = "feature_capable"))]
             Command::Luau => cmd::luau::run(argv),
-            Command::Partition => cmd::partition::run(argv),
             #[cfg(all(feature = "polars", feature = "feature_capable"))]
             Command::PivotP => cmd::pivotp::run(argv),
-            Command::Pro => cmd::pro::run(argv),
             #[cfg(all(feature = "prompt", feature = "feature_capable"))]
             Command::Prompt => cmd::prompt::run(argv),
-            Command::Pseudo => cmd::pseudo::run(argv),
             #[cfg(all(feature = "python", feature = "feature_capable"))]
             Command::Py => cmd::python::run(argv),
-            Command::Rename => cmd::rename::run(argv),
             Command::Replace => cmd::replace::run(argv),
             Command::Reverse => cmd::reverse::run(argv),
             Command::Safenames => cmd::safenames::run(argv),
@@ -506,16 +448,13 @@ impl Command {
             Command::SearchSet => cmd::searchset::run(argv),
             Command::Select => cmd::select::run(argv),
             Command::Slice => cmd::slice::run(argv),
-            Command::Snappy => cmd::snappy::run(argv),
             Command::Sniff => cmd::sniff::run(argv),
             Command::Sort => cmd::sort::run(argv),
             Command::SortCheck => cmd::sortcheck::run(argv),
-            Command::Split => cmd::split::run(argv),
             #[cfg(all(feature = "polars", feature = "feature_capable"))]
             Command::SqlP => cmd::sqlp::run(argv),
             Command::Stats => cmd::stats::run(argv),
             Command::Table => cmd::table::run(argv),
-            Command::Template => cmd::template::run(argv),
             Command::Transpose => cmd::transpose::run(argv),
             #[cfg(all(feature = "to", feature = "feature_capable"))]
             Command::To => cmd::to::run(argv),
