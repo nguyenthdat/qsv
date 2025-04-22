@@ -119,7 +119,7 @@
 
 ### Option 0: TLDR Quick Install
 
-<a href="https://github.com/dathere/qsv-easy-windows-installer/releases/download/v1.0.0/qsv-easy-installer_1.0.0_x64_en-US.msi"><img src="https://github.com/user-attachments/assets/ca24398b-0aaf-40be-abe0-c79a2b2da520" width="200" /></a>
+<a href="https://github.com/dathere/qsv-easy-windows-installer/releases/download/v1.1.0/qsv-easy-installer_1.1.0_x64_en-US.msi"><img src="https://github.com/user-attachments/assets/ca24398b-0aaf-40be-abe0-c79a2b2da520" width="200" /></a>
 
 qsv's big brother - [qsv pro](https://qsvpro.dathere.com) is available for download from its website and on the [Microsoft Store](https://apps.microsoft.com/detail/xpffdj3f1jsztf?mode=full). Apart from a Graphical User Interface, it's superpowered with additional features and capabilities - an API, [CKAN](https://ckan.org) integration, a Natural Language interface, no false-positive Windows Defender warnings and more!
 
