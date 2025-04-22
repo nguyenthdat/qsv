@@ -83,7 +83,7 @@ cached = { version = "0.55", features = [
     "disk_store",
     "redis_ahash",
 ], optional = true }
-calamine = { version = "0.26", features = ["dates"] }
+calamine = { version = "0.27", features = ["dates"] }
 censor = { version = "0.3", optional = true }
 chrono = { version = "0.4", default-features = false }
 chrono-tz = "0.10"
@@ -314,10 +314,6 @@ csv-index = { git = "https://github.com/dathere/rust-csv", branch = "qsv-optimiz
 # use upstream with 2024 edition now that our PR has been merged
 # but a new release hasn't been made yet
 csvlens = { git = "https://github.com/YS-L/csvlens", rev = "a1af5ca" }
-
-# use latest upstream with upgraded quick-xml and accelerated int/float parsing
-# now that our PR has been merged
-calamine = { git = "https://github.com/tafia/calamine", rev = "7e60cf7" }
 
 # needed to get latest dependencies and unreleased fixes
 grex = { git = "https://github.com/jqnatividad/grex", branch = "bumped-dependencies-202502" }
