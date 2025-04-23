@@ -2626,6 +2626,28 @@ impl TypedMinMax {
                 ) {
                     let min_str = String::from_utf8_lossy(min).to_string();
                     let max_str = String::from_utf8_lossy(max).to_string();
+
+                    let max_length = std::env::var("QSV_STATS_STRING_MAX_LENGTH")
+                        .ok()
+                        .and_then(|s| s.parse::<usize>().ok());
+
+                    let (min_str, max_str) = if let Some(max_len) = max_length {
+                        (
+                            if min_str.len() > max_len {
+                                format!("{}...", &min_str[..max_len])
+                            } else {
+                                min_str
+                            },
+                            if max_str.len() > max_len {
+                                format!("{}...", &max_str[..max_len])
+                            } else {
+                                max_str
+                            },
+                        )
+                    } else {
+                        (min_str, max_str)
+                    };
+
                     let (min_display, max_display) = if visualize_ws {
                         (
                             util::visualize_whitespace(&min_str),

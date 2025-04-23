@@ -2726,3 +2726,109 @@ fn stats_issue_2668_semicolon_separator() {
 
     similar_asserts::assert_eq!(got, expected);
 }
+
+#[test]
+fn stats_string_max_length() {
+    let wrk = Workdir::new("stats_string_max_length");
+
+    // Create test data with long strings
+    wrk.create(
+        "data.csv",
+        vec![
+            svec!["col1", "col2"],
+            svec!["short", "very_short"],
+            svec!["medium_length_string", "medium_length_string"],
+            svec![
+                "this_is_a_very_long_string_that_should_be_truncated",
+                "another_very_long_string_that_should_be_truncated"
+            ],
+        ],
+    );
+
+    // Run stats with QSV_STATS_STRING_MAX_LENGTH set to 10
+    let mut cmd = wrk.command("stats");
+    cmd.arg("data.csv").env("QSV_STATS_STRING_MAX_LENGTH", "10");
+
+    let got: Vec<Vec<String>> = wrk.read_stdout(&mut cmd);
+
+    // Print the output for debugging
+    // println!("Output with QSV_STATS_STRING_MAX_WIDTH=10:");
+    // for row in &got {
+    //     println!("{:?}", row);
+    // }
+
+    // Find the min and max values in the output
+    let mut min_value = String::new();
+    let mut max_value = String::new();
+
+    // Find the row for col1
+    for row in &got {
+        if row.len() > 0 && row[0] == "col1" {
+            // The min and max values are in columns 4 and 5 (0-indexed)
+            if row.len() > 5 {
+                min_value = row[4].clone();
+                max_value = row[5].clone();
+            }
+            break;
+        }
+    }
+
+    // Check that the long string was truncated
+    assert_eq!(min_value, "medium_len...");
+    assert_eq!(max_value, "this_is_a_...");
+
+    // Run stats with QSV_STATS_STRING_MAX_LENGTH set to 20
+    let mut cmd = wrk.command("stats");
+    cmd.arg("data.csv").env("QSV_STATS_STRING_MAX_LENGTH", "20");
+
+    let got: Vec<Vec<String>> = wrk.read_stdout(&mut cmd);
+
+    // Find the min and max values in the output
+    let mut min_value = String::new();
+    let mut max_value = String::new();
+
+    // Find the row for col1
+    for row in &got {
+        if row.len() > 0 && row[0] == "col1" {
+            // The min and max values are in columns 4 and 5 (0-indexed)
+            if row.len() > 5 {
+                min_value = row[4].clone();
+                max_value = row[5].clone();
+            }
+            break;
+        }
+    }
+
+    // Check that the long string was truncated with a longer width
+    assert_eq!(min_value, "medium_length_string");
+    assert_eq!(max_value, "this_is_a_very_long_...");
+
+    // Run stats without the environment variable
+    let mut cmd = wrk.command("stats");
+    cmd.arg("data.csv");
+
+    let got: Vec<Vec<String>> = wrk.read_stdout(&mut cmd);
+
+    // Find the min and max values in the output
+    let mut min_value = String::new();
+    let mut max_value = String::new();
+
+    // Find the row for col1
+    for row in &got {
+        if row.len() > 0 && row[0] == "col1" {
+            // The min and max values are in columns 4 and 5 (0-indexed)
+            if row.len() > 5 {
+                min_value = row[4].clone();
+                max_value = row[5].clone();
+            }
+            break;
+        }
+    }
+
+    // Check that the long string was not truncated
+    assert_eq!(min_value, "medium_length_string");
+    assert_eq!(
+        max_value,
+        "this_is_a_very_long_string_that_should_be_truncated"
+    );
+}
