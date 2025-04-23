@@ -1527,3 +1527,38 @@ Ackerly,0,0
 Addison,0,0"#;
     similar_asserts::assert_eq!(got, expected);
 }
+
+#[test]
+fn geoconvert_geojson_to_csv_max_length() {
+    let wrk = Workdir::new("geoconvert_geojson_to_csv_max_length");
+    let txcities_geojson = wrk.load_test_file("TX_Cities.geojson");
+    let txcities_csv = wrk
+        .path("TX_cities_max_length.csv")
+        .to_string_lossy()
+        .to_string();
+
+    // Convert GeoJSON to CSV with max-length option set to 10
+    let mut cmd = wrk.command("geoconvert");
+    cmd.arg(txcities_geojson)
+        .arg("geojson")
+        .arg("csv")
+        .args(["--max-length", "10"])
+        .args(["--output", &txcities_csv]);
+
+    wrk.assert_success(&mut cmd);
+
+    let mut cmd = wrk.command("slice");
+    cmd.arg(txcities_csv).args(["--len", "5"]);
+
+    wrk.assert_success(&mut cmd);
+
+    let got: String = wrk.stdout(&mut cmd);
+
+    let expected = r#"geometry,OBJECTID,name,Shape_Length,Shape_Area
+POLYGON((-...,1,Abbott,0,0
+MULTIPOLYG...,2,Abernathy,0,0
+POLYGON((-...,3,Abilene,0,0
+POLYGON((-...,4,Ackerly,0,0
+POLYGON((-...,5,Addison,0,0"#;
+    similar_asserts::assert_eq!(got, expected);
+}

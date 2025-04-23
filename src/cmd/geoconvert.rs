@@ -37,17 +37,25 @@ geoconvert options:
     -y, --latitude <col>         The name of the column with northing values.
     -x, --longitude <col>        The name of the column with easting values.
 
+    -l, --max-length <length>    The maximum column length when the output format is CSV.
+                                 Oftentimes, the geometry column is too long to fit in a
+                                 CSV file, causing other tools like Python & PostgreSQL to fail. 
+                                 If a column is too long, it will be truncated to the specified
+                                 length and an ellipsis ("...") will be appended.
+
 Common options:
     -h, --help                   Display this message
     -o, --output <file>          Write output to <file> instead of stdout.
 "#;
 
 use std::{
-    fs::File,
+    env,
+    fs::{self, File},
     io::{self, BufRead, BufReader, BufWriter, Write},
     path::Path,
 };
 
+use csv::{Reader, Writer};
 use geozero::{
     GeozeroDatasource,
     csv::CsvWriter,
@@ -57,6 +65,57 @@ use geozero::{
 use serde::Deserialize;
 
 use crate::{CliError, CliResult, util};
+
+/// Helper function to handle CSV output with max_length truncation
+fn process_csv_with_max_length<F>(
+    wtr: &mut Box<dyn Write>,
+    max_len: usize,
+    process_fn: F,
+) -> CliResult<()>
+where
+    F: FnOnce(&mut Box<dyn Write>) -> CliResult<()>,
+{
+    // Create a temporary file for the CSV output
+    let temp_dir = env::temp_dir();
+    let temp_file_path = temp_dir.join(format!("qsv_geoconvert_{}.csv", uuid::Uuid::new_v4()));
+
+    // Write the CSV output to the temporary file
+    {
+        let temp_file = File::create(&temp_file_path)?;
+        let temp_writer = BufWriter::new(temp_file);
+        let mut temp_box: Box<dyn Write> = Box::new(temp_writer);
+        process_fn(&mut temp_box)?;
+    } // temp_writer is dropped here, which will flush it
+
+    // Read the temporary file and truncate columns that exceed the max length
+    let mut rdr = Reader::from_path(&temp_file_path)?;
+    let headers = rdr.headers()?.clone();
+
+    // Create a new CSV writer for the final output
+    let mut csv_writer = Writer::from_writer(wtr);
+    csv_writer.write_record(&headers)?;
+
+    // Process each record and truncate columns that exceed the max length
+    for result in rdr.records() {
+        let record = result?;
+        let mut truncated_record = Vec::new();
+
+        for value in &record {
+            if value.len() > max_len {
+                truncated_record.push(format!("{}...", &value[..max_len]));
+            } else {
+                truncated_record.push(value.to_string());
+            }
+        }
+
+        csv_writer.write_record(&truncated_record)?;
+    }
+
+    // Clean up the temporary file
+    fs::remove_file(temp_file_path)?;
+
+    Ok(())
+}
 
 /// Supported input formats for spatial data conversion
 #[derive(Debug, Deserialize, PartialEq)]
@@ -87,6 +146,7 @@ struct Args {
     flag_longitude:    Option<String>,
     flag_geometry:     Option<String>,
     flag_output:       Option<String>,
+    flag_max_length:   Option<usize>,
 }
 
 impl From<geozero::error::GeozeroError> for CliError {
@@ -120,6 +180,8 @@ fn validate_input_file(path: &str) -> CliResult<()> {
 pub fn run(argv: &[&str]) -> CliResult<()> {
     let args: Args = util::get_args(USAGE, argv)?;
 
+    let max_length = args.flag_max_length;
+
     let mut buf_reader: Box<dyn BufRead> = if let Some(input_path) = args.arg_input.clone() {
         if &input_path == "-" {
             Box::new(BufReader::new(std::io::stdin()))
@@ -141,8 +203,18 @@ pub fn run(argv: &[&str]) -> CliResult<()> {
     match args.arg_input_format {
         InputFormat::Geojson => {
             let mut geometry = geozero::geojson::GeoJsonReader(&mut buf_reader);
+
             match args.arg_output_format {
                 OutputFormat::Csv => {
+                    if let Some(max_len) = max_length {
+                        process_csv_with_max_length(&mut wtr, max_len, |writer| {
+                            let mut processor = CsvWriter::new(writer);
+                            geometry.process(&mut processor)?;
+                            Ok(())
+                        })?;
+                        return Ok(());
+                    }
+                    // If max_length is not set, write directly to the output
                     let mut processor = CsvWriter::new(&mut wtr);
                     geometry.process(&mut processor)?;
                 },
@@ -196,6 +268,7 @@ pub fn run(argv: &[&str]) -> CliResult<()> {
                 BufReader::new(File::open(shp_input_path.replace(".shp", ".dbf"))?);
             reader.add_index_source(&mut input_reader)?;
             reader.add_dbf_source(&mut dbf_reader)?;
+
             let output_string = match args.arg_output_format {
                 OutputFormat::Geojson => {
                     let mut json: Vec<u8> = Vec::new();
@@ -214,6 +287,18 @@ pub fn run(argv: &[&str]) -> CliResult<()> {
                         .map_err(|e| CliError::Other(format!("Invalid UTF-8 in output: {e}")))?
                 },
                 OutputFormat::Csv => {
+                    if let Some(max_len) = max_length {
+                        process_csv_with_max_length(&mut wtr, max_len, |writer| {
+                            let mut csv: Vec<u8> = Vec::new();
+                            let _ = reader
+                                .iter_features(&mut CsvWriter::new(&mut csv))?
+                                .collect::<Vec<_>>();
+                            writer.write_all(&csv)?;
+                            Ok(())
+                        })?;
+                        return Ok(());
+                    }
+                    // If max_length is not set, write directly to the output
                     let mut csv: Vec<u8> = Vec::new();
                     let _ = reader
                         .iter_features(&mut CsvWriter::new(&mut csv))?
@@ -225,7 +310,11 @@ pub fn run(argv: &[&str]) -> CliResult<()> {
                     return fail_clierror!("Converting SHP to SVG is not supported");
                 },
             };
-            wtr.write_all(output_string.as_bytes())?;
+
+            // Only write to the output if we haven't already written to it
+            if args.arg_output_format != OutputFormat::Csv || max_length.is_none() {
+                wtr.write_all(output_string.as_bytes())?;
+            }
         },
         InputFormat::Csv => {
             if args.flag_geometry.is_some()
@@ -237,6 +326,7 @@ pub fn run(argv: &[&str]) -> CliResult<()> {
             }
             if let Some(geometry_col) = args.flag_geometry {
                 let mut csv = geozero::csv::CsvReader::new(&geometry_col, buf_reader);
+
                 match args.arg_output_format {
                     OutputFormat::Geojson => {
                         let mut processor = GeoJsonWriter::new(&mut wtr);
@@ -251,6 +341,14 @@ pub fn run(argv: &[&str]) -> CliResult<()> {
                         csv.process(&mut processor)?;
                     },
                     OutputFormat::Csv => {
+                        if let Some(max_len) = max_length {
+                            process_csv_with_max_length(&mut wtr, max_len, |writer| {
+                                let mut processor = CsvWriter::new(writer);
+                                csv.process(&mut processor)?;
+                                Ok(())
+                            })?;
+                            return Ok(());
+                        }
                         return fail_clierror!("Converting CSV to CSV is not supported");
                     },
                 }
@@ -352,6 +450,15 @@ pub fn run(argv: &[&str]) -> CliResult<()> {
                         let mut geometry = geozero::geojson::GeoJson(&fc_string);
                         match args.arg_output_format {
                             OutputFormat::Csv => {
+                                if let Some(max_len) = max_length {
+                                    process_csv_with_max_length(&mut wtr, max_len, |writer| {
+                                        let mut processor = CsvWriter::new(writer);
+                                        geometry.process(&mut processor)?;
+                                        Ok(())
+                                    })?;
+                                    return Ok(());
+                                }
+                                // If max_length is not set, write directly to the output
                                 let mut processor = CsvWriter::new(&mut wtr);
                                 geometry.process(&mut processor)?;
                             },
@@ -367,7 +474,7 @@ pub fn run(argv: &[&str]) -> CliResult<()> {
                                 wtr.write_all(fc_string.as_bytes())?;
                             },
                         }
-                        return Ok(wtr.flush()?);
+                        return Ok(());
                     }
                 }
                 return fail_clierror!(
