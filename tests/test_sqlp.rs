@@ -939,13 +939,12 @@ fn sqlp_boston311_explain() {
   AGGREGATE
 "    [[(col(""closed_dt"")) - (col(""open_dt""))].mean().strict_cast(Float64).alias(""avg_tat"")] BY [col(""ward"")]"
     FROM
-"    simple π 4/4 [""ward"", ""closed_dt"", ""open_dt"", ... 1 other column]"
-      Csv SCAN ["#;
+    Csv SCAN ["#;
     assert!(got.starts_with(expected_begin));
 
     let expected_end = r#"boston311-100.csv]
-      PROJECT 4/29 COLUMNS
-"      SELECTION: [(col(""case_status"")) == (""Closed"")]""#;
+    PROJECT 4/29 COLUMNS
+"    SELECTION: [(col(""case_status"")) == (""Closed"")]""#;
     assert!(got.ends_with(expected_end));
 }
 
