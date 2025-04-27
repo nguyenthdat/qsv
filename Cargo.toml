@@ -276,7 +276,7 @@ uuid = { version = "1", features = ["v4", "v7"] }
 url = "2.5"
 whatlang = { version = "0.16", optional = true }
 xxhash-rust = { version = "0.8", features = ["xxh3"] }
-zip = "=2.5.0"
+zip = "2.6"
 
 # enable parking_lot hardware lock elision on x86_64
 [target.'cfg(target_arch = "x86_64")'.dependencies]
@@ -311,6 +311,9 @@ serial_test = { version = "3.2", features = ["file_locks"] }
 csv       = { git = "https://github.com/dathere/rust-csv", branch = "qsv-optimized-non-allocating-byterecord-trim" }
 csv-core  = { git = "https://github.com/dathere/rust-csv", branch = "qsv-optimized-non-allocating-byterecord-trim" }
 csv-index = { git = "https://github.com/dathere/rust-csv", branch = "qsv-optimized-non-allocating-byterecord-trim" }
+
+# use upstream with unreleased fixes to allow the use of zip 2.6
+calamine = { git = "https://github.com/tafia/calamine", rev = "0d772d1" }
 
 # use upstream with 2024 edition now that our PR has been merged
 # but a new release hasn't been made yet
