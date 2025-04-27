@@ -31,6 +31,7 @@ use serde::de::DeserializeOwned;
 #[cfg(any(feature = "feature_capable", feature = "lite"))]
 use serde::de::{Deserialize, Deserializer, Error};
 use sysinfo::System;
+use zip::read::root_dir_common_filter;
 
 #[cfg(feature = "polars")]
 use crate::cmd::count::polars_count_input;
@@ -40,7 +41,7 @@ use crate::{
     config,
     config::{
         Config, DEFAULT_RDR_BUFFER_CAPACITY, DEFAULT_WTR_BUFFER_CAPACITY, Delimiter, SpecialFormat,
-        is_special_format,
+        get_special_format,
     },
     select::SelectColumns,
 };
@@ -1758,6 +1759,19 @@ pub fn isutf8_file(path: &Path) -> Result<bool, CliError> {
     Ok(simdutf8::basic::from_utf8(&buffer).is_ok())
 }
 
+// check if a file is supported by process_input
+fn is_supported_file(path: &Path) -> bool {
+    let ext = path
+        .extension()
+        .and_then(std::ffi::OsStr::to_str)
+        .map(str::to_lowercase)
+        .unwrap_or_default();
+    match ext.as_str() {
+        "csv" | "ssv" | "tsv" | "tab" => true,
+        _ => get_special_format(path) != SpecialFormat::Unknown,
+    }
+}
+
 /// Process the input files and return a vector of paths to the input files.
 ///
 /// If the input is empty, try to copy stdin to a file named stdin in the passed temp directory.
@@ -1765,6 +1779,7 @@ pub fn isutf8_file(path: &Path) -> Result<bool, CliError> {
 /// If it's not empty, check the input files if they exist, and return an error if they don't.
 ///
 /// If the input is a directory, add all the files in the directory to the input.
+/// If the input is a zip file, add all the files in the zip file to the input.
 /// If the input is a file with the extension ".infile-list", read the file & add each line as a
 /// file to the input.
 /// If the input is a file, add the file to the input.
@@ -1779,10 +1794,12 @@ pub fn process_input(
     let work_input = if arg_input.len() == 1 {
         let input_path = &arg_input[0];
         if input_path.is_dir() {
-            // if the input is a directory, add all the files in the directory to the input
+            // if the input is a directory, add all the supported files in the directory to the
+            // input
             std::fs::read_dir(input_path)?
                 .map(|entry| entry.map(|e| e.path()))
-                .collect::<Result<Vec<_>, _>>()?
+                .filter_map(|path| path.ok().filter(|p| is_supported_file(p)))
+                .collect::<Vec<_>>()
         } else if input_path.is_file() {
             // if the input is a file and has the extension "infile-list" case-insensitive,
             // read the file. Each line is a file path
@@ -1876,6 +1893,67 @@ pub fn process_input(
             std::fs::rename(&decompressed_filepath, &final_decompressed_filepath)?;
 
             processed_input.push(final_decompressed_filepath);
+        }
+        // is the input file a zip archive?
+        else if path
+            .extension()
+            .and_then(std::ffi::OsStr::to_str)
+            .map(str::to_lowercase)
+            == Some("zip".to_string())
+        {
+            // if so, extract all files from the zip archive to the temp directory
+            log::info!("Extracting files from zip archive: {}", path.display());
+
+            // Create a subdirectory in the temp directory for this zip file
+            let zip_filename = path
+                .file_name()
+                .unwrap()
+                .to_str()
+                .unwrap()
+                .replace(".zip", "");
+            let zip_extract_dir = tmpdir.path().join(&zip_filename);
+            std::fs::create_dir_all(&zip_extract_dir)?;
+
+            // Open the zip file
+            let zip_file = std::fs::File::open(&path)?;
+            let mut archive = zip::ZipArchive::new(zip_file)?;
+
+            // Extract all files from the zip archive
+            for i in 0..archive.len() {
+                let mut zip_entry = archive.by_index(i)?;
+                let entry_path = zip_entry.name().to_string();
+
+                // Skip directories and common system files
+                if entry_path.ends_with('/')
+                    || !root_dir_common_filter(std::path::Path::new(&entry_path))
+                {
+                    log::info!("  Skipping system file or directory: {entry_path}");
+                    continue;
+                }
+
+                // Create the full path for the extracted file
+                let file_path = zip_extract_dir.join(&entry_path);
+
+                // Create parent directories if they don't exist
+                if let Some(parent) = file_path.parent() {
+                    std::fs::create_dir_all(parent)?;
+                }
+
+                // Extract the file
+                let mut outfile = std::fs::File::create(&file_path)?;
+                std::io::copy(&mut zip_entry, &mut outfile)?;
+
+                log::info!("  Extracted file: {}", file_path.display());
+
+                // Add the extracted file to the processed input if it's a supported format
+                if is_supported_file(&file_path) {
+                    processed_input.push(file_path);
+                } else {
+                    log::info!("  Skipping unsupported file type: {}", file_path.display());
+                }
+            }
+
+            log::info!("Extracted {} files from zip archive", archive.len());
         } else {
             processed_input.push(path);
         }
@@ -2132,7 +2210,7 @@ pub fn get_stats_records(
         || env_mode == "none"
         || args.arg_input.is_none()
         || args.arg_input.as_ref() == Some(&"-".to_string())
-        || is_special_format(Path::new(args.arg_input.as_ref().unwrap())) != SpecialFormat::Unknown
+        || get_special_format(Path::new(args.arg_input.as_ref().unwrap())) != SpecialFormat::Unknown
     {
         // if stdin or StatsMode::None,
         // we're just doing frequency old school w/o cardinality

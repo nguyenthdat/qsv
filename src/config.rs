@@ -204,7 +204,7 @@ impl Config {
 
                 #[cfg(feature = "polars")]
                 let special_format = {
-                    let special_format = is_special_format(&path);
+                    let special_format = get_special_format(&path);
                     if special_format != SpecialFormat::Unknown {
                         skip_format_check = true;
                     }
@@ -801,7 +801,7 @@ pub fn get_delim_by_extension(path: &Path, default_delim: u8) -> (String, u8, bo
 /// # Returns
 ///
 /// A `SpecialFormat` enum value indicating the type of special format the file is.
-pub fn is_special_format(path: &Path) -> SpecialFormat {
+pub fn get_special_format(path: &Path) -> SpecialFormat {
     if !path.exists() {
         return SpecialFormat::Unknown;
     }
