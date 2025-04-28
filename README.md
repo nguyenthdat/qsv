@@ -184,7 +184,7 @@ scoop install qsv
 # Void Linux (https://voidlinux.org/packages/?arch=x86_64&q=qsv)
 sudo xbps-install qsv
 
-# Conda-forge
+# Conda-forge (https://anaconda.org/conda-forge/qsv)
 conda install conda-forge::qsv
 ```
 
