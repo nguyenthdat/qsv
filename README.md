@@ -131,20 +131,20 @@ width="200"  /></a>
 Full-featured prebuilt [binary variants](#variants) of the latest qsv version for Linux, macOS & Windows are available [for download](https://github.com/dathere/qsv/releases/latest), including binaries compiled with [Rust Nightly](https://stackoverflow.com/questions/70745970/rust-nightly-vs-beta-version) ([more info](https://github.com/dathere/qsv/blob/master/docs/PERFORMANCE.md#nightly-release-builds)). You may click a badge below based on your platform to download a ZIP with pre-built binaries.
 
 <div style="display: flex; gap: 1rem;">
-<a href="https://qsv.dathere.com/download/linux-x86_64-gnu"><img src="https://github.com/user-attachments/assets/f71812ec-30bc-4bfe-a8a3-a639d6a6c5aa" width="200" /></a>
-<a href="https://qsv.dathere.com/download/linux-aarch64-gnu"><img src="https://github.com/user-attachments/assets/80dccb2a-c0e5-4f85-a4e2-282d7e84d03f" width="200" /></a>
-<a href="https://qsv.dathere.com/download/linux-x86_64-musl"><img src="https://github.com/user-attachments/assets/aa2ee7ec-c183-4426-87e6-c2e9c136b69f" width="200" /></a>
-<a href="https://qsv.dathere.com/download/macos-silicon"><img src="https://github.com/user-attachments/assets/6b9534ae-ea09-44f9-b34a-259a3d9bcfa1" width="200" /></a>
-<a href="https://qsv.dathere.com/download/macos-intel"><img src="https://github.com/user-attachments/assets/79a25198-09b0-4c41-9ed7-2098da163d8b" width="200" /></a>
-<a href="https://qsv.dathere.com/download/windows-msvc"><img src="https://github.com/user-attachments/assets/d4418a34-541a-4a9a-8f29-da25d9ff3d7f" width="200" /></a>
-<a href="https://qsv.dathere.com/download/windows-gnu"><img src="https://github.com/user-attachments/assets/771660f3-e898-4ee2-acb5-e5f268434752" width="200" /></a>
+<a target="_blank" href="https://qsv.dathere.com/download/linux-x86_64-gnu"><img src="https://github.com/user-attachments/assets/f71812ec-30bc-4bfe-a8a3-a639d6a6c5aa" width="200" /></a>
+<a target="_blank" href="https://qsv.dathere.com/download/linux-aarch64-gnu"><img src="https://github.com/user-attachments/assets/80dccb2a-c0e5-4f85-a4e2-282d7e84d03f" width="200" /></a>
+<a target="_blank" href="https://qsv.dathere.com/download/linux-x86_64-musl"><img src="https://github.com/user-attachments/assets/aa2ee7ec-c183-4426-87e6-c2e9c136b69f" width="200" /></a>
+<a target="_blank" href="https://qsv.dathere.com/download/macos-silicon"><img src="https://github.com/user-attachments/assets/6b9534ae-ea09-44f9-b34a-259a3d9bcfa1" width="200" /></a>
+<a target="_blank" href="https://qsv.dathere.com/download/macos-intel"><img src="https://github.com/user-attachments/assets/79a25198-09b0-4c41-9ed7-2098da163d8b" width="200" /></a>
+<a target="_blank" href="https://qsv.dathere.com/download/windows-msvc"><img src="https://github.com/user-attachments/assets/d4418a34-541a-4a9a-8f29-da25d9ff3d7f" width="200" /></a>
+<a target="_blank" href="https://qsv.dathere.com/download/windows-gnu"><img src="https://github.com/user-attachments/assets/771660f3-e898-4ee2-acb5-e5f268434752" width="200" /></a>
 </div>
 
 These prebuilt binaries are also built with CPU optimizations enabled for x86_64 (e.g. [SSE4.2](https://en.wikipedia.org/wiki/SSE4#SSE4.2), [AVX2](https://en.wikipedia.org/wiki/Advanced_Vector_Extensions#Advanced_Vector_Extensions_2), [AVX512](https://en.wikipedia.org/wiki/Advanced_Vector_Extensions#Advanced_Vector_Extensions_512), etc. on Intel and AMD processors) and Apple Silicon processors ([ARM64 SIMD NEON](https://eclecticlight.co/2021/08/06/accelerating-the-m1-mac-an-introduction-to-simd/)) for even more performance gains. This may prevent some older CPUs from running qsv. If so, "portable" binaries (all CPU optimizations disabled) are also included in the release zip archives (qsv with a "p" suffix - e.g. `qsvp`, `qsvplite` `qsvpdp`).
 
 For Windows, an MSI "Easy installer" is also available. After downloading and installing the Easy installer, launch the Easy installer and click "Install qsv" to download the latest `qsvp` pre-built binary to a folder that is added to your `PATH`. Afterwards qsv should be installed and you may launch a new terminal to use qsv.
 
-<a href="https://github.com/dathere/qsv-easy-windows-installer/releases/download/v1.1.1/qsv-easy-installer_1.1.1_x64_en-US.msi"><img src="https://github.com/user-attachments/assets/ca24398b-0aaf-40be-abe0-c79a2b2da520" width="200" /></a>
+<a download href="https://github.com/dathere/qsv-easy-windows-installer/releases/download/v1.1.1/qsv-easy-installer_1.1.1_x64_en-US.msi"><img src="https://github.com/user-attachments/assets/ca24398b-0aaf-40be-abe0-c79a2b2da520" width="200" /></a>
 
 For macOS, ["ad-hoc" signatures](https://users.rust-lang.org/t/distributing-cli-apps-on-macos/70223) are used to sign our binaries, so you will need to [set appropriate Gatekeeper security settings](https://support.apple.com/en-us/HT202491) or run the following command to remove the quarantine attribute from qsv before you run it for the first time:
 
