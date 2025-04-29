@@ -183,6 +183,9 @@ scoop install qsv
 
 # Void Linux (https://voidlinux.org/packages/?arch=x86_64&q=qsv)
 sudo xbps-install qsv
+
+# Conda-forge (https://anaconda.org/conda-forge/qsv)
+conda install conda-forge::qsv
 ```
 
 Note that qsv provided by these package managers/distros enable different features (Homebrew, for instance, only enables the `apply` and `luau` features. However, it does automatically install shell completion for `bash`, `fish` and `zsh` shells).
