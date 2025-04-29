@@ -79,6 +79,8 @@ mod test_foreach;
 mod test_frequency;
 #[cfg(feature = "geocode")]
 mod test_geocode;
+#[cfg(feature = "geocode")]
+mod test_geoconvert;
 mod test_headers;
 mod test_index;
 mod test_input;
