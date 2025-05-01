@@ -466,7 +466,7 @@ dependencies = [
  "arrow-schema",
  "chrono",
  "half",
- "hashbrown 0.15.2",
+ "hashbrown 0.15.3",
  "num",
 ]
 
@@ -2558,7 +2558,7 @@ version = "0.13.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "8640e34b88f7652208ce9e88b1a37a2ae95227d84abec377ccd3c5cfeb141ed4"
 dependencies = [
- "rustix 1.0.5",
+ "rustix 1.0.7",
  "windows-sys 0.59.0",
 ]
 
@@ -2899,7 +2899,7 @@ dependencies = [
  "futures-timer",
  "futures-util",
  "getrandom 0.3.2",
- "hashbrown 0.15.2",
+ "hashbrown 0.15.3",
  "nonzero_ext",
  "parking_lot",
  "portable-atomic",
@@ -2990,7 +2990,7 @@ version = "0.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "aa2c385c6df70fd180bbb673d93039dbd2cd34e41d782600bdf6e1ca7bce39aa"
 dependencies = [
- "hashbrown 0.15.2",
+ "hashbrown 0.15.3",
  "serde",
 ]
 
@@ -3017,9 +3017,9 @@ dependencies = [
 
 [[package]]
 name = "hashbrown"
-version = "0.15.2"
+version = "0.15.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "bf151400ff0baff5465007dd2f3e717f3fe502074ca563069ce3a6629d07b289"
+checksum = "84b26c544d002229e640969970a2e74021aadf6e2f96372b9c58eff97de08eb3"
 dependencies = [
  "allocator-api2",
  "equivalent",
@@ -3405,7 +3405,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "cea70ddb795996207ad57735b50c5982d8844f38ba9ee5f1aedcfb708a2aa11e"
 dependencies = [
  "equivalent",
- "hashbrown 0.15.2",
+ "hashbrown 0.15.3",
  "serde",
 ]
 
@@ -3942,7 +3942,7 @@ version = "0.12.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "234cf4f4a04dc1f57e24b96cc0cd600cf2af460d4161ac5ecdd0af8e1f3b2a38"
 dependencies = [
- "hashbrown 0.15.2",
+ "hashbrown 0.15.3",
 ]
 
 [[package]]
@@ -4625,7 +4625,7 @@ dependencies = [
  "bytes",
  "chrono",
  "half",
- "hashbrown 0.15.2",
+ "hashbrown 0.15.3",
  "num",
  "num-bigint",
  "paste",
@@ -4828,7 +4828,7 @@ dependencies = [
  "either",
  "ethnum",
  "getrandom 0.2.16",
- "hashbrown 0.15.2",
+ "hashbrown 0.15.3",
  "itoa",
  "lz4",
  "num-traits",
@@ -4866,7 +4866,7 @@ dependencies = [
  "chrono",
  "either",
  "fast-float2",
- "hashbrown 0.15.2",
+ "hashbrown 0.15.3",
  "itoa",
  "num-traits",
  "polars-arrow",
@@ -4892,7 +4892,7 @@ dependencies = [
  "comfy-table",
  "either",
  "hashbrown 0.14.5",
- "hashbrown 0.15.2",
+ "hashbrown 0.15.3",
  "indexmap",
  "itoa",
  "num-traits",
@@ -4933,7 +4933,7 @@ version = "0.46.0"
 source = "git+https://github.com/pola-rs/polars?rev=c434669#c434669d583dd40c21e84f30becddfc716e0b224"
 dependencies = [
  "bitflags 2.9.0",
- "hashbrown 0.15.2",
+ "hashbrown 0.15.3",
  "num-traits",
  "polars-arrow",
  "polars-compute",
@@ -4965,7 +4965,7 @@ dependencies = [
  "fs4",
  "futures",
  "glob",
- "hashbrown 0.15.2",
+ "hashbrown 0.15.3",
  "home",
  "itoa",
  "memchr",
@@ -5003,7 +5003,7 @@ dependencies = [
  "chrono",
  "chrono-tz 0.10.3",
  "fallible-streaming-iterator",
- "hashbrown 0.15.2",
+ "hashbrown 0.15.3",
  "indexmap",
  "itoa",
  "num-traits",
@@ -5077,7 +5077,7 @@ dependencies = [
  "chrono",
  "chrono-tz 0.10.3",
  "either",
- "hashbrown 0.15.2",
+ "hashbrown 0.15.3",
  "hex",
  "indexmap",
  "jsonpath_lib_polars_vendor",
@@ -5114,7 +5114,7 @@ dependencies = [
  "ethnum",
  "flate2",
  "futures",
- "hashbrown 0.15.2",
+ "hashbrown 0.15.3",
  "lz4",
  "num-traits",
  "polars-arrow",
@@ -5148,7 +5148,7 @@ dependencies = [
  "crossbeam-queue",
  "enum_dispatch",
  "futures",
- "hashbrown 0.15.2",
+ "hashbrown 0.15.3",
  "num-traits",
  "polars-arrow",
  "polars-compute",
@@ -5177,7 +5177,7 @@ dependencies = [
  "chrono-tz 0.10.3",
  "either",
  "futures",
- "hashbrown 0.15.2",
+ "hashbrown 0.15.3",
  "memmap2",
  "num-traits",
  "percent-encoding",
@@ -5313,7 +5313,7 @@ dependencies = [
  "compact_str",
  "flate2",
  "foldhash",
- "hashbrown 0.15.2",
+ "hashbrown 0.15.3",
  "indexmap",
  "libc",
  "memmap2",
@@ -5619,7 +5619,7 @@ dependencies = [
  "governor 0.10.0",
  "grex",
  "gzp",
- "hashbrown 0.15.2",
+ "hashbrown 0.15.3",
  "human-panic",
  "indexmap",
  "indicatif",
@@ -5719,7 +5719,7 @@ dependencies = [
  "bytecount",
  "csv",
  "csv-core",
- "hashbrown 0.15.2",
+ "hashbrown 0.15.3",
  "memchr",
  "qsv-dateparser",
  "regex",
@@ -5852,9 +5852,9 @@ dependencies = [
 
 [[package]]
 name = "quinn-udp"
-version = "0.5.11"
+version = "0.5.12"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "541d0f57c6ec747a90738a52741d3221f7960e8ac2f0ff4b1a63680e033b4ab5"
+checksum = "ee4e529991f949c5e25755532370b8af5d114acae52326361d68d47af64aa842"
 dependencies = [
  "cfg_aliases",
  "libc",
@@ -6435,9 +6435,9 @@ dependencies = [
 
 [[package]]
 name = "rustix"
-version = "1.0.5"
+version = "1.0.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d97817398dd4bb2e6da002002db259209759911da105da92bec29ccb12cf58bf"
+checksum = "c71e83d6afe7ff64890ec6b71d6a69bb8a610ab78ce364b3352876bb4c801266"
 dependencies = [
  "bitflags 2.9.0",
  "errno",
@@ -6775,9 +6775,9 @@ checksum = "bbfa15b3dddfee50a0fff136974b3e1bde555604ba463834a7eb7deb6417705d"
 
 [[package]]
 name = "sha2"
-version = "0.10.8"
+version = "0.10.9"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "793db75ad2bcafc3ffa7c68b215fee268f537982cd901d132f89c6343f3a3dc8"
+checksum = "a7507d819769d01a365ab707794a4084392c824f54a7a6a7862f8c3d0892b283"
 dependencies = [
  "cfg-if",
  "cpufeatures",
@@ -7229,9 +7229,9 @@ dependencies = [
 
 [[package]]
 name = "synstructure"
-version = "0.13.1"
+version = "0.13.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c8af7666ab7b6390ab78131fb5b0fce11d6b7a6951602017c35fa82800708971"
+checksum = "728a70f3dbaf5bab7f0c4b1ac8d7ae5ea60a4b5549c8a5914361c99147a709d2"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -7294,7 +7294,7 @@ dependencies = [
  "fastrand",
  "getrandom 0.3.2",
  "once_cell",
- "rustix 1.0.5",
+ "rustix 1.0.7",
  "windows-sys 0.59.0",
 ]
 
@@ -8111,9 +8111,9 @@ dependencies = [
 
 [[package]]
 name = "wayland-backend"
-version = "0.3.9"
+version = "0.3.10"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c2bea670be0e24795f39416e5461ccef0185b47df2749ed2b226b8a7557ac871"
+checksum = "fe770181423e5fc79d3e2a7f4410b7799d5aab1de4372853de3c6aa13ca24121"
 dependencies = [
  "cc",
  "downcast-rs",
@@ -8124,9 +8124,9 @@ dependencies = [
 
 [[package]]
 name = "wayland-client"
-version = "0.31.9"
+version = "0.31.10"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5029b0ff4f7be961c326169ee8e247d534d8507dbe390cac6aa3d2cc7c268825"
+checksum = "978fa7c67b0847dbd6a9f350ca2569174974cd4082737054dbb7fbb79d7d9a61"
 dependencies = [
  "bitflags 2.9.0",
  "rustix 0.38.44",
@@ -8136,9 +8136,9 @@ dependencies = [
 
 [[package]]
 name = "wayland-protocols"
-version = "0.32.7"
+version = "0.32.8"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ba8de1f9dda5e589d08848af3ad4cd694bbfd059c3eb3c6d89c7120e8c0efa71"
+checksum = "779075454e1e9a521794fed15886323ea0feda3f8b0fc1390f5398141310422a"
 dependencies = [
  "bitflags 2.9.0",
  "wayland-backend",
@@ -8148,9 +8148,9 @@ dependencies = [
 
 [[package]]
 name = "wayland-protocols-wlr"
-version = "0.3.7"
+version = "0.3.8"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9f3334ee752fbe3c228adfda339a9e7a03e0ba65a78806d8d464b69928cf4ef2"
+checksum = "1cb6cdc73399c0e06504c437fe3cf886f25568dd5454473d565085b36d6a8bbf"
 dependencies = [
  "bitflags 2.9.0",
  "wayland-backend",
@@ -8201,9 +8201,9 @@ dependencies = [
 
 [[package]]
 name = "webpki-roots"
-version = "0.26.9"
+version = "0.26.10"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "29aad86cec885cafd03e8305fd727c418e970a521322c91688414d5b8efba16b"
+checksum = "37493cadf42a2a939ed404698ded7fb378bf301b5011f973361779a3a74f8c93"
 dependencies = [
  "rustls-pki-types",
 ]
