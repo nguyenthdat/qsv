@@ -174,7 +174,7 @@ mlua = { version = "0.10", features = [
 num_cpus = "1"
 odht = "0.3"
 phf = { version = "0.11", features = ["macros"]}
-polars = { version = "0.46", features = [
+polars = { version = "0.47", features = [
     "asof_join",
     "avro",
     "avx512",
@@ -209,7 +209,8 @@ polars = { version = "0.46", features = [
     "streaming",
     "timezones",
 ], optional = true }
-polars-ops = { version = "0.46", optional = true }
+polars-lazy = { version = "0.47", features = ["new_streaming"], optional = true }
+polars-ops = { version = "0.47", optional = true }
 publicsuffix = { version = "2.2", optional = true }
 pyo3 = { version = "0.24", features = ["auto-initialize"], optional = true }
 qsv-dateparser = "0.13"
@@ -350,11 +351,11 @@ spreadsheet-ods = { git = "https://github.com/jqnatividad/spreadsheet-ods", bran
 #     (e.g. py-1.19.0:52ea381 to indicate that we are Python Polars 1.19.0,
 #      and the commit hash 52ea381)
 # ================================
-# QSV_POLARS_REV=py-1.27.1:c434669
+# QSV_POLARS_REV=
 # polars = { git = "https://github.com/pola-rs/polars", tag = "py-1.27.1" }
-polars = { git = "https://github.com/pola-rs/polars", rev = "c434669" }
+# polars = { git = "https://github.com/pola-rs/polars", rev = "c434669" }
 # polars-ops = { git = "https://github.com/pola-rs/polars", tag = "py-1.27.1" }
-polars-ops = { git = "https://github.com/pola-rs/polars", rev = "c434669" }
+# polars-ops = { git = "https://github.com/pola-rs/polars", rev = "c434669" }
 
 [features]
 default = ["mimalloc"]
@@ -407,7 +408,7 @@ geocode = [
     "sled",
 ]
 luau = ["mlua", "sanitize-filename"]
-polars = ["dep:polars", "bytemuck", "dep:polars-ops"]
+polars = ["dep:polars", "bytemuck", "dep:polars-lazy", "dep:polars-ops"]
 prompt = ["rfd"]
 python = ["pyo3"]
 to = ["csvs_convert", "spreadsheet-ods"]
