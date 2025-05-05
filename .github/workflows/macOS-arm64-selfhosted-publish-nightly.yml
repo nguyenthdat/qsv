@@ -28,7 +28,7 @@ jobs:
     # runs-on: macos-latest
     strategy:
       matrix:
-        rust: [nightly-2025-03-07]
+        rust: [nightly-2025-04-19]
         job:
           - os: macos
             os-name: macos
