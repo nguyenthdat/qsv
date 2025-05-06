@@ -372,8 +372,9 @@ use cached::{SizedCache, proc_macro::cached};
 use dynfmt2::Format;
 use foldhash::fast::RandomState;
 use geosuggest_core::{
-    CitiesRecord, CountryRecord, Engine,
-    storage::{self, IndexStorage},
+    Engine, EngineData,
+    index::{ArchivedCitiesRecord as CitiesRecord, ArchivedCountryRecord as CountryRecord},
+    storage,
 };
 use geosuggest_utils::{IndexUpdater, IndexUpdaterSettings, SourceItem};
 use indicatif::{ProgressBar, ProgressDrawTarget};
@@ -403,58 +404,58 @@ use crate::{
 
 #[derive(Deserialize)]
 struct Args {
-    arg_column:          String,
-    arg_location:        String,
-    cmd_suggest:         bool,
-    cmd_suggestnow:      bool,
-    cmd_reverse:         bool,
-    cmd_reversenow:      bool,
-    cmd_countryinfo:     bool,
-    cmd_countryinfonow:  bool,
-    cmd_index_check:     bool,
-    cmd_index_update:    bool,
-    cmd_index_load:      bool,
-    cmd_index_reset:     bool,
-    arg_input:           Option<String>,
-    arg_index_file:      Option<String>,
-    flag_rename:         Option<String>,
-    flag_country:        Option<String>,
-    flag_min_score:      Option<f32>,
-    flag_admin1:         Option<String>,
-    flag_k_weight:       Option<f32>,
-    flag_formatstr:      String,
-    flag_language:       String,
+    arg_column: String,
+    arg_location: String,
+    cmd_suggest: bool,
+    cmd_suggestnow: bool,
+    cmd_reverse: bool,
+    cmd_reversenow: bool,
+    cmd_countryinfo: bool,
+    cmd_countryinfonow: bool,
+    cmd_index_check: bool,
+    cmd_index_update: bool,
+    cmd_index_load: bool,
+    cmd_index_reset: bool,
+    arg_input: Option<String>,
+    arg_index_file: Option<String>,
+    flag_rename: Option<String>,
+    flag_country: Option<String>,
+    flag_min_score: Option<f32>,
+    flag_admin1: Option<String>,
+    flag_k_weight: Option<f32>,
+    flag_formatstr: String,
+    flag_language: String,
     flag_invalid_result: Option<String>,
-    flag_batch:          usize,
-    flag_timeout:        u16,
-    flag_cache_dir:      String,
-    flag_languages:      String,
-    flag_cities_url:     String,
-    flag_force:          bool,
-    flag_jobs:           Option<usize>,
-    flag_new_column:     Option<String>,
-    flag_output:         Option<String>,
-    flag_delimiter:      Option<Delimiter>,
-    flag_progressbar:    bool,
+    flag_batch: usize,
+    flag_timeout: u16,
+    flag_cache_dir: String,
+    flag_languages: String,
+    flag_cities_url: String,
+    flag_force: bool,
+    flag_jobs: Option<usize>,
+    flag_new_column: Option<String>,
+    flag_output: Option<String>,
+    flag_delimiter: Option<Delimiter>,
+    flag_progressbar: bool,
 }
 
 #[derive(Clone, Debug)]
 struct Admin1Filter {
     admin1_string: String,
-    is_code:       bool,
+    is_code: bool,
 }
 
 #[derive(Clone)]
 struct NamesLang {
-    cityname:    String,
-    admin1name:  String,
-    admin2name:  String,
+    cityname: String,
+    admin1name: String,
+    admin2name: String,
     countryname: String,
 }
 
 static QSV_VERSION: &str = env!("CARGO_PKG_VERSION");
 static DEFAULT_GEOCODE_INDEX_FILENAME: &str =
-    concat!("qsv-", env!("CARGO_PKG_VERSION"), "-geocode-index.bincode");
+    concat!("qsv-", env!("CARGO_PKG_VERSION"), "-geocode-index.rkyv");
 
 static DEFAULT_CITIES_NAMES_URL: &str =
     "https://download.geonames.org/export/dump/alternateNamesV2.zip";
@@ -772,16 +773,16 @@ async fn geocode_main(args: Args) -> CliResult<()> {
         info!("geocode_index_file: {geocode_index_file} Languages: {languages_vec:?}");
 
         let indexupdater_settings = IndexUpdaterSettings {
-            http_timeout_ms:  util::timeout_secs(args.flag_timeout)? * 1000,
-            cities:           SourceItem {
-                url:      &args.flag_cities_url,
+            http_timeout_ms: util::timeout_secs(args.flag_timeout)? * 1000,
+            cities: SourceItem {
+                url: &args.flag_cities_url,
                 filename: &cities_filename,
             },
-            names:            Some(SourceItem {
-                url:      DEFAULT_CITIES_NAMES_URL,
+            names: Some(SourceItem {
+                url: DEFAULT_CITIES_NAMES_URL,
                 filename: DEFAULT_CITIES_NAMES_FILENAME,
             }),
-            countries_url:    Some(DEFAULT_COUNTRY_INFO_URL),
+            countries_url: Some(DEFAULT_COUNTRY_INFO_URL),
             admin1_codes_url: Some(DEFAULT_ADMIN1_CODES_URL),
             admin2_codes_url: Some(DEFAULT_ADMIN2_CODES_URL),
             filter_languages: languages_vec.clone(),
@@ -790,7 +791,7 @@ async fn geocode_main(args: Args) -> CliResult<()> {
         let updater = IndexUpdater::new(indexupdater_settings.clone())
             .map_err(|_| CliError::Other("Error initializing IndexUpdater".to_string()))?;
 
-        let storage = storage::bincode::Storage::new();
+        let storage = storage::Storage::new();
 
         match geocode_cmd {
             // check if Geoname index needs to be updated from the Geonames website
@@ -862,11 +863,11 @@ async fn geocode_main(args: Args) -> CliResult<()> {
                         "This will take a while as we need to download data & rebuild the index..."
                     );
 
-                    let engine = updater.build().await.map_err(|_| {
+                    let engine_data = updater.build().await.map_err(|_| {
                         CliError::Other("Error building geonames index.".to_string())
                     })?;
                     storage
-                        .dump_to(geocode_index_file.clone(), &engine)
+                        .dump_to(geocode_index_file.clone(), &engine_data)
                         .map_err(|e| format!("{e}"))?;
                     winfo!("Geonames index successfully rebuilt: {geocode_index_file}");
                 } else {
@@ -895,12 +896,13 @@ async fn geocode_main(args: Args) -> CliResult<()> {
                     winfo!("Validating alternate Geonames index: {index_file}...");
                     check_index_file(&index_file)?;
 
-                    let engine = load_engine(index_file.clone().into(), &progress).await?;
+                    let engine_data =
+                        load_engine_data(index_file.clone().into(), &progress).await?;
                     // we successfully loaded the alternate geocode index file, so its valid
                     // copy it to the default geocode index file
 
-                    if engine.metadata.is_some() {
-                        let _ = storage.dump_to(active_geocode_index_file.clone(), &engine);
+                    if engine_data.metadata.is_some() {
+                        let _ = storage.dump_to(active_geocode_index_file.clone(), &engine_data);
                         winfo!(
                             "Valid Geonames index file {index_file} successfully copied to \
                              {active_geocode_index_file}. It will be used from now on or until \
@@ -922,7 +924,7 @@ async fn geocode_main(args: Args) -> CliResult<()> {
                 // and downloading the default geocode index for the current qsv version
                 winfo!("Resetting Geonames index to default: {geocode_index_file}...");
                 fs::remove_file(&geocode_index_file)?;
-                load_engine(geocode_index_file.clone().into(), &progress).await?;
+                load_engine_data(geocode_index_file.clone().into(), &progress).await?;
                 winfo!("Default Geonames index file successfully reset to {QSV_VERSION} release.");
             },
             // index_cmd is true, so we should never get a non-index subcommand
@@ -933,7 +935,10 @@ async fn geocode_main(args: Args) -> CliResult<()> {
 
     // we're not doing an index subcommand, so we're doing a suggest/now, reverse/now
     // or countryinfo/now subcommand. Load the current local Geonames index
-    let engine = load_engine(geocode_index_file.clone().into(), &progress).await?;
+    let engine_data = load_engine_data(geocode_index_file.clone().into(), &progress).await?;
+    let engine = engine_data
+        .as_engine()
+        .map_err(|e| CliError::Other(format!("Error initializing Engine: {e}")))?;
 
     let mut rdr = rconfig.reader()?;
     let mut wtr = Config::new(args.flag_output.as_ref())
@@ -1056,7 +1061,7 @@ async fn geocode_main(args: Args) -> CliResult<()> {
                                     // so we can do case-insensitive starts_with() comparisons
                                     temp_s.to_lowercase()
                                 },
-                                is_code:       is_code_flag,
+                                is_code: is_code_flag,
                             }
                         })
                         .collect::<Vec<Admin1Filter>>(),
@@ -1293,11 +1298,14 @@ fn check_index_file(index_file: &String) -> CliResult<()> {
     Ok(())
 }
 
-/// load_engine loads the Geonames index file into memory
+/// load_engine_data loads the Geonames index file into memory
 /// if the index file does not exist, it will download the default index file
 /// from the qsv GitHub repo. For convenience, if geocode_index_file is 500, 1000, 5000 or 15000,
 /// it will download the desired index file from the qsv GitHub repo.
-async fn load_engine(geocode_index_file: PathBuf, progressbar: &ProgressBar) -> CliResult<Engine> {
+async fn load_engine_data(
+    geocode_index_file: PathBuf,
+    progressbar: &ProgressBar,
+) -> CliResult<EngineData> {
     // default cities index file
     static DEFAULT_GEONAMES_CITIES_INDEX: u16 = 15000;
 
@@ -1383,7 +1391,7 @@ async fn load_engine(geocode_index_file: PathBuf, progressbar: &ProgressBar) -> 
         geocode_index_file
     };
 
-    let storage = storage::bincode::Storage::new();
+    let storage = storage::Storage::new();
 
     let engine = storage
         .load_from(geocode_index_file)
@@ -1468,7 +1476,7 @@ fn search_index(
                 }
                 let mut matched_record: Option<&CitiesRecord> = None;
                 'outer: for cr in &search_result {
-                    if let Some(admin_division) = &cr.admin_division {
+                    if let Some(admin_division) = cr.admin_division.as_ref() {
                         for (admin1_filter, is_code) in &admin1_filter_map {
                             if *is_code {
                                 // admin1 is a code, so we search for admin1 code
@@ -1503,7 +1511,7 @@ fn search_index(
             }
         };
 
-        let country = cityrecord.country.clone().unwrap().code;
+        let country = &cityrecord.country.as_ref().clone().unwrap().code;
 
         let nameslang = get_cityrecord_name_in_lang(cityrecord, lang_lookup);
 
@@ -1528,7 +1536,7 @@ fn search_index(
 
         let capital = engine
             .capital(&country)
-            .map(|cr| cr.name.clone())
+            .map(|cr| cr.name.as_str())
             .unwrap_or_default();
 
         if formatstr.starts_with("%dyncols:") {
@@ -1572,7 +1580,7 @@ fn search_index(
             let nameslang = get_cityrecord_name_in_lang(cityrecord, lang_lookup);
 
             // safety: we know country is Some because we got a cityrecord
-            let country = cityrecord.country.clone().unwrap().code;
+            let country = &cityrecord.country.as_ref().unwrap().code;
 
             if formatstr == "%+" {
                 // default for reverse is city, admin1 country - e.g. "Brooklyn, New York US"
@@ -1586,7 +1594,7 @@ fn search_index(
 
             let capital = engine
                 .capital(&country)
-                .map(|cr| cr.name.clone())
+                .map(|cr| cr.name.as_ref())
                 .unwrap_or_default();
 
             if formatstr.starts_with("%dyncols:") {
@@ -1639,7 +1647,7 @@ fn add_dyncols(
 
             // US FIPS fields
             "us_state_fips_code" => {
-                let us_state_code = if let Some(admin1) = cityrecord.admin_division.clone() {
+                let us_state_code = if let Some(admin1) = cityrecord.admin_division.as_ref() {
                     if let Some(state_fips_code) = admin1.code.strip_prefix("US.") {
                         // admin1 code is a US state code, the two-letter state code
                         // is the last two characters of the admin1 code
@@ -1658,7 +1666,8 @@ fn add_dyncols(
                 record.push_field(lookup_us_state_fips_code(&us_state_code).unwrap_or_default());
             },
             "us_county_fips_code" => {
-                let us_county_fips_code = if let Some(admin2) = cityrecord.admin2_division.clone() {
+                let us_county_fips_code = if let Some(admin2) = cityrecord.admin2_division.as_ref()
+                {
                     if admin2.code.starts_with("US.") && admin2.code.len() == 9 {
                         // admin2 code is a US county code, the three-digit county code
                         // is the last three characters of the admin2 code
@@ -1745,7 +1754,7 @@ fn format_result(
             "%id" => format!("{}", cityrecord.id),
             "%capital" => capital.to_owned(),
             "%population" => format!("{}", cityrecord.population),
-            "%timezone" => cityrecord.timezone.clone(),
+            "%timezone" => cityrecord.timezone.to_string(),
             "%cityrecord" => format!("{cityrecord:?}"),
             "%admin1record" => format!("{:?}", cityrecord.admin_division),
             "%admin2record" => format!("{:?}", cityrecord.admin2_division),
@@ -1837,7 +1846,7 @@ fn format_result(
                 "admin1" => cityrecord_map.insert("admin1", nameslang.admin1name.clone()),
                 "admin2" => cityrecord_map.insert("admin2", nameslang.admin2name.clone()),
                 "capital" => cityrecord_map.insert("capital", capital.to_owned()),
-                "timezone" => cityrecord_map.insert("timezone", cityrecord.timezone.clone()),
+                "timezone" => cityrecord_map.insert("timezone", cityrecord.timezone.to_string()),
                 "population" => {
                     cityrecord_map.insert("population", cityrecord.population.to_string())
                 },
@@ -1845,7 +1854,7 @@ fn format_result(
                 // US FIPS fields
                 // set US state FIPS code
                 "us_state_fips_code" => {
-                    let us_state_code = if let Some(admin1) = cityrecord.admin_division.clone() {
+                    let us_state_code = if let Some(admin1) = cityrecord.admin_division.as_ref() {
                         if let Some(state_fips_code) = admin1.code.strip_prefix("US.") {
                             // admin1 code is a US state code, the two-letter state code
                             // is the last two characters of the admin1 code
@@ -1870,7 +1879,7 @@ fn format_result(
 
                 // set US county FIPS code
                 "us_county_fips_code" => cityrecord_map.insert("us_county_fips_code", {
-                    match cityrecord.admin2_division.clone() {
+                    match cityrecord.admin2_division.as_ref() {
                         Some(admin2) => {
                             if admin2.code.starts_with("US.") && admin2.code.len() == 9 {
                                 // admin2 code is a US county code, the three-digit county code
@@ -1893,45 +1902,47 @@ fn format_result(
                 }),
 
                 // countryrecord fields
-                "iso3" => cityrecord_map.insert("iso3", countryrecord.info.iso3.clone()),
-                "fips" => cityrecord_map.insert("fips", countryrecord.info.fips.clone()),
+                "iso3" => cityrecord_map.insert("iso3", countryrecord.info.iso3.to_string()),
+                "fips" => cityrecord_map.insert("fips", countryrecord.info.fips.to_string()),
                 "area" => cityrecord_map.insert("area", countryrecord.info.area.to_string()),
                 "country_population" => cityrecord_map.insert(
                     "country_population",
                     countryrecord.info.population.to_string(),
                 ),
                 "continent" => {
-                    cityrecord_map.insert("continent", countryrecord.info.continent.clone())
+                    cityrecord_map.insert("continent", countryrecord.info.continent.to_string())
                 },
-                "tld" => cityrecord_map.insert("tld", countryrecord.info.tld.clone()),
-                "currency_code" => {
-                    cityrecord_map.insert("currency_code", countryrecord.info.currency_code.clone())
-                },
-                "currency_name" => {
-                    cityrecord_map.insert("currency_name", countryrecord.info.currency_name.clone())
-                },
-                "phone" => cityrecord_map.insert("phone", countryrecord.info.phone.clone()),
+                "tld" => cityrecord_map.insert("tld", countryrecord.info.tld.to_string()),
+                "currency_code" => cityrecord_map.insert(
+                    "currency_code",
+                    countryrecord.info.currency_code.to_string(),
+                ),
+                "currency_name" => cityrecord_map.insert(
+                    "currency_name",
+                    countryrecord.info.currency_name.to_string(),
+                ),
+                "phone" => cityrecord_map.insert("phone", countryrecord.info.phone.to_string()),
                 "postal_code_format" => cityrecord_map.insert(
                     "postal_code_format",
-                    countryrecord.info.postal_code_format.clone(),
+                    countryrecord.info.postal_code_format.to_string(),
                 ),
                 "postal_code_regex" => cityrecord_map.insert(
                     "postal_code_regex",
-                    countryrecord.info.postal_code_regex.clone(),
+                    countryrecord.info.postal_code_regex.to_string(),
                 ),
                 "languages" => {
-                    cityrecord_map.insert("languages", countryrecord.info.languages.clone())
+                    cityrecord_map.insert("languages", countryrecord.info.languages.to_string())
                 },
                 "country_geonameid" => cityrecord_map.insert(
                     "country_geonameid",
                     countryrecord.info.geonameid.to_string(),
                 ),
                 "neighbours" => {
-                    cityrecord_map.insert("neighbours", countryrecord.info.neighbours.clone())
+                    cityrecord_map.insert("neighbours", countryrecord.info.neighbours.to_string())
                 },
                 "equivalent_fips_code" => cityrecord_map.insert(
                     "equivalent_fips_code",
-                    countryrecord.info.equivalent_fips_code.clone(),
+                    countryrecord.info.equivalent_fips_code.to_string(),
                 ),
                 _ => return INVALID_DYNFMT.to_string(),
             };
@@ -1962,18 +1973,17 @@ fn get_countryinfo(
     if formatstr.starts_with('%') {
         // if formatstr starts with %, then we're using a predefined format
         let formatted = match formatstr {
-            "%capital" => countryrecord.info.capital.clone(),
-            "%continent" => countryrecord.info.continent.clone(),
+            "%capital" => countryrecord.info.capital.to_string(),
+            "%continent" => countryrecord.info.continent.to_string(),
             "%json" => serde_json::to_string(countryrecord).unwrap_or_else(|_| "null".to_string()),
             "%pretty-json" => {
                 serde_json::to_string_pretty(countryrecord).unwrap_or_else(|_| "null".to_string())
             },
             _ => countryrecord
                 .names
-                .clone()
-                .unwrap_or_default()
-                .get(lang_lookup)
-                .cloned()
+                .as_ref()
+                .and_then(|n| n.get(lang_lookup))
+                .map(ToString::to_string)
                 .unwrap_or_default(),
         };
         Some(formatted)
@@ -2001,16 +2011,15 @@ fn get_countryinfo(
                 "country_name" => countryrecord_map.insert("country_name", {
                     countryrecord
                         .names
-                        .clone()
-                        .unwrap_or_default()
-                        .get(lang_lookup)
-                        .cloned()
+                        .as_ref()
+                        .and_then(|n| n.get(lang_lookup))
+                        .map(ToString::to_string)
                         .unwrap_or_default()
                 }),
-                "iso3" => countryrecord_map.insert("iso3", countryrecord.info.iso3.clone()),
-                "fips" => countryrecord_map.insert("fips", countryrecord.info.fips.clone()),
+                "iso3" => countryrecord_map.insert("iso3", countryrecord.info.iso3.to_string()),
+                "fips" => countryrecord_map.insert("fips", countryrecord.info.fips.to_string()),
                 "capital" => {
-                    countryrecord_map.insert("capital", countryrecord.info.capital.clone())
+                    countryrecord_map.insert("capital", countryrecord.info.capital.to_string())
                 },
                 "area" => countryrecord_map.insert("area", countryrecord.info.area.to_string()),
                 "country_population" => countryrecord_map.insert(
@@ -2018,34 +2027,37 @@ fn get_countryinfo(
                     countryrecord.info.population.to_string(),
                 ),
                 "continent" => {
-                    countryrecord_map.insert("continent", countryrecord.info.continent.clone())
+                    countryrecord_map.insert("continent", countryrecord.info.continent.to_string())
                 },
-                "tld" => countryrecord_map.insert("tld", countryrecord.info.tld.clone()),
-                "currency_code" => countryrecord_map
-                    .insert("currency_code", countryrecord.info.currency_code.clone()),
-                "currency_name" => countryrecord_map
-                    .insert("currency_name", countryrecord.info.currency_name.clone()),
-                "phone" => countryrecord_map.insert("phone", countryrecord.info.phone.clone()),
+                "tld" => countryrecord_map.insert("tld", countryrecord.info.tld.to_string()),
+                "currency_code" => countryrecord_map.insert(
+                    "currency_code",
+                    countryrecord.info.currency_code.to_string(),
+                ),
+                "currency_name" => countryrecord_map.insert(
+                    "currency_name",
+                    countryrecord.info.currency_name.to_string(),
+                ),
+                "phone" => countryrecord_map.insert("phone", countryrecord.info.phone.to_string()),
                 "postal_code_format" => countryrecord_map.insert(
                     "postal_code_format",
-                    countryrecord.info.postal_code_format.clone(),
+                    countryrecord.info.postal_code_format.to_string(),
                 ),
                 "postal_code_regex" => countryrecord_map.insert(
                     "postal_code_regex",
-                    countryrecord.info.postal_code_regex.clone(),
+                    countryrecord.info.postal_code_regex.to_string(),
                 ),
                 "languages" => {
-                    countryrecord_map.insert("languages", countryrecord.info.languages.clone())
+                    countryrecord_map.insert("languages", countryrecord.info.languages.to_string())
                 },
                 "geonameid" => {
                     countryrecord_map.insert("geonameid", countryrecord.info.geonameid.to_string())
                 },
-                "neighbours" => {
-                    countryrecord_map.insert("neighbours", countryrecord.info.neighbours.clone())
-                },
+                "neighbours" => countryrecord_map
+                    .insert("neighbours", countryrecord.info.neighbours.to_string()),
                 "equivalent_fips_code" => countryrecord_map.insert(
                     "equivalent_fips_code",
-                    countryrecord.info.equivalent_fips_code.clone(),
+                    countryrecord.info.equivalent_fips_code.to_string(),
                 ),
                 _ => return Some(INVALID_DYNFMT.to_string()),
             };
@@ -2068,32 +2080,28 @@ fn get_countryinfo(
 fn get_cityrecord_name_in_lang(cityrecord: &CitiesRecord, lang_lookup: &str) -> NamesLang {
     let cityname = cityrecord
         .names
-        .clone()
-        .unwrap_or_default()
-        .get(lang_lookup)
-        .cloned()
+        .as_ref()
+        .and_then(|n| n.get(lang_lookup))
         // Note that the city name is the default name if the language is not found.
-        .unwrap_or_else(|| cityrecord.name.clone());
+        .unwrap_or_else(|| &cityrecord.name)
+        .to_string();
     let admin1name = cityrecord
         .admin1_names
-        .clone()
-        .unwrap_or_default()
-        .get(lang_lookup)
-        .cloned()
+        .as_ref()
+        .and_then(|n| n.get(lang_lookup))
+        .map(ToString::to_string)
         .unwrap_or_default();
     let admin2name = cityrecord
         .admin2_names
-        .clone()
-        .unwrap_or_default()
-        .get(lang_lookup)
-        .cloned()
+        .as_ref()
+        .and_then(|n| n.get(lang_lookup))
+        .map(ToString::to_string)
         .unwrap_or_default();
     let countryname = cityrecord
         .country_names
-        .clone()
-        .unwrap_or_default()
-        .get(lang_lookup)
-        .cloned()
+        .as_ref()
+        .and_then(|n| n.get(lang_lookup))
+        .map(ToString::to_string)
         .unwrap_or_default();
 
     NamesLang {
@@ -2110,7 +2118,7 @@ fn lookup_us_state_fips_code(state: &str) -> Option<&'static str> {
 }
 
 fn get_us_fips_codes(cityrecord: &CitiesRecord, nameslang: &NamesLang) -> serde_json::Value {
-    let us_state_code = if let Some(admin1) = cityrecord.admin_division.clone() {
+    let us_state_code = if let Some(admin1) = cityrecord.admin_division.as_ref() {
         if let Some(state_fips_code) = admin1.code.strip_prefix("US.") {
             // admin1 code is a US state code, the two-letter state code
             // is the last two characters of the admin1 code
@@ -2127,7 +2135,7 @@ fn get_us_fips_codes(cityrecord: &CitiesRecord, nameslang: &NamesLang) -> serde_
     };
     let us_state_fips_code = lookup_us_state_fips_code(&us_state_code).unwrap_or("null");
 
-    let us_county_code = match cityrecord.admin2_division.clone() {
+    let us_county_code = match cityrecord.admin2_division.as_ref() {
         Some(admin2) => {
             if admin2.code.starts_with("US.") && admin2.code.len() == 9 {
                 // admin2 code is a US county code, the three-digit county code
