@@ -6,6 +6,37 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## What's Changed
+* feat: add CSV input and GeoJSONL output to geoconvert, and use buf by @rzmk in https://github.com/dathere/qsv/pull/2690
+* build(deps): bump libc from 0.2.171 to 0.2.172 by @dependabot in https://github.com/dathere/qsv/pull/2696
+* feat: qsvdp now include geocode, geoconvert & luau commands by default by @jqnatividad in https://github.com/dathere/qsv/pull/2697
+* feat: add stdin support to qsv geoconvert (except for SHP input) by @rzmk in https://github.com/dathere/qsv/pull/2699
+* build(deps): bump rand from 0.9.0 to 0.9.1 by @dependabot in https://github.com/dathere/qsv/pull/2702
+* build(deps): bump simd-json from 0.15.0 to 0.15.1 by @dependabot in https://github.com/dathere/qsv/pull/2701
+* `feat`: Better Polars Schema support by @jqnatividad in https://github.com/dathere/qsv/pull/2703
+* build(deps): bump jsonschema from 0.29.1 to 0.30.0 by @dependabot in https://github.com/dathere/qsv/pull/2704
+* fix: `split` save stdin to tempfile by @jqnatividad in https://github.com/dathere/qsv/pull/2706
+* feat: --latitude and --longitude for geoconvert by @rzmk in https://github.com/dathere/qsv/pull/2707
+* build(deps): bump pyo3 from 0.24.1 to 0.24.2 by @dependabot in https://github.com/dathere/qsv/pull/2708
+* `feat`: `stats` QSV_STATS_STRING_MAX_LENGTH env var by @jqnatividad in https://github.com/dathere/qsv/pull/2709
+* feat: add `geoconvert --max-length` option by @jqnatividad in https://github.com/dathere/qsv/pull/2711
+* build(deps): bump actions/setup-python from 5.5.0 to 5.6.0 by @dependabot in https://github.com/dathere/qsv/pull/2713
+* build(deps): bump jaq-json from 1.1.1 to 1.1.2 by @dependabot in https://github.com/dathere/qsv/pull/2714
+* build(deps): bump jaq-std from 2.1.0 to 2.1.1 by @dependabot in https://github.com/dathere/qsv/pull/2715
+* build(deps): bump jaq-core from 2.1.1 to 2.2.0 by @dependabot in https://github.com/dathere/qsv/pull/2716
+* tests: add basic geoconvert test and move tests to test_geoconvert.rs by @rzmk in https://github.com/dathere/qsv/pull/2717
+* docs: add conda install command by @rzmk in https://github.com/dathere/qsv/pull/2718
+* build(deps): bump bytemuck from 1.22.0 to 1.23.0 by @dependabot in https://github.com/dathere/qsv/pull/2719
+* docs: add qsv download badges and update install instructions by @rzmk in https://github.com/dathere/qsv/pull/2721
+* build(deps): bump chrono from 0.4.40 to 0.4.41 by @dependabot in https://github.com/dathere/qsv/pull/2722
+* build(deps): bump sysinfo from 0.34.2 to 0.35.0 by @dependabot in https://github.com/dathere/qsv/pull/2724
+* build(deps): bump minijinja from 2.9.0 to 2.10.0 by @dependabot in https://github.com/dathere/qsv/pull/2727
+* build(deps): bump minijinja-contrib from 2.9.0 to 2.10.0 by @dependabot in https://github.com/dathere/qsv/pull/2728
+* build(deps): bump mlua from 0.10.3 to 0.10.4 by @dependabot in https://github.com/dathere/qsv/pull/2730
+
+
+**Full Changelog**: https://github.com/dathere/qsv/compare/4.0.0...4.1.0
+
 ## [4.0.0] - 2025-04-13
 
 ## Highlights:
