@@ -932,7 +932,7 @@ fn validate_operations(
                                 DEFAULT_THRESHOLD
                             };
                             if show_confidence {
-                                final_threshold * -1.0
+                                -final_threshold
                             } else {
                                 final_threshold
                             }
