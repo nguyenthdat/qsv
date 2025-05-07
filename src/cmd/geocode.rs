@@ -133,7 +133,7 @@ It has four operations:
             index (cities15000) - downloading it from the qsv GitHub repo for the current qsv version.
  * load   - load a Geonames cities index from a file, making it the default index going forward.
             If set to 500, 1000, 5000 or 15000, it will download the corresponding English-only
-            Geonames index bincode file from the qsv GitHub repo for the current qsv version.
+            Geonames index rkyv file from the qsv GitHub repo for the current qsv version.
 
 Examples:
 Update the Geonames cities index with the latest changes.
@@ -145,7 +145,7 @@ Update the Geonames cities index with the latest changes.
 
 Load an alternative Geonames cities index from a file, making it the default index going forward.
 
-  $ qsv geocode index-load my_geonames_index.bincode
+  $ qsv geocode index-load my_geonames_index.rkyv
 
 For more extensive examples, see https://github.com/dathere/qsv/blob/master/tests/test_geocode.rs.
 
@@ -179,9 +179,9 @@ geocode arguments:
                                 For reversenow, it must be a WGS 84 coordinate.
                                 For countryinfonow, it must be a ISO 3166-1 alpha-2 code.
                                 
-    <index-file>                The alternate geonames index file to use. It must be a .bincode file.
+    <index-file>                The alternate geonames index file to use. It must be a .rkyv file.
                                 For convenience, if this is set to 500, 1000, 5000 or 15000, it will download
-                                the corresponding English-only Geonames index bincode file from the qsv GitHub repo
+                                the corresponding English-only Geonames index rkyv file from the qsv GitHub repo
                                 for the current qsv version and use it. Only used by the index-load subcommand.
 
 geocode options:
@@ -763,7 +763,7 @@ async fn geocode_main(args: Args) -> CliResult<()> {
         let languages_string_vec = args
             .flag_languages
             .split(',')
-            .map(|s| s.trim().to_ascii_lowercase())
+            .map(|s| s.trim().to_ascii_uppercase())
             .collect::<Vec<String>>();
         let languages_vec: Vec<&str> = languages_string_vec
             .iter()
@@ -1104,7 +1104,7 @@ async fn geocode_main(args: Args) -> CliResult<()> {
     let country_filter_list = flag_country.map(|country_list| {
         country_list
             .split(',')
-            .map(|s| s.trim().to_ascii_lowercase())
+            .map(|s| s.trim().to_ascii_uppercase())
             .collect::<Vec<String>>()
     });
 
@@ -1172,9 +1172,13 @@ async fn geocode_main(args: Args) -> CliResult<()> {
                     || geocode_cmd == GeocodeSubCmd::CountryInfoNow
                 {
                     // we're doing a countryinfo or countryinfonow subcommand
-                    cell =
-                        get_countryinfo(&engine, &cell, &args.flag_language, &args.flag_formatstr)
-                            .unwrap_or(cell);
+                    cell = get_countryinfo(
+                        &engine,
+                        &cell.to_ascii_uppercase(),
+                        &args.flag_language,
+                        &args.flag_formatstr,
+                    )
+                    .unwrap_or(cell);
                 } else if dyncols_len > 0 {
                     // we're in dyncols mode, so use search_index_NO_CACHE fn
                     // as we need to inject the column values into each row of the output csv
@@ -1272,7 +1276,7 @@ async fn geocode_main(args: Args) -> CliResult<()> {
     Ok(wtr.flush()?)
 }
 
-/// check if index_file exists and ends with a .bincode extension
+/// check if index_file exists and ends with a .rkyv extension
 fn check_index_file(index_file: &String) -> CliResult<()> {
     // check if index_file is a u16 with the values 500, 1000, 5000 or 15000
     // if it is, return OK
@@ -1282,9 +1286,9 @@ fn check_index_file(index_file: &String) -> CliResult<()> {
         }
     }
 
-    if !index_file.ends_with(".bincode") {
+    if !index_file.ends_with(".rkyv") {
         return fail_incorrectusage_clierror!(
-            "Alternate Geonames index file {index_file} does not have a .bincode extension."
+            "Alternate Geonames index file {index_file} does not have a .rkyv extension."
         );
     }
     // check if index_file exist
@@ -1321,7 +1325,9 @@ async fn load_engine_data(
         .to_string();
 
     let download_url = format!(
-        "https://github.com/dathere/qsv/releases/download/{QSV_VERSION}/{DEFAULT_GEOCODE_INDEX_FILENAME}.cities"
+        // TODO revert back
+        // "https://github.com/dathere/qsv/releases/download/{QSV_VERSION}/{DEFAULT_GEOCODE_INDEX_FILENAME}.cities"
+        "https://github.com/estin/qsv/releases/download/rkyv/qsv-4.0.0-geocode-index.rkyv.cities"
     );
 
     if geocode_index_file_stem.parse::<u16>().is_ok() {
@@ -1377,7 +1383,7 @@ async fn load_engine_data(
     // check if the geocode_index_file is snappy compressed
     // if it is, decompress it
     let geocode_index_file = if geocode_index_file.extension().unwrap() == "sz" {
-        let decompresssed_geocode_index_file = geocode_index_file.with_extension("bincode");
+        let decompresssed_geocode_index_file = geocode_index_file.with_extension(".rkyv");
         progressbar.println(format!(
             "Decompressing {} to {}",
             geocode_index_file.display(),
@@ -1965,7 +1971,7 @@ fn get_countryinfo(
     lang_lookup: &str,
     formatstr: &str,
 ) -> Option<String> {
-    let Some(countryrecord) = engine.country_info(cell) else {
+    let Some(countryrecord) = engine.country_info(&cell.to_ascii_uppercase()) else {
         // no results, so return early with None
         return None;
     };

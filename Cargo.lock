@@ -2773,7 +2773,7 @@ dependencies = [
 [[package]]
 name = "geosuggest-core"
 version = "0.6.6"
-source = "git+https://github.com/estin/geosuggest.git?rev=dede0c3#dede0c3280ec6b9107776d5c594c59976e46d05c"
+source = "git+https://github.com/estin/geosuggest.git?rev=8879edd#8879edd646744b03ded2f082057f993395001684"
 dependencies = [
  "csv",
  "itertools 0.14.0",
@@ -2787,7 +2787,7 @@ dependencies = [
 [[package]]
 name = "geosuggest-utils"
 version = "0.6.6"
-source = "git+https://github.com/estin/geosuggest.git?rev=dede0c3#dede0c3280ec6b9107776d5c594c59976e46d05c"
+source = "git+https://github.com/estin/geosuggest.git?rev=8879edd#8879edd646744b03ded2f082057f993395001684"
 dependencies = [
  "anyhow",
  "futures",
