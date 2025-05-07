@@ -1517,7 +1517,7 @@ fn search_index(
             }
         };
 
-        let country = &cityrecord.country.as_ref().clone().unwrap().code;
+        let country = &cityrecord.country.as_ref().unwrap().code;
 
         let nameslang = get_cityrecord_name_in_lang(cityrecord, lang_lookup);
 
@@ -1541,26 +1541,26 @@ fn search_index(
         }
 
         let capital = engine
-            .capital(&country)
+            .capital(country)
             .map(|cr| cr.name.as_str())
             .unwrap_or_default();
 
         if formatstr.starts_with("%dyncols:") {
-            let countryrecord = engine.country_info(&country)?;
+            let countryrecord = engine.country_info(country)?;
             add_dyncols(
                 record,
                 cityrecord,
                 countryrecord,
                 &nameslang,
-                &country,
-                &capital,
+                country,
+                capital,
                 column_values,
             );
             return Some(DYNCOLS_POPULATED.to_string());
         }
 
         return Some(format_result(
-            engine, cityrecord, &nameslang, &country, &capital, formatstr, true,
+            engine, cityrecord, &nameslang, country, capital, formatstr, true,
         ));
     }
 
@@ -1599,26 +1599,26 @@ fn search_index(
             }
 
             let capital = engine
-                .capital(&country)
+                .capital(country)
                 .map(|cr| cr.name.as_ref())
                 .unwrap_or_default();
 
             if formatstr.starts_with("%dyncols:") {
-                let countryrecord = engine.country_info(&country)?;
+                let countryrecord = engine.country_info(country)?;
                 add_dyncols(
                     record,
                     cityrecord,
                     countryrecord,
                     &nameslang,
-                    &country,
-                    &capital,
+                    country,
+                    capital,
                     column_values,
                 );
                 return Some(DYNCOLS_POPULATED.to_string());
             }
 
             return Some(format_result(
-                engine, cityrecord, &nameslang, &country, &capital, formatstr, false,
+                engine, cityrecord, &nameslang, country, capital, formatstr, false,
             ));
         }
     }
@@ -1697,7 +1697,7 @@ fn add_dyncols(
             "country_name" => record.push_field(&nameslang.countryname),
             "iso3" => record.push_field(&countryrecord.info.iso3),
             "fips" => record.push_field(&countryrecord.info.fips),
-            "area" => record.push_field(&countryrecord.info.area.to_string()),
+            "area" => record.push_field(&countryrecord.info.area),
             "country_population" => record.push_field(&countryrecord.info.population.to_string()),
             "continent" => record.push_field(&countryrecord.info.continent),
             "tld" => record.push_field(&countryrecord.info.tld),
@@ -2089,7 +2089,7 @@ fn get_cityrecord_name_in_lang(cityrecord: &CitiesRecord, lang_lookup: &str) -> 
         .as_ref()
         .and_then(|n| n.get(lang_lookup))
         // Note that the city name is the default name if the language is not found.
-        .unwrap_or_else(|| &cityrecord.name)
+        .unwrap_or(&cityrecord.name)
         .to_string();
     let admin1name = cityrecord
         .admin1_names
