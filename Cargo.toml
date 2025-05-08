@@ -209,7 +209,6 @@ polars = { version = "0.47", features = [
     "streaming",
     "timezones",
 ], optional = true }
-polars-lazy = { version = "0.47", features = ["new_streaming"], optional = true }
 polars-ops = { version = "0.47", optional = true }
 publicsuffix = { version = "2.2", optional = true }
 pyo3 = { version = "0.24", features = ["auto-initialize"], optional = true }
@@ -408,7 +407,7 @@ geocode = [
     "sled",
 ]
 luau = ["mlua", "sanitize-filename"]
-polars = ["dep:polars", "bytemuck", "dep:polars-lazy", "dep:polars-ops"]
+polars = ["dep:polars", "bytemuck",  "dep:polars-ops"]
 prompt = ["rfd"]
 python = ["pyo3"]
 to = ["csvs_convert", "spreadsheet-ods"]
