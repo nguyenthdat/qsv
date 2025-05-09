@@ -1,9 +1,11 @@
 static USAGE: &str = r#"
 Compute summary statistics & infers data types for each column in a CSV.
 
-> NOTE: `stats` is heavily optimized for speed. It assumes the CSV is well-formed and
-UTF-8 encoded. If you encounter problems generating stats, use `qsv validate` to confirm the
-input CSV is valid.
+> IMPORTANT: `stats` is heavily optimized for speed. It ASSUMES the CSV is well-formed & UTF-8 encoded.
+> This allows it to employ numerous performance optimizations (skip repetitive UTF-8 validation, skip
+> bounds checks, cache results, etc.) that may result in undefined behavior if the CSV is not well-formed.
+> All these optimizations are GUARANTEED to work with well-formed CSVs.
+> If you encounter problems generating stats, use `qsv validate` FIRST to confirm the CSV is valid.
 
 Summary stats include sum, min/max/range, sort order/sortiness, min/max/sum/avg/stddev/variance/cv length,
 mean, standard error of the mean (SEM), geometric mean, harmonic mean, stddev, variance, coefficient of
@@ -285,7 +287,9 @@ https://github.com/dathere/qsv/blob/master/docs/PERFORMANCE.md#stats-cache)
 to make them work smarter & faster.
 
 To safeguard against undefined behavior, `stats` is the most extensively tested command,
-with ~520 tests.
+with ~520 tests. It also employs numerous performance optimizations (skip repetitive UTF-8
+validation, skip bounds checks, cache results, etc.) that may result in undefined behavior
+if the CSV is not well-formed. See "safety:" comments in the code for more details.
 */
 
 use std::{
