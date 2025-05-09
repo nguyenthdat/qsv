@@ -936,7 +936,7 @@ fn sqlp_boston311_explain() {
     let got: String = wrk.stdout(&mut cmd);
     let expected_begin = r#"Logical Plan
 "SORT BY [col(""avg_tat""), col(""ward"")]"
-  AGGREGATE
+  AGGREGATE[maintain_order: false]
 "    [[(col(""closed_dt"")) - (col(""open_dt""))].mean().strict_cast(Float64).alias(""avg_tat"")] BY [col(""ward"")]"
     FROM
     Csv SCAN ["#;
