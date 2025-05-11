@@ -1383,16 +1383,16 @@ async fn load_engine_data(
     // check if the geocode_index_file is snappy compressed
     // if it is, decompress it
     let geocode_index_file = if geocode_index_file.extension().unwrap() == "sz" {
-        let decompresssed_geocode_index_file = geocode_index_file.with_extension(".rkyv");
+        let decompressed_geocode_index_file = geocode_index_file.with_extension(".rkyv");
         progressbar.println(format!(
             "Decompressing {} to {}",
             geocode_index_file.display(),
-            decompresssed_geocode_index_file.display()
+            decompressed_geocode_index_file.display()
         ));
         let tmpdir = tempdir()?;
         let decompressed_tmpfile = util::decompress_snappy_file(&geocode_index_file, &tmpdir)?;
-        fs::copy(decompressed_tmpfile, &decompresssed_geocode_index_file)?;
-        decompresssed_geocode_index_file
+        fs::copy(decompressed_tmpfile, &decompressed_geocode_index_file)?;
+        decompressed_geocode_index_file
     } else {
         geocode_index_file
     };
