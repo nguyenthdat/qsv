@@ -848,10 +848,6 @@ async fn geocode_main(args: Args) -> CliResult<()> {
                 // will only update if there are changes unless --force is specified
                 check_index_file(&geocode_index_file)?;
 
-                let metadata = storage
-                    .read_metadata(geocode_index_file.clone())
-                    .map_err(|e| format!("index-update error: {e}"))?;
-
                 if args.flag_force {
                     winfo!("Forcing fresh build of Geonames index: {geocode_index_file}");
                     winfo!(
@@ -872,6 +868,9 @@ async fn geocode_main(args: Args) -> CliResult<()> {
                     winfo!("Geonames index successfully rebuilt: {geocode_index_file}");
                 } else {
                     winfo!("Checking main Geonames website for updates...");
+                    let metadata = storage
+                        .read_metadata(geocode_index_file.clone())
+                        .map_err(|e| format!("index-update error: {e}"))?;
 
                     if updater.has_updates(&metadata.unwrap()).await.map_err(|_| {
                         CliError::Network("Geonames update check failed.".to_string())
@@ -1286,7 +1285,10 @@ fn check_index_file(index_file: &String) -> CliResult<()> {
         }
     }
 
-    if !index_file.ends_with(".rkyv") {
+    if !std::path::Path::new(index_file)
+        .extension()
+        .is_some_and(|ext| ext.eq_ignore_ascii_case("rkyv"))
+    {
         return fail_incorrectusage_clierror!(
             "Alternate Geonames index file {index_file} does not have a .rkyv extension."
         );
