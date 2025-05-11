@@ -665,53 +665,56 @@ fn geocode_suggest_fmt_cityrecord() {
     let expected = vec![
         svec!["Location"],
         svec![
-            "ArchivedCitiesRecord { id: 4891010, name: \"Elmhurst\", latitude: 41.89947, longitude: \
-             -87.94034, country: Some(ArchivedCountry { id: 6252001, code: \"US\", name: \"United \
-             States\" }), admin_division: Some(ArchivedAdminDivision { id: 4896861, code: \"US.IL\", \
-             name: \"Illinois\" }), admin2_division: Some(ArchivedAdminDivision { id: 4890213, code: \
-             \"US.IL.043\", name: \"DuPage County\" }), timezone: \"America/Chicago\", names: \
-             Some({\"en\": \"Elmhurst\"}), country_names: Some({\"en\": \"United States\"}), \
-             admin1_names: Some({\"en\": \"Illinois\"}), admin2_names: Some({\"en\": \"DuPage \
-             County\"}), population: 45957 }"
+            "ArchivedCitiesRecord { id: 4891010, name: \"Elmhurst\", latitude: 41.89947, \
+             longitude: -87.94034, country: Some(ArchivedCountry { id: 6252001, code: \"US\", \
+             name: \"United States\" }), admin_division: Some(ArchivedAdminDivision { id: \
+             4896861, code: \"US.IL\", name: \"Illinois\" }), admin2_division: \
+             Some(ArchivedAdminDivision { id: 4890213, code: \"US.IL.043\", name: \"DuPage \
+             County\" }), timezone: \"America/Chicago\", names: Some({\"en\": \"Elmhurst\"}), \
+             country_names: Some({\"en\": \"United States\"}), admin1_names: Some({\"en\": \
+             \"Illinois\"}), admin2_names: Some({\"en\": \"DuPage County\"}), population: 45957 }"
         ],
         svec![
-            "ArchivedCitiesRecord { id: 4154008, name: \"East Lake\", latitude: 28.11085, longitude: \
-             -82.69482, country: Some(ArchivedCountry { id: 6252001, code: \"US\", name: \"United \
-             States\" }), admin_division: Some(ArchivedAdminDivision { id: 4155751, code: \"US.FL\", \
-             name: \"Florida\" }), admin2_division: Some(ArchivedAdminDivision { id: 4168618, code: \
-             \"US.FL.103\", name: \"Pinellas County\" }), timezone: \"America/New_York\", names: \
-             None, country_names: Some({\"en\": \"United States\"}), admin1_names: Some({\"en\": \
-             \"Florida\"}), admin2_names: Some({\"en\": \"Pinellas\"}), population: 30962 }"
+            "ArchivedCitiesRecord { id: 4154008, name: \"East Lake\", latitude: 28.11085, \
+             longitude: -82.69482, country: Some(ArchivedCountry { id: 6252001, code: \"US\", \
+             name: \"United States\" }), admin_division: Some(ArchivedAdminDivision { id: \
+             4155751, code: \"US.FL\", name: \"Florida\" }), admin2_division: \
+             Some(ArchivedAdminDivision { id: 4168618, code: \"US.FL.103\", name: \"Pinellas \
+             County\" }), timezone: \"America/New_York\", names: None, country_names: \
+             Some({\"en\": \"United States\"}), admin1_names: Some({\"en\": \"Florida\"}), \
+             admin2_names: Some({\"en\": \"Pinellas\"}), population: 30962 }"
         ],
         svec![
-            "ArchivedCitiesRecord { id: 5128581, name: \"New York City\", latitude: 40.71427, longitude: \
-             -74.00597, country: Some(ArchivedCountry { id: 6252001, code: \"US\", name: \"United \
-             States\" }), admin_division: Some(ArchivedAdminDivision { id: 5128638, code: \"US.NY\", \
-             name: \"New York\" }), admin2_division: None, timezone: \"America/New_York\", names: \
-             Some({\"en\": \"New York\"}), country_names: Some({\"en\": \"United States\"}), \
-             admin1_names: Some({\"en\": \"New York\"}), admin2_names: None, population: 8804190 }"
+            "ArchivedCitiesRecord { id: 5128581, name: \"New York City\", latitude: 40.71427, \
+             longitude: -74.00597, country: Some(ArchivedCountry { id: 6252001, code: \"US\", \
+             name: \"United States\" }), admin_division: Some(ArchivedAdminDivision { id: \
+             5128638, code: \"US.NY\", name: \"New York\" }), admin2_division: None, timezone: \
+             \"America/New_York\", names: Some({\"en\": \"New York\"}), country_names: \
+             Some({\"en\": \"United States\"}), admin1_names: Some({\"en\": \"New York\"}), \
+             admin2_names: None, population: 8804190 }"
         ],
         svec![
-            "ArchivedCitiesRecord { id: 4833425, name: \"East Haven\", latitude: 41.27621, longitude: \
-             -72.86843, country: Some(ArchivedCountry { id: 6252001, code: \"US\", name: \"United \
-             States\" }), admin_division: Some(ArchivedAdminDivision { id: 4831725, code: \"US.CT\", \
-             name: \"Connecticut\" }), admin2_division: Some(ArchivedAdminDivision { id: 12809023, code: \
-             \"US.CT.170\", name: \"South Central Connecticut Planning Region\" }), timezone: \
-             \"America/New_York\", names: Some({\"en\": \"East Haven\"}), country_names: \
-             Some({\"en\": \"United States\"}), admin1_names: Some({\"en\": \"Connecticut\"}), \
-             admin2_names: None, population: 29257 }"
+            "ArchivedCitiesRecord { id: 4833425, name: \"East Haven\", latitude: 41.27621, \
+             longitude: -72.86843, country: Some(ArchivedCountry { id: 6252001, code: \"US\", \
+             name: \"United States\" }), admin_division: Some(ArchivedAdminDivision { id: \
+             4831725, code: \"US.CT\", name: \"Connecticut\" }), admin2_division: \
+             Some(ArchivedAdminDivision { id: 12809023, code: \"US.CT.170\", name: \"South \
+             Central Connecticut Planning Region\" }), timezone: \"America/New_York\", names: \
+             Some({\"en\": \"East Haven\"}), country_names: Some({\"en\": \"United States\"}), \
+             admin1_names: Some({\"en\": \"Connecticut\"}), admin2_names: None, population: 29257 \
+             }"
         ],
         svec!["This is not a Location and it will not be geocoded"],
         svec!["40.71427, -74.00597"],
         svec![
-            "ArchivedCitiesRecord { id: 1703417, name: \"Makati City\", latitude: 14.55027, longitude: \
-             121.03269, country: Some(ArchivedCountry { id: 1694008, code: \"PH\", name: \"Philippines\" \
-             }), admin_division: Some(ArchivedAdminDivision { id: 7521311, code: \"PH.NCR\", name: \
-             \"Metro Manila\" }), admin2_division: Some(ArchivedAdminDivision { id: 11395838, code: \
-             \"PH.NCR.137600000\", name: \"Southern Manila District\" }), timezone: \
-             \"Asia/Manila\", names: Some({\"en\": \"Makati City\"}), country_names: \
-             Some({\"en\": \"Philippines\"}), admin1_names: Some({\"en\": \"National Capital \
-             Region\"}), admin2_names: None, population: 510383 }"
+            "ArchivedCitiesRecord { id: 1703417, name: \"Makati City\", latitude: 14.55027, \
+             longitude: 121.03269, country: Some(ArchivedCountry { id: 1694008, code: \"PH\", \
+             name: \"Philippines\" }), admin_division: Some(ArchivedAdminDivision { id: 7521311, \
+             code: \"PH.NCR\", name: \"Metro Manila\" }), admin2_division: \
+             Some(ArchivedAdminDivision { id: 11395838, code: \"PH.NCR.137600000\", name: \
+             \"Southern Manila District\" }), timezone: \"Asia/Manila\", names: Some({\"en\": \
+             \"Makati City\"}), country_names: Some({\"en\": \"Philippines\"}), admin1_names: \
+             Some({\"en\": \"National Capital Region\"}), admin2_names: None, population: 510383 }"
         ],
     ];
     similar_asserts::assert_eq!(got, expected);

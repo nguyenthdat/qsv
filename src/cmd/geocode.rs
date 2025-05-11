@@ -404,52 +404,52 @@ use crate::{
 
 #[derive(Deserialize)]
 struct Args {
-    arg_column: String,
-    arg_location: String,
-    cmd_suggest: bool,
-    cmd_suggestnow: bool,
-    cmd_reverse: bool,
-    cmd_reversenow: bool,
-    cmd_countryinfo: bool,
-    cmd_countryinfonow: bool,
-    cmd_index_check: bool,
-    cmd_index_update: bool,
-    cmd_index_load: bool,
-    cmd_index_reset: bool,
-    arg_input: Option<String>,
-    arg_index_file: Option<String>,
-    flag_rename: Option<String>,
-    flag_country: Option<String>,
-    flag_min_score: Option<f32>,
-    flag_admin1: Option<String>,
-    flag_k_weight: Option<f32>,
-    flag_formatstr: String,
-    flag_language: String,
+    arg_column:          String,
+    arg_location:        String,
+    cmd_suggest:         bool,
+    cmd_suggestnow:      bool,
+    cmd_reverse:         bool,
+    cmd_reversenow:      bool,
+    cmd_countryinfo:     bool,
+    cmd_countryinfonow:  bool,
+    cmd_index_check:     bool,
+    cmd_index_update:    bool,
+    cmd_index_load:      bool,
+    cmd_index_reset:     bool,
+    arg_input:           Option<String>,
+    arg_index_file:      Option<String>,
+    flag_rename:         Option<String>,
+    flag_country:        Option<String>,
+    flag_min_score:      Option<f32>,
+    flag_admin1:         Option<String>,
+    flag_k_weight:       Option<f32>,
+    flag_formatstr:      String,
+    flag_language:       String,
     flag_invalid_result: Option<String>,
-    flag_batch: usize,
-    flag_timeout: u16,
-    flag_cache_dir: String,
-    flag_languages: String,
-    flag_cities_url: String,
-    flag_force: bool,
-    flag_jobs: Option<usize>,
-    flag_new_column: Option<String>,
-    flag_output: Option<String>,
-    flag_delimiter: Option<Delimiter>,
-    flag_progressbar: bool,
+    flag_batch:          usize,
+    flag_timeout:        u16,
+    flag_cache_dir:      String,
+    flag_languages:      String,
+    flag_cities_url:     String,
+    flag_force:          bool,
+    flag_jobs:           Option<usize>,
+    flag_new_column:     Option<String>,
+    flag_output:         Option<String>,
+    flag_delimiter:      Option<Delimiter>,
+    flag_progressbar:    bool,
 }
 
 #[derive(Clone, Debug)]
 struct Admin1Filter {
     admin1_string: String,
-    is_code: bool,
+    is_code:       bool,
 }
 
 #[derive(Clone)]
 struct NamesLang {
-    cityname: String,
-    admin1name: String,
-    admin2name: String,
+    cityname:    String,
+    admin1name:  String,
+    admin2name:  String,
     countryname: String,
 }
 
@@ -773,16 +773,16 @@ async fn geocode_main(args: Args) -> CliResult<()> {
         info!("geocode_index_file: {geocode_index_file} Languages: {languages_vec:?}");
 
         let indexupdater_settings = IndexUpdaterSettings {
-            http_timeout_ms: util::timeout_secs(args.flag_timeout)? * 1000,
-            cities: SourceItem {
-                url: &args.flag_cities_url,
+            http_timeout_ms:  util::timeout_secs(args.flag_timeout)? * 1000,
+            cities:           SourceItem {
+                url:      &args.flag_cities_url,
                 filename: &cities_filename,
             },
-            names: Some(SourceItem {
-                url: DEFAULT_CITIES_NAMES_URL,
+            names:            Some(SourceItem {
+                url:      DEFAULT_CITIES_NAMES_URL,
                 filename: DEFAULT_CITIES_NAMES_FILENAME,
             }),
-            countries_url: Some(DEFAULT_COUNTRY_INFO_URL),
+            countries_url:    Some(DEFAULT_COUNTRY_INFO_URL),
             admin1_codes_url: Some(DEFAULT_ADMIN1_CODES_URL),
             admin2_codes_url: Some(DEFAULT_ADMIN2_CODES_URL),
             filter_languages: languages_vec.clone(),
@@ -1061,7 +1061,7 @@ async fn geocode_main(args: Args) -> CliResult<()> {
                                     // so we can do case-insensitive starts_with() comparisons
                                     temp_s.to_lowercase()
                                 },
-                                is_code: is_code_flag,
+                                is_code:       is_code_flag,
                             }
                         })
                         .collect::<Vec<Admin1Filter>>(),
