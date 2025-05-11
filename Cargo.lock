@@ -2772,8 +2772,9 @@ dependencies = [
 
 [[package]]
 name = "geosuggest-core"
-version = "0.6.6"
-source = "git+https://github.com/estin/geosuggest.git?rev=8879edd#8879edd646744b03ded2f082057f993395001684"
+version = "0.7.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ad152bc0ff3d0ae8b1a506a00ec748a9e121243dd059b5f648a5df3c9d5c2edd"
 dependencies = [
  "csv",
  "itertools 0.14.0",
@@ -2786,8 +2787,9 @@ dependencies = [
 
 [[package]]
 name = "geosuggest-utils"
-version = "0.6.6"
-source = "git+https://github.com/estin/geosuggest.git?rev=8879edd#8879edd646744b03ded2f082057f993395001684"
+version = "0.7.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "308df4814b943ae1b8376e8d9e20ba3eaa7435a32916ea9db780c610009178c6"
 dependencies = [
  "anyhow",
  "futures",

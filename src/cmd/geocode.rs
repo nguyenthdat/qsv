@@ -1325,9 +1325,7 @@ async fn load_engine_data(
         .to_string();
 
     let download_url = format!(
-        // TODO revert back
-        // "https://github.com/dathere/qsv/releases/download/{QSV_VERSION}/{DEFAULT_GEOCODE_INDEX_FILENAME}.cities"
-        "https://github.com/estin/qsv/releases/download/rkyv/qsv-4.0.0-geocode-index.rkyv.cities"
+        "https://github.com/dathere/qsv/releases/download/{QSV_VERSION}/{DEFAULT_GEOCODE_INDEX_FILENAME}.cities"
     );
 
     if geocode_index_file_stem.parse::<u16>().is_ok() {
