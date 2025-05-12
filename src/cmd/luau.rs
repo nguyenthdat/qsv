@@ -520,7 +520,7 @@ pub fn run(argv: &[&str]) -> CliResult<()> {
     let temp_dir = if require_used {
         match tempfile::tempdir() {
             Ok(temp_dir) => {
-                let temp_dir_path = temp_dir.into_path();
+                let temp_dir_path = temp_dir.keep();
                 Some(temp_dir_path)
             },
             Err(e) => {
