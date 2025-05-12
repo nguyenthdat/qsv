@@ -123,7 +123,7 @@ Trim parentheses & brackets from the description field.
 
 Replace ' and ' with ' & ' in the description field.
 
-  $ qsv apply replace description --comparand ' and ' --replacement ' & ' file.csv
+  $ qsv apply operations replace description --comparand ' and ' --replacement ' & ' file.csv
 
 Extract the numeric value of the Salary column in a new column named Salary_num.
 
