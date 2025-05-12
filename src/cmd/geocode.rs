@@ -1,9 +1,18 @@
 static USAGE: &str = r#"
-Geocodes a location in CSV data against an updatable local copy of the Geonames cities index.
+Geocodes a location in CSV data against an updatable local copy of the Geonames cities index
+and a local copy of the MaxMind GeoLite2 City database.
+
+The Geonames cities index can be retrieved and updated using the `geocode index-*` subcommands.
+
+The GeoLite2 City database will need to be MANUALLY downloaded from MaxMind. Though it is
+free, you will need to create a MaxMind account to download the GeoIP2 Binary database (mmdb)
+from https://www.maxmind.com/en/accounts/current/geoip/downloads.
+Copy the GeoLite2-City.mmdb file to the ~/.qsv-cache/ directory or point to it using the
+QSV_GEOIP2_FILENAME environment variable.
 
 When you run the command for the first time, it will download a prebuilt Geonames cities
 index from the qsv GitHub repo and use it going forward. You can operate on the local
-index using the index-* subcommands.
+index using the `geocode index-*` subcommands.
 
 By default, the prebuilt index uses the Geonames Gazeteer cities15000.zip file using
 English names. It contains cities with populations > 15,000 (about ~26k cities). 
@@ -22,6 +31,10 @@ It has seven major subcommands:
  * countryinfo    - returns the country information for the ISO-3166 2-letter country code
                     (e.g. US, CA, MX, etc.)
  * countryinfonow - same as countryinfo, but using a country code from the command line,
+                    instead of CSV data.
+ * iplookup       - given an IP address, return the closest City's location metadata
+                    per the local Geonames cities index.
+ * iplookupnow    - same as iplookup, but using an IP address from the command line,
                     instead of CSV data.
  * index-*        - operations to update the local Geonames cities index.
                     (index-check, index-update, index-load & index-reset)
@@ -118,6 +131,20 @@ Accepts the same options as countryinfo, but does not require an input file.
   $ qsv geocode countryinfonow -f "%continent" US
   $ qsv geocode countryinfonow -f "{country_name} ({fips}) in {continent}" US
 
+IPLOOKUP
+Given an IP address, return the closest City's location metadata per the local Geonames cities index.
+
+  $ qsv geocode iplookup IP_col data.csv
+  $ qsv geocode iplookup --formatstr "%json" IP_col data.csv
+  $ qsv geocode iplookup -f "%cityrecord" IP_col data.csv
+
+IPLOOKUPNOW
+Accepts the same options as iplookup, but does not require an input file.
+
+  $ qsv geocode iplookupnow 140.174.222.253
+  $ qsv geocode iplookupnow --formatstr "%json" 140.174.222.253
+  $ qsv geocode iplookupnow -f "%cityrecord" 140.174.222.253
+
 INDEX-<operation>
 Manage the local Geonames cities index used by the geocode command.
 
@@ -156,6 +183,8 @@ qsv geocode reverse [--formatstr=<string>] [options] <column> [<input>]
 qsv geocode reversenow [options] <location>
 qsv geocode countryinfo [options] <column> [<input>]
 qsv geocode countryinfonow [options] <location>
+qsv geocode iplookup [options] <column> [<input>]
+qsv geocode iplookupnow [options] <location>
 qsv geocode index-load <index-file>
 qsv geocode index-check
 qsv geocode index-update [--languages=<lang>] [--cities-url=<url>] [--force] [--timeout=<seconds>]
@@ -171,14 +200,17 @@ geocode arguments:
                                 For reverse, it must be a column using WGS 84 coordinates in
                                 "lat, long" or "(lat, long)" format.
                                 For countryinfo, it must be a column with a ISO 3166-1 alpha-2 country code.
+                                For iplookup, it must be a column with an IP address or a URL.
                                 Note that you can use column selector syntax to select the column, but only
                                 the first column will be used. See `select --help` for more information.
 
-    <location>                  The location to geocode for suggestnow, reversenow & countryinfonow subcommands.
-                                For suggestnow, its a City string pattern.
-                                For reversenow, it must be a WGS 84 coordinate.
-                                For countryinfonow, it must be a ISO 3166-1 alpha-2 code.
-                                
+    <location>                  The location to geocode for suggestnow, reversenow, countryinfonow and
+                                iplookupnow subcommands.
+                                  For suggestnow, its a City string pattern.
+                                  For reversenow, it must be a WGS 84 coordinate.
+                                  For countryinfonow, it must be a ISO 3166-1 alpha-2 code.
+                                  For iplookupnow, it must be an IP address or a URL.
+
     <index-file>                The alternate geonames index file to use. It must be a .rkyv file.
                                 For convenience, if this is set to 500, 1000, 5000 or 15000, it will download
                                 the corresponding English-only Geonames index rkyv file from the qsv GitHub repo
@@ -265,6 +297,9 @@ geocode options:
                                            suggestnow - '{name}, {admin1} {country}: {latitude}, {longitude}'
                                            reverse & reversenow - '%city-admin1-country'
                                            countryinfo - '%country_name'
+                                           iplookup - '%cityrecord'
+                                           iplookupnow - '{name}, {admin1} {country}: {latitude}, {longitude}'
+
                                 
                                 If an invalid format is specified, it will be treated as '%+'.
 
@@ -365,6 +400,7 @@ Common options:
 use std::{
     collections::HashMap,
     fs,
+    net::{IpAddr, Ipv4Addr},
     path::{Path, PathBuf},
 };
 
@@ -412,6 +448,8 @@ struct Args {
     cmd_reversenow:      bool,
     cmd_countryinfo:     bool,
     cmd_countryinfonow:  bool,
+    cmd_iplookup:        bool,
+    cmd_iplookupnow:     bool,
     cmd_index_check:     bool,
     cmd_index_update:    bool,
     cmd_index_load:      bool,
@@ -456,6 +494,7 @@ struct NamesLang {
 static QSV_VERSION: &str = env!("CARGO_PKG_VERSION");
 static DEFAULT_GEOCODE_INDEX_FILENAME: &str =
     concat!("qsv-", env!("CARGO_PKG_VERSION"), "-geocode-index.rkyv");
+static GEOIP2_FILENAME: &str = "GeoLite2-City.mmdb";
 
 static DEFAULT_CITIES_NAMES_URL: &str =
     "https://download.geonames.org/export/dump/alternateNamesV2.zip";
@@ -587,6 +626,8 @@ enum GeocodeSubCmd {
     ReverseNow,
     CountryInfo,
     CountryInfoNow,
+    Iplookup,
+    IplookupNow,
     IndexCheck,
     IndexUpdate,
     IndexLoad,
@@ -643,6 +684,7 @@ pub fn run(argv: &[&str]) -> CliResult<()> {
 async fn geocode_main(args: Args) -> CliResult<()> {
     let mut index_cmd = false;
     let mut now_cmd = false;
+    let mut iplookup_cmd = false;
     let geocode_cmd = if args.cmd_suggest {
         GeocodeSubCmd::Suggest
     } else if args.cmd_reverse {
@@ -658,6 +700,13 @@ async fn geocode_main(args: Args) -> CliResult<()> {
     } else if args.cmd_countryinfonow {
         now_cmd = true;
         GeocodeSubCmd::CountryInfoNow
+    } else if args.cmd_iplookup {
+        iplookup_cmd = true;
+        GeocodeSubCmd::Iplookup
+    } else if args.cmd_iplookupnow {
+        now_cmd = true;
+        iplookup_cmd = true;
+        GeocodeSubCmd::IplookupNow
     } else if args.cmd_index_check {
         index_cmd = true;
         GeocodeSubCmd::IndexCheck
@@ -709,6 +758,8 @@ async fn geocode_main(args: Args) -> CliResult<()> {
         .arg_index_file
         .clone()
         .unwrap_or_else(|| active_geocode_index_file.clone());
+    let geoip2_filename = std::env::var("QSV_GEOIP2_FILENAME")
+        .unwrap_or_else(|_| format!("{}/{}", geocode_cache_dir.display(), GEOIP2_FILENAME));
 
     // create a TempDir for the one record CSV we're creating if we're doing a Now command
     // we're doing this at this scope so the TempDir is automatically dropped after we're done
@@ -932,9 +983,16 @@ async fn geocode_main(args: Args) -> CliResult<()> {
         return Ok(());
     }
 
-    // we're not doing an index subcommand, so we're doing a suggest/now, reverse/now
-    // or countryinfo/now subcommand. Load the current local Geonames index
-    let engine_data = load_engine_data(geocode_index_file.clone().into(), &progress).await?;
+    // we're not doing an index subcommand, so we're doing a suggest/now, reverse/now,
+    // countryinfo/now or iplookup/now subcommand. Load the current local Geonames index
+    let mut engine_data = load_engine_data(geocode_index_file.clone().into(), &progress).await?;
+    if iplookup_cmd {
+        // load the GeoIP2 database
+        engine_data
+            .load_geoip2(geoip2_filename.clone())
+            .map_err(|e| CliError::Other(format!("Error loading GeoIP2 database: {e}")))?;
+    }
+
     let engine = engine_data
         .as_engine()
         .map_err(|e| CliError::Other(format!("Error initializing Engine: {e}")))?;
@@ -1562,6 +1620,43 @@ fn search_index(
         return Some(format_result(
             engine, cityrecord, &nameslang, country, capital, formatstr, true,
         ));
+    } else if mode == GeocodeSubCmd::Iplookup || mode == GeocodeSubCmd::IplookupNow {
+        // check if the cell is an IP address
+        let ip_addr = if let Ok(ip_addr) = cell.to_string().parse::<IpAddr>() {
+            ip_addr
+        } else {
+            // not an IP address, check if it's a URL and lookup the IP address
+            let url = Url::parse(cell)
+                .map_err(|_| CliError::Other("Invalid URL".to_string()))
+                .ok()?;
+            let host = url.host_str().unwrap_or_default().to_string();
+            // try to resolve the host to an IP address using cached DNS lookup
+            cached_dns_lookup(host)?
+        };
+
+        let search_result = engine.geoip2_lookup(ip_addr);
+        let Some(cityrecord) = search_result else {
+            // if no cityrecord is found, return the IP address
+            return Some(format!("{ip_addr}"));
+        };
+        let nameslang = get_cityrecord_name_in_lang(cityrecord, lang_lookup);
+        let country = &cityrecord.country.as_ref().unwrap().code;
+        let capital = engine
+            .capital(country)
+            .map(|cr| cr.name.as_str())
+            .unwrap_or_default();
+        let formatstr = if formatstr == "%+" {
+            if mode == GeocodeSubCmd::IplookupNow {
+                "{name}, {admin1} {country}: {latitude}, {longitude}"
+            } else {
+                "%+"
+            }
+        } else {
+            formatstr
+        };
+        return Some(format_result(
+            engine, cityrecord, &nameslang, country, capital, formatstr, false,
+        ));
     }
 
     // we're doing a Reverse/Now command and expect a WGS 84 coordinate
@@ -1625,6 +1720,17 @@ fn search_index(
 
     // not a valid lat, long
     return None;
+}
+
+#[cached]
+fn cached_dns_lookup(host: String) -> Option<IpAddr> {
+    dns_lookup::lookup_host(&host)
+        .map(|ips| {
+            ips.into_iter()
+                .next()
+                .unwrap_or(IpAddr::V4(Ipv4Addr::new(0, 0, 0, 0)))
+        })
+        .ok()
 }
 
 /// "%dyncols:" formatstr used. Adds dynamic columns to CSV.
@@ -1804,7 +1910,8 @@ fn format_result(
                         longitude = cityrecord.longitude
                     )
                 } else {
-                    // default for reverse/now is city-admin1-country - e.g. "Brooklyn, New York US"
+                    // default for reverse/now or iplookup is city-admin1-country - e.g. "Brooklyn,
+                    // New York US"
                     format!(
                         "{city}, {admin1} {country}",
                         city = nameslang.cityname,

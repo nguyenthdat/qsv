@@ -2111,6 +2111,18 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "69dde51e8fef5e12c1d65e0929b03d66e4c0c18282bc30ed2ca050ad6f44dd82"
 
 [[package]]
+name = "dns-lookup"
+version = "2.0.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e5766087c2235fec47fafa4cfecc81e494ee679d0fd4a59887ea0919bfb0e4fc"
+dependencies = [
+ "cfg-if",
+ "libc",
+ "socket2",
+ "windows-sys 0.48.0",
+]
+
+[[package]]
 name = "doc-comment"
 version = "0.3.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2759,6 +2771,26 @@ dependencies = [
 ]
 
 [[package]]
+name = "geoip2"
+version = "0.1.7"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "6514903b5164a5d655fcd0cb1d87de8ee7a8de0da4d95b78b8d08de4df7bb6f6"
+dependencies = [
+ "geoip2-codegen",
+]
+
+[[package]]
+name = "geoip2-codegen"
+version = "0.1.5"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "1f2cac58ebe4e3057db62922453a19143a41aa66e7e5207a06cb07b975c5694b"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn 2.0.101",
+]
+
+[[package]]
 name = "geojson"
 version = "0.24.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2777,6 +2809,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "ad152bc0ff3d0ae8b1a506a00ec748a9e121243dd059b5f648a5df3c9d5c2edd"
 dependencies = [
  "csv",
+ "geoip2",
  "itertools 0.14.0",
  "kiddo",
  "rayon",
@@ -5678,6 +5711,7 @@ dependencies = [
  "csvs_convert",
  "data-encoding",
  "directories",
+ "dns-lookup",
  "dotenvy",
  "dunce",
  "dynfmt2",
@@ -8667,6 +8701,15 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "7a2ba9642430ee452d5a7aa78d72907ebe8cfda358e8cb7918a2050581322f97"
 dependencies = [
  "windows-link",
+]
+
+[[package]]
+name = "windows-sys"
+version = "0.48.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "677d2418bec65e3338edb076e806bc1ec15693c5d0104683f2efe857f61056a9"
+dependencies = [
+ "windows-targets 0.48.5",
 ]
 
 [[package]]
