@@ -33,7 +33,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * build(deps): bump minijinja from 2.9.0 to 2.10.0 by @dependabot in https://github.com/dathere/qsv/pull/2727
 * build(deps): bump minijinja-contrib from 2.9.0 to 2.10.0 by @dependabot in https://github.com/dathere/qsv/pull/2728
 * build(deps): bump mlua from 0.10.3 to 0.10.4 by @dependabot in https://github.com/dathere/qsv/pull/2730
+* build(deps): bump tokio from 1.44.2 to 1.45.0 by @dependabot in https://github.com/dathere/qsv/pull/2731
+* build(deps): bump minijinja from 2.10.1 to 2.10.2 by @dependabot in https://github.com/dathere/qsv/pull/2732
+* build(deps): bump minijinja-contrib from 2.10.1 to 2.10.2 by @dependabot in https://github.com/dathere/qsv/pull/2733
+* build(deps): bump file-format from 0.26.0 to 0.27.0 by @dependabot in https://github.com/dathere/qsv/pull/2735
+* build(deps): bump ext-sort from 0.1.4 to 0.1.5 by @dependabot in https://github.com/dathere/qsv/pull/2736
+* feat: geosuggest rkyv serialization by @estin in https://github.com/dathere/qsv/pull/2734
+* build(deps): bump tempfile from 3.19.1 to 3.20.0 by @dependabot in https://github.com/dathere/qsv/pull/2739
+* build(deps): bump sysinfo from 0.35.0 to 0.35.1 by @dependabot in https://github.com/dathere/qsv/pull/2740
+* feat: `geocode` add iplookup and iplookupnow subcommands by @jqnatividad in https://github.com/dathere/qsv/pull/2741
+* build(deps): bump actix-web from 4.10.2 to 4.11.0 by @dependabot in https://github.com/dathere/qsv/pull/2742
 
+## New Contributors
+* @estin made their first contribution in https://github.com/dathere/qsv/pull/2734
 
 **Full Changelog**: https://github.com/dathere/qsv/compare/4.0.0...4.1.0
 
