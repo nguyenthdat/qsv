@@ -2857,9 +2857,8 @@ pub fn convert_special_format(
     };
 
     // Get or initialize temp directory that persists until program exit
-    let temp_dir = crate::config::TEMP_FILE_DIR.get_or_init(|| {
-        tempfile::TempDir::new().unwrap().keep() // Convert to PathBuf to prevent auto-deletion
-    });
+    let temp_dir =
+        crate::config::TEMP_FILE_DIR.get_or_init(|| tempfile::TempDir::new().unwrap().keep());
 
     // Create temp file with appropriate extension
     let mut temp_file = tempfile::Builder::new()

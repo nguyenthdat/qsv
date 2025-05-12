@@ -749,10 +749,8 @@ pub fn run(argv: &[&str]) -> CliResult<()> {
         // read from stdin and write to a temp file
         log::info!("Reading from stdin");
 
-        let temp_dir = crate::config::TEMP_FILE_DIR.get_or_init(|| {
-            // Convert to PathBuf to prevent auto-deletion
-            tempfile::TempDir::new().unwrap().keep()
-        });
+        let temp_dir =
+            crate::config::TEMP_FILE_DIR.get_or_init(|| tempfile::TempDir::new().unwrap().keep());
 
         let mut stdin_file = tempfile::Builder::new().tempfile_in(temp_dir)?;
 

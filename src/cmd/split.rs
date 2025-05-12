@@ -170,9 +170,8 @@ pub fn run(argv: &[&str]) -> CliResult<()> {
     // if no input file is provided, use stdin and save to a temp file
     if args.arg_input.is_none() {
         // Get or initialize temp directory that persists until program exit
-        let temp_dir = crate::config::TEMP_FILE_DIR.get_or_init(|| {
-            tempfile::TempDir::new().unwrap().keep() // Convert to PathBuf to prevent auto-deletion
-        });
+        let temp_dir =
+            crate::config::TEMP_FILE_DIR.get_or_init(|| tempfile::TempDir::new().unwrap().keep());
 
         // Create a temporary file with .csv extension to store stdin input
         let mut temp_file = tempfile::Builder::new()

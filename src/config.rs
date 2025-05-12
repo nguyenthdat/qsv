@@ -195,10 +195,8 @@ impl Config {
                 let mut path = PathBuf::from(s);
 
                 // if QSV_SKIP_FORMAT_CHECK is set or path is a temp file, we skip format check
-                let temp_dir = crate::config::TEMP_FILE_DIR.get_or_init(|| {
-                    // Convert to PathBuf to prevent auto-deletion
-                    tempfile::TempDir::new().unwrap().keep()
-                });
+                let temp_dir = crate::config::TEMP_FILE_DIR
+                    .get_or_init(|| tempfile::TempDir::new().unwrap().keep());
                 skip_format_check = sniff
                     || util::get_envvar_flag("QSV_SKIP_FORMAT_CHECK")
                     || path.starts_with(temp_dir);
