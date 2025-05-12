@@ -1,10 +1,10 @@
 static USAGE: &str = r#"
 Geocodes a location in CSV data against an updatable local copy of the Geonames cities index
-and a local copy of the MaxMind GeoLite City database.
+and a local copy of the MaxMind GeoLite2 City database.
 
 The Geonames cities index can be retrieved and updated using the `geocode index-*` subcommands.
 
-The GeoLite City database will need to be MANUALLY downloaded from MaxMind. Though it is
+The GeoLite2 City database will need to be MANUALLY downloaded from MaxMind. Though it is
 free, you will need to create a MaxMind account to download the GeoIP2 Binary database (mmdb)
 from https://www.maxmind.com/en/accounts/current/geoip/downloads.
 Copy the GeoLite2-City.mmdb file to the ~/.qsv-cache/ directory or point to it using the
