@@ -33,7 +33,7 @@ It has seven major subcommands:
  * countryinfonow - same as countryinfo, but using a country code from the command line,
                     instead of CSV data.
  * iplookup       - given an IP address or URL, return the closest City's location metadata
-                    per the local Geonames cities index.
+                    per the local Maxmind GeoLite2 City database.
  * iplookupnow    - same as iplookup, but using an IP address or URL from the command line,
                     instead of CSV data.
  * index-*        - operations to update the local Geonames cities index.
