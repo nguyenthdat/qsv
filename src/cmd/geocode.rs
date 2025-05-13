@@ -32,9 +32,9 @@ It has seven major subcommands:
                     (e.g. US, CA, MX, etc.)
  * countryinfonow - same as countryinfo, but using a country code from the command line,
                     instead of CSV data.
- * iplookup       - given an IP address, return the closest City's location metadata
+ * iplookup       - given an IP address or URL, return the closest City's location metadata
                     per the local Geonames cities index.
- * iplookupnow    - same as iplookup, but using an IP address from the command line,
+ * iplookupnow    - same as iplookup, but using an IP address or URL from the command line,
                     instead of CSV data.
  * index-*        - operations to update the local Geonames cities index.
                     (index-check, index-update, index-load & index-reset)
@@ -132,7 +132,8 @@ Accepts the same options as countryinfo, but does not require an input file.
   $ qsv geocode countryinfonow -f "{country_name} ({fips}) in {continent}" US
 
 IPLOOKUP
-Given an IP address, return the closest City's location metadata per the local Geonames cities index.
+Given an IP address or URL, return the closest City's location metadata per the
+local Geonames cities index.
 
   $ qsv geocode iplookup IP_col data.csv
   $ qsv geocode iplookup --formatstr "%json" IP_col data.csv
@@ -142,6 +143,7 @@ IPLOOKUPNOW
 Accepts the same options as iplookup, but does not require an input file.
 
   $ qsv geocode iplookupnow 140.174.222.253
+  $ qsv geocode iplookupnow https://amazon.com
   $ qsv geocode iplookupnow --formatstr "%json" 140.174.222.253
   $ qsv geocode iplookupnow -f "%cityrecord" 140.174.222.253
 
