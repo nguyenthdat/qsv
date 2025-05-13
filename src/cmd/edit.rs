@@ -35,6 +35,7 @@ edit arguments:
 
 edit options:
     -i, --in-place         Overwrite the input file data with the output.
+                           The input file is renamed to a .bak file in the same directory.
 
 Common options:
     -h, --help             Display this message
@@ -121,8 +122,14 @@ pub fn run(argv: &[&str]) -> CliResult<()> {
     drop(wtr);
 
     if in_place {
-        if let Some(input_path) = input {
-            std::fs::copy(tempfile, std::path::Path::new(&input_path))?;
+        if let Some(input_path_string) = input {
+            let input_path = std::path::Path::new(&input_path_string);
+            if let Some(input_extension_osstr) = input_path.extension() {
+                let mut backup_extension = input_extension_osstr.to_string_lossy().to_string();
+                backup_extension.push_str(".bak");
+                std::fs::rename(input_path, input_path.with_extension(backup_extension))?;
+                std::fs::copy(tempfile, input_path)?;
+            }
         }
     }
 

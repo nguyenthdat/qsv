@@ -133,11 +133,19 @@ fn edit_in_place() {
     cmd.output().unwrap();
 
     let test_file = wrk.path("data.csv");
+    let backup_file = wrk.path("data.csv.bak");
     let got = std::fs::read_to_string(test_file).unwrap();
+    let got_backup = std::fs::read_to_string(backup_file).unwrap();
     let expected = "letter,number
 a,3
 b,2
 "
     .to_string();
+    let expected_backup = "letter,number
+a,1
+b,2
+"
+    .to_string();
     similar_asserts::assert_eq!(got, expected);
+    similar_asserts::assert_eq!(got_backup, expected_backup);
 }
