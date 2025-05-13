@@ -128,7 +128,7 @@ pub fn run(argv: &[&str]) -> CliResult<()> {
                 let mut backup_extension = input_extension_osstr.to_string_lossy().to_string();
                 backup_extension.push_str(".bak");
                 std::fs::rename(input_path, input_path.with_extension(backup_extension))?;
-                std::fs::copy(tempfile, input_path)?;
+                std::fs::copy(tempfile.path(), input_path)?;
             }
         }
     }
