@@ -3,7 +3,7 @@ use serial_test::serial;
 use crate::workdir::Workdir;
 
 #[test]
-// #[ignore = "Temporarily skip this as it seems https://zippopotam.us is not currently available"]
+#[ignore = "Temporarily skip this as zippotam.us API is in flux"]
 fn fetch_simple() {
     let wrk = Workdir::new("fetch");
     wrk.create(
@@ -34,7 +34,7 @@ fn fetch_simple() {
 }
 
 #[test]
-// #[ignore = "Temporarily skip this as it seems https://zippopotam.us is not currently available"]
+#[ignore = "Temporarily skip this as zippotam.us API is in flux"]
 fn fetch_simple_pretty_json() {
     let wrk = Workdir::new("fetch_simple_pretty_json");
     wrk.create(
@@ -107,7 +107,7 @@ https://api.zippopotam.us/us/92802,"{
 }
 
 #[test]
-// #[ignore = "Temporarily skip this as it seems https://zippopotam.us is not currently available"]
+#[ignore = "Temporarily skip this as zippotam.us API is in flux"]
 fn fetch_simple_new_col() {
     let wrk = Workdir::new("fetch_simple_new_col");
     wrk.create(
@@ -168,7 +168,7 @@ fn fetch_simple_new_col() {
 }
 
 #[test]
-// #[ignore = "Temporarily skip this as it seems https://zippopotam.us is not currently available"]
+#[ignore = "Temporarily skip this as zippotam.us API is in flux"]
 fn fetch_simple_report() {
     let wrk = Workdir::new("fetch_simple_report");
     wrk.create(
@@ -229,7 +229,7 @@ fn fetch_simple_report() {
 }
 
 #[test]
-// #[ignore = "Temporarily skip this as it seems https://zippopotam.us is not currently available"]
+#[ignore = "Temporarily skip this as zippotam.us API is in flux"]
 fn fetch_simple_url_template() {
     let wrk = Workdir::new("fetch");
     wrk.create(
@@ -258,7 +258,7 @@ fn fetch_simple_url_template() {
 }
 
 #[test]
-// #[ignore = "Temporarily skip this as it seems https://zippopotam.us is not currently available"]
+#[ignore = "Temporarily skip this as zippotam.us API is in flux"]
 fn fetch_simple_redis() {
     // if there is no local redis server, skip fetch_simple_redis test
     let redis_client = redis::Client::open("redis://127.0.0.1:6379").unwrap();
@@ -299,8 +299,7 @@ fn fetch_simple_redis() {
 }
 
 #[test]
-// #[ignore = "Temporarily skip this as diskcache behavior on macOS 14.4.1 generates more hits (the
-// \             desired behavior) than other platforms"]
+#[ignore = "Temporarily skip this as zippotam.us API is in flux"]
 fn fetch_simple_diskcache() {
     let wrk = Workdir::new("fetch");
     wrk.create(
@@ -380,7 +379,7 @@ thisisnotaurl,404,1,0,"{""errors"":[{""title"":""Invalid URL"",""detail"":""rela
 }
 
 #[test]
-// #[ignore = "Temporarily skip this as it seems https://zippopotam.us is not currently available"]
+#[ignore = "Temporarily skip this as zippotam.us API is in flux"]
 fn fetch_jaq_single() {
     let wrk = Workdir::new("fetch");
     wrk.create(
@@ -414,7 +413,7 @@ fn fetch_jaq_single() {
 }
 
 #[test]
-// #[ignore = "Temporarily skip this as it seems https://zippopotam.us is not currently available"]
+#[ignore = "Temporarily skip this as zippotam.us API is in flux"]
 fn fetch_jaq_single_file() {
     let wrk = Workdir::new("fetch");
     wrk.create(
@@ -448,7 +447,7 @@ fn fetch_jaq_single_file() {
 }
 
 #[test]
-// #[ignore = "Temporarily skip this as it seems https://zippopotam.us is not currently available"]
+#[ignore = "Temporarily skip this as zippotam.us API is in flux"]
 fn fetch_jaqfile_doesnotexist_error() {
     let wrk = Workdir::new("fetch");
     wrk.create(
@@ -475,7 +474,7 @@ fn fetch_jaqfile_doesnotexist_error() {
 }
 
 #[test]
-// #[ignore = "Temporarily skip this as it seems https://zippopotam.us is not currently available"]
+#[ignore = "Temporarily skip this as zippotam.us API is in flux"]
 fn fetch_jaq_jaqfile_error() {
     let wrk = Workdir::new("fetch");
     wrk.create(
@@ -500,7 +499,7 @@ fn fetch_jaq_jaqfile_error() {
 }
 
 #[test]
-// #[ignore = "Temporarily skip this as it seems https://zippopotam.us is not currently available"]
+#[ignore = "Temporarily skip this as zippotam.us API is in flux"]
 fn fetch_jaq_multiple() {
     let wrk = Workdir::new("fetch");
     wrk.create(
@@ -537,7 +536,7 @@ fn fetch_jaq_multiple() {
 }
 
 #[test]
-// #[ignore = "Temporarily skip this as it seems https://zippopotam.us is not currently available"]
+#[ignore = "Temporarily skip this as zippotam.us API is in flux"]
 fn fetch_jaq_multiple_file() {
     let wrk = Workdir::new("fetch");
     wrk.create(
