@@ -1647,6 +1647,7 @@ fn search_index(
             .capital(country)
             .map(|cr| cr.name.as_str())
             .unwrap_or_default();
+        #[allow(clippy::literal_string_with_formatting_args)]
         let formatstr = if formatstr == "%+" {
             if mode == GeocodeSubCmd::IplookupNow {
                 "{name}, {admin1} {country}: {latitude}, {longitude}"
