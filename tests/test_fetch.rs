@@ -27,10 +27,9 @@ fn fetch_simple() {
     let got = wrk.stdout::<String>(&mut cmd);
 
     let expected = r#"{"errors":[{"title":"HTTP ERROR","detail":"HTTP ERROR 404 - Not Found"}]}
-{"post code":"90210","country":"United States","country abbreviation":"US","places":[{"place name":"Beverly Hills","longitude":"-118.4065","state":"California","state abbreviation":"CA","latitude":"34.0901"}]}
-{"post code":"94105","country":"United States","country abbreviation":"US","places":[{"place name":"San Francisco","longitude":"-122.3892","state":"California","state abbreviation":"CA","latitude":"37.7864"}]}
-{"post code":"92802","country":"United States","country abbreviation":"US","places":[{"place name":"Anaheim","longitude":"-117.9228","state":"California","state abbreviation":"CA","latitude":"33.8085"}]}"#;
-    // {"head":{"vars":["dob"]},"results":{"bindings":[{"dob":{"datatype":"http://www.w3.org/2001/XMLSchema#dateTime","type":"literal","value":"1952-03-11T00:00:00Z"}}]}}"#;
+{"country":"United States","country abbreviation":"US","post code":"90210","places":[{"place name":"Beverly Hills","longitude":"-118.4065","latitude":"34.0901","state":"California","state abbreviation":"CA"}]}
+{"country":"United States","country abbreviation":"US","post code":"94105","places":[{"place name":"San Francisco","longitude":"-122.3892","latitude":"37.7864","state":"California","state abbreviation":"CA"}]}
+{"country":"United States","country abbreviation":"US","post code":"92802","places":[{"place name":"Anaheim","longitude":"-117.9228","latitude":"33.8085","state":"California","state abbreviation":"CA"}]}"#;
     similar_asserts::assert_eq!(got, expected);
 }
 
@@ -63,44 +62,44 @@ fn fetch_simple_pretty_json() {
     let expected = r#"URL,pretty_response
 https://api.zippopotam.us/us/99999,
 https://api.zippopotam.us/us/90210,"{
-  ""post code"": ""90210"",
   ""country"": ""United States"",
   ""country abbreviation"": ""US"",
+  ""post code"": ""90210"",
   ""places"": [
     {
       ""place name"": ""Beverly Hills"",
       ""longitude"": ""-118.4065"",
+      ""latitude"": ""34.0901"",
       ""state"": ""California"",
-      ""state abbreviation"": ""CA"",
-      ""latitude"": ""34.0901""
+      ""state abbreviation"": ""CA""
     }
   ]
 }"
 https://api.zippopotam.us/us/94105,"{
-  ""post code"": ""94105"",
   ""country"": ""United States"",
   ""country abbreviation"": ""US"",
+  ""post code"": ""94105"",
   ""places"": [
     {
       ""place name"": ""San Francisco"",
       ""longitude"": ""-122.3892"",
+      ""latitude"": ""37.7864"",
       ""state"": ""California"",
-      ""state abbreviation"": ""CA"",
-      ""latitude"": ""37.7864""
+      ""state abbreviation"": ""CA""
     }
   ]
 }"
 https://api.zippopotam.us/us/92802,"{
-  ""post code"": ""92802"",
   ""country"": ""United States"",
   ""country abbreviation"": ""US"",
+  ""post code"": ""92802"",
   ""places"": [
     {
       ""place name"": ""Anaheim"",
       ""longitude"": ""-117.9228"",
+      ""latitude"": ""33.8085"",
       ""state"": ""California"",
-      ""state abbreviation"": ""CA"",
-      ""latitude"": ""33.8085""
+      ""state abbreviation"": ""CA""
     }
   ]
 }""#;
@@ -140,21 +139,29 @@ fn fetch_simple_new_col() {
             "https://api.zippopotam.us/us/90210",
             "b",
             "2",
-            r#"{"post code":"90210","country":"United States","country abbreviation":"US","places":[{"place name":"Beverly Hills","longitude":"-118.4065","state":"California","state abbreviation":"CA","latitude":"34.0901"}]}"#
+            "{\"country\":\"United States\",\"country abbreviation\":\"US\",\"post \
+             code\":\"90210\",\"places\":[{\"place name\":\"Beverly \
+             Hills\",\"longitude\":\"-118.4065\",\"latitude\":\"34.0901\",\"state\":\"California\"\
+             ,\"state abbreviation\":\"CA\"}]}"
         ],
         svec![
             "https://api.zippopotam.us/us/94105",
             "c",
             "3",
-            r#"{"post code":"94105","country":"United States","country abbreviation":"US","places":[{"place name":"San Francisco","longitude":"-122.3892","state":"California","state abbreviation":"CA","latitude":"37.7864"}]}"#
+            "{\"country\":\"United States\",\"country abbreviation\":\"US\",\"post \
+             code\":\"94105\",\"places\":[{\"place name\":\"San \
+             Francisco\",\"longitude\":\"-122.3892\",\"latitude\":\"37.7864\",\"state\":\"\
+             California\",\"state abbreviation\":\"CA\"}]}"
         ],
         svec![
             "https://api.zippopotam.us/us/92802",
             "d",
             "4",
-            r#"{"post code":"92802","country":"United States","country abbreviation":"US","places":[{"place name":"Anaheim","longitude":"-117.9228","state":"California","state abbreviation":"CA","latitude":"33.8085"}]}"#
+            "{\"country\":\"United States\",\"country abbreviation\":\"US\",\"post \
+             code\":\"92802\",\"places\":[{\"place \
+             name\":\"Anaheim\",\"longitude\":\"-117.9228\",\"latitude\":\"33.8085\",\"state\":\"\
+             California\",\"state abbreviation\":\"CA\"}]}"
         ],
-        // svec!["https://query.wikidata.org/sparql?query=SELECT%20?dob%20WHERE%20{wd:Q42%20wdt:P569%20?dob.}&format=json", "Scott Adams", "42", r#"{"head":{"vars":["dob"]},"results":{"bindings":[{"dob":{"datatype":"http://www.w3.org/2001/XMLSchema#dateTime","type":"literal","value":"1952-03-11T00:00:00Z"}}]}}"#],
     ];
 
     similar_asserts::assert_eq!(got, expected);
@@ -244,10 +251,9 @@ fn fetch_simple_url_template() {
     let got = wrk.stdout::<String>(&mut cmd);
 
     let expected = r#"{"errors":[{"title":"HTTP ERROR","detail":"HTTP ERROR 404 - Not Found"}]}
-{"post code":"90210","country":"United States","country abbreviation":"US","places":[{"place name":"Beverly Hills","longitude":"-118.4065","state":"California","state abbreviation":"CA","latitude":"34.0901"}]}
-{"post code":"94105","country":"United States","country abbreviation":"US","places":[{"place name":"San Francisco","longitude":"-122.3892","state":"California","state abbreviation":"CA","latitude":"37.7864"}]}
-{"post code":"92802","country":"United States","country abbreviation":"US","places":[{"place name":"Anaheim","longitude":"-117.9228","state":"California","state abbreviation":"CA","latitude":"33.8085"}]}"#;
-
+{"country":"United States","country abbreviation":"US","post code":"90210","places":[{"place name":"Beverly Hills","longitude":"-118.4065","latitude":"34.0901","state":"California","state abbreviation":"CA"}]}
+{"country":"United States","country abbreviation":"US","post code":"94105","places":[{"place name":"San Francisco","longitude":"-122.3892","latitude":"37.7864","state":"California","state abbreviation":"CA"}]}
+{"country":"United States","country abbreviation":"US","post code":"92802","places":[{"place name":"Anaheim","longitude":"-117.9228","latitude":"33.8085","state":"California","state abbreviation":"CA"}]}"#;
     similar_asserts::assert_eq!(got, expected);
 }
 
