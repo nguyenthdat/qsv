@@ -290,9 +290,9 @@ fn fetch_simple_redis() {
     let got = wrk.stdout::<String>(&mut cmd);
 
     let expected = r#"{"errors":[{"title":"HTTP ERROR","detail":"HTTP ERROR 404 - Not Found"}]}
-{"post code":"90210","country":"United States","country abbreviation":"US","places":[{"place name":"Beverly Hills","longitude":"-118.4065","state":"California","state abbreviation":"CA","latitude":"34.0901"}]}
-{"post code":"94105","country":"United States","country abbreviation":"US","places":[{"place name":"San Francisco","longitude":"-122.3892","state":"California","state abbreviation":"CA","latitude":"37.7864"}]}
-{"post code":"92802","country":"United States","country abbreviation":"US","places":[{"place name":"Anaheim","longitude":"-117.9228","state":"California","state abbreviation":"CA","latitude":"33.8085"}]}
+{"country":"United States","country abbreviation":"US","post code":"90210","places":[{"place name":"Beverly Hills","longitude":"-118.4065","latitude":"34.0901","state":"California","state abbreviation":"CA"}]}
+{"country":"United States","country abbreviation":"US","post code":"94105","places":[{"place name":"San Francisco","longitude":"-122.3892","latitude":"37.7864","state":"California","state abbreviation":"CA"}]}
+{"country":"United States","country abbreviation":"US","post code":"92802","places":[{"place name":"Anaheim","longitude":"-117.9228","latitude":"33.8085","state":"California","state abbreviation":"CA"}]}
 {"errors":[{"title":"Invalid URL","detail":"relative URL without a base"}]}"#;
 
     similar_asserts::assert_eq!(got, expected);
