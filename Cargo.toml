@@ -313,8 +313,8 @@ csv       = { git = "https://github.com/dathere/rust-csv", branch = "qsv-optimiz
 csv-core  = { git = "https://github.com/dathere/rust-csv", branch = "qsv-optimized-non-allocating-byterecord-trim" }
 csv-index = { git = "https://github.com/dathere/rust-csv", branch = "qsv-optimized-non-allocating-byterecord-trim" }
 
-# use our fork fixing zip dependency until our PR is merged
-calamine = { git = "https://github.com/jqnatividad/calamine", branch = "bump-zip-to-3" }
+# use fork fixing zip dependency until PR is merged
+calamine = { git = "https://github.com/prophittcorey/calamine", branch = "fix/zip-3.0" }
 
 # use upstream with 2024 edition now that our PR has been merged
 # but a new release hasn't been made yet

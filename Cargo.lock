@@ -1280,7 +1280,7 @@ checksum = "ade8366b8bd5ba243f0a58f036cc0ca8a2f069cff1a2351ef1cac6b083e16fc0"
 [[package]]
 name = "calamine"
 version = "0.27.0"
-source = "git+https://github.com/jqnatividad/calamine?branch=bump-zip-to-3#97138fad1b9b0f70aca5dc7b484bb94ad5afbd13"
+source = "git+https://github.com/prophittcorey/calamine?branch=fix%2Fzip-3.0#f69a25730c568aa6cfa32390abf298ec015a96ab"
 dependencies = [
  "atoi_simd",
  "byteorder",
