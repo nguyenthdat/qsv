@@ -65,7 +65,7 @@ impl SelectColumns {
     }
 
     #[allow(dead_code)]
-    pub fn is_empty(&self) -> bool {
+    pub const fn is_empty(&self) -> bool {
         self.selectors.is_empty()
     }
 }
@@ -248,7 +248,7 @@ impl SelectorParser {
         self.cur().is_none_or(|c| c == ',')
     }
 
-    fn bump(&mut self) {
+    const fn bump(&mut self) {
         if self.pos < self.chars.len() {
             self.pos += 1;
         }
@@ -437,7 +437,7 @@ impl Selection {
         NormalSelection(set)
     }
 
-    pub fn len(&self) -> usize {
+    pub const fn len(&self) -> usize {
         self.0.len()
     }
 }

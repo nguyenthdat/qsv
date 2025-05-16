@@ -1394,7 +1394,7 @@ impl ColumnNameParser {
         self.chars.get(self.pos).copied()
     }
 
-    fn bump(&mut self) {
+    const fn bump(&mut self) {
         if self.pos < self.chars.len() {
             self.pos += 1;
         }
