@@ -205,6 +205,7 @@ To options:
     -i --pipe              For parquet, allow piping from stdin (using `-`) or from a named pipe.
     -p --separator <arg>   For xlsx, use this character to help truncate xlsx sheet names.
                            Defaults to space.
+    -A --all-strings       Convert all fields to strings.
     -j, --jobs <arg>       The number of jobs to run in parallel.
                            When not set, the number of jobs is set to the number of CPUs detected.
                            
@@ -250,6 +251,7 @@ struct Args {
     flag_delimiter:     Option<Delimiter>,
     flag_schema:        Option<String>,
     flag_separator:     Option<String>,
+    flag_all_strings:   bool,
     flag_dump:          bool,
     flag_drop:          bool,
     flag_evolve:        bool,
@@ -283,6 +285,7 @@ pub fn run(argv: &[&str]) -> CliResult<()> {
         .delimiter(args.flag_delimiter.map(config::Delimiter::as_byte))
         .schema(args.flag_schema.unwrap_or_default())
         .seperator(args.flag_separator.unwrap_or_else(|| " ".into()))
+        .all_strings(args.flag_all_strings)
         .evolve(args.flag_evolve)
         .stats(args.flag_stats)
         .pipe(args.flag_pipe)
