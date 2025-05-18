@@ -98,7 +98,7 @@ csv-index = "0.1"
 csvlens = { version = "0.12", optional = true, default-features = false, features = [
     "clipboard",
 ] }
-csvs_convert = { version = "0.11", default-features = false, features = [
+csvs_convert = { version = "0.12", default-features = false, features = [
     "converters",
     "parquet",
 ], optional = true }
@@ -319,9 +319,6 @@ calamine = { git = "https://github.com/prophittcorey/calamine", branch = "fix/zi
 # use upstream with 2024 edition now that our PR has been merged
 # but a new release hasn't been made yet
 csvlens = { git = "https://github.com/YS-L/csvlens", rev = "a1af5ca" }
-
-# use our fork until csvs_convert bumps rust-xlsxwriter to 0.87
-csvs_convert = { git = "https://github.com/jqnatividad/csvs_convert", branch = "bump_rust_xlsxwriter_to_0.87"}
 
 # needed to get latest dependencies and unreleased fixes
 grex = { git = "https://github.com/jqnatividad/grex", branch = "bumped-dependencies-202502" }
