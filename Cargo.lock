@@ -1841,8 +1841,9 @@ dependencies = [
 
 [[package]]
 name = "csvs_convert"
-version = "0.11.1"
-source = "git+https://github.com/jqnatividad/csvs_convert?branch=bump_rust_xlsxwriter_to_0.87#91c406fb788333918056b3e6e60243e2eefa7a95"
+version = "0.12.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "c5407480126ec30f5236b2c40fb59544f103d368153c976d806f623ff6f6dccf"
 dependencies = [
  "arrow",
  "chrono",

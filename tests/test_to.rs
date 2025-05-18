@@ -47,6 +47,42 @@ fn to_xlsx_roundtrip() {
 }
 
 #[test]
+fn to_xlsx_roundtrip_all_strings() {
+    let wrk = Workdir::new("to_xlsx_all_strings");
+
+    let thedata = vec![
+        svec!["col1", "numbers"],
+        svec!["1", "1.23"],
+        svec!["2", "4014270163361"],
+        svec!["3", "3.14"],
+        svec!["4", "1234567890"],
+        svec!["5", "12345678901234567890"],
+        svec!["6", "123456789012345678901234567890"],
+        svec!["7", "1234567890123456789012345678901234567890"],
+    ];
+    wrk.create("in.csv", thedata.clone());
+
+    let xlsx_file = wrk.path("testxlsx.xlsx").to_string_lossy().to_string();
+    log::info!("xlsx_file: {}", xlsx_file);
+
+    let mut cmd = wrk.command("to");
+    cmd.arg("xlsx")
+        .arg("--all-strings")
+        .arg(xlsx_file.clone())
+        .arg("in.csv");
+
+    wrk.assert_success(&mut cmd);
+
+    let mut cmd = wrk.command("excel");
+    cmd.arg(xlsx_file);
+
+    let got: Vec<Vec<String>> = wrk.read_stdout(&mut cmd);
+    similar_asserts::assert_eq!(got, thedata);
+
+    wrk.assert_success(&mut cmd);
+}
+
+#[test]
 fn to_xlsx_dir() {
     let wrk = Workdir::new("to_xlsx_dir");
 
