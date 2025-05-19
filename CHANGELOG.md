@@ -43,9 +43,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * build(deps): bump sysinfo from 0.35.0 to 0.35.1 by @dependabot in https://github.com/dathere/qsv/pull/2740
 * feat: `geocode` add iplookup and iplookupnow subcommands by @jqnatividad in https://github.com/dathere/qsv/pull/2741
 * build(deps): bump actix-web from 4.10.2 to 4.11.0 by @dependabot in https://github.com/dathere/qsv/pull/2742
+* docs: fix typo in apply operations replace example by @HarrisonMc555 in https://github.com/dathere/qsv/pull/2743
+* feat: `edit` add `--in-place` (and test) which uses tempfile by @rzmk in https://github.com/dathere/qsv/pull/2744
+* build(deps): bump pyo3 from 0.24.2 to 0.25.0 by @dependabot in https://github.com/dathere/qsv/pull/2745
+* `feat`: `to` add `--all-strings` option by @jqnatividad in https://github.com/dathere/qsv/pull/2746
+* Bump polars py 1.30.0 beta 1 by @jqnatividad in https://github.com/dathere/qsv/pull/2747
 
 ## New Contributors
 * @estin made their first contribution in https://github.com/dathere/qsv/pull/2734
+* @HarrisonMc555 made their first contribution in https://github.com/dathere/qsv/pull/2743
 
 **Full Changelog**: https://github.com/dathere/qsv/compare/4.0.0...4.1.0
 
