@@ -250,6 +250,7 @@ impl Config {
         let no_headers = util::get_envvar_flag("QSV_NO_HEADERS");
         let mut preamble = 0_u64;
         if sniff && path.is_some() {
+            // safety: we can safely unwrap as we just checked path.is_some()
             #[allow(clippy::unnecessary_unwrap)]
             let sniff_path = path.as_ref().unwrap().to_str().unwrap();
 
