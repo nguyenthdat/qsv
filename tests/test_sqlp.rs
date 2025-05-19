@@ -942,8 +942,7 @@ fn sqlp_boston311_explain() {
     Csv SCAN ["#;
     assert!(got.starts_with(expected_begin));
 
-    let expected_end = r#"boston311-100.csv]
-    PROJECT 4/29 COLUMNS
+    let expected_end = r#"PROJECT 4/29 COLUMNS
 "    SELECTION: [(col(""case_status"")) == (""Closed"")]""#;
     assert!(got.ends_with(expected_end));
 }
