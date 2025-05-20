@@ -344,6 +344,8 @@ fn compare_num(n1: Number, n2: Number) -> cmp::Ordering {
 }
 
 #[allow(clippy::inline_always)]
+// This function is part of a performance-critical hot path. Inlining it
+// avoids the overhead of a function call, improving performance.
 #[inline(always)]
 fn compare_float(f1: f64, f2: f64) -> cmp::Ordering {
     f1.partial_cmp(&f2).unwrap_or(cmp::Ordering::Equal)
