@@ -24,7 +24,7 @@ sort options:
     -u, --unique            When set, identical consecutive lines will be dropped
                             to keep only one line per sorted value.
 
-    --random                Randomize/scramble the data by row
+    --random                Randomize (scramble) the data by row
     --seed <number>         Random Number Generator (RNG) seed to use if --random is set
     --rng <kind>            The RNG algorithm to use if --random is set.
                             Three RNGs are supported:
