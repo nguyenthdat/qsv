@@ -3262,9 +3262,9 @@ dependencies = [
 
 [[package]]
 name = "hyper-util"
-version = "0.1.11"
+version = "0.1.12"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "497bbc33a26fdd4af9ed9c70d63f61cf56a938375fbb32df34db9b1cd6d643f2"
+checksum = "cf9f1e950e0d9d1d3c47184416723cf29c0d1f93bd8cccf37e4beb6b44f31710"
 dependencies = [
  "bytes",
  "futures-channel",
@@ -3292,7 +3292,7 @@ dependencies = [
  "js-sys",
  "log",
  "wasm-bindgen",
- "windows-core 0.61.1",
+ "windows-core 0.61.2",
 ]
 
 [[package]]
@@ -3365,9 +3365,9 @@ checksum = "00210d6893afc98edb752b664b8890f0ef174c8adbb8d0be9710fa66fbbf72d3"
 
 [[package]]
 name = "icu_properties"
-version = "2.0.0"
+version = "2.0.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2549ca8c7241c82f59c80ba2a6f415d931c5b58d24fb8412caa1a1f02c49139a"
+checksum = "016c619c1eeb94efb86809b015c58f479963de65bdb6253345c1a1276f22e32b"
 dependencies = [
  "displaydoc",
  "icu_collections",
@@ -3381,9 +3381,9 @@ dependencies = [
 
 [[package]]
 name = "icu_properties_data"
-version = "2.0.0"
+version = "2.0.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8197e866e47b68f8f7d95249e172903bec06004b18b2937f1095d40a0c57de04"
+checksum = "298459143998310acd25ffe6810ed544932242d3f07083eee1084d83a71bd632"
 
 [[package]]
 name = "icu_provider"
@@ -4881,8 +4881,9 @@ dependencies = [
 
 [[package]]
 name = "polars"
-version = "0.47.1"
-source = "git+https://github.com/pola-rs/polars?rev=fa9f3fe#fa9f3fe6f25ddbba36cc1ed873ea9ed561882da9"
+version = "0.48.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "7f8e55331501d603dacb8ddbdc0f53306166fd34e05f59b77585cabf5049a405"
 dependencies = [
  "getrandom 0.2.16",
  "polars-arrow",
@@ -4901,8 +4902,9 @@ dependencies = [
 
 [[package]]
 name = "polars-arrow"
-version = "0.47.1"
-source = "git+https://github.com/pola-rs/polars?rev=fa9f3fe#fa9f3fe6f25ddbba36cc1ed873ea9ed561882da9"
+version = "0.48.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "80bbff45c3c087bb96667768b0c5e1a29f599ca23c906a5cf44cd5719c2d19f2"
 dependencies = [
  "atoi_simd",
  "avro-schema",
@@ -4942,8 +4944,9 @@ dependencies = [
 
 [[package]]
 name = "polars-compute"
-version = "0.47.1"
-source = "git+https://github.com/pola-rs/polars?rev=fa9f3fe#fa9f3fe6f25ddbba36cc1ed873ea9ed561882da9"
+version = "0.48.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f5d89a05c1ef9263ba2085a32b71520695b91c0363eef9782aa6b450edb6ba39"
 dependencies = [
  "atoi_simd",
  "bytemuck",
@@ -4967,8 +4970,9 @@ dependencies = [
 
 [[package]]
 name = "polars-core"
-version = "0.47.1"
-source = "git+https://github.com/pola-rs/polars?rev=fa9f3fe#fa9f3fe6f25ddbba36cc1ed873ea9ed561882da9"
+version = "0.48.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "98cbc2f5626c36b435a7d9f7c412ebc84e5c5e7f16ed6f51fc1bca947db2ffe1"
 dependencies = [
  "bitflags 2.9.1",
  "bytemuck",
@@ -5000,8 +5004,9 @@ dependencies = [
 
 [[package]]
 name = "polars-error"
-version = "0.47.1"
-source = "git+https://github.com/pola-rs/polars?rev=fa9f3fe#fa9f3fe6f25ddbba36cc1ed873ea9ed561882da9"
+version = "0.48.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "fd9c6c914e573adcee31c92e43085a1fdcc0c200435c6742587278f4782f42a1"
 dependencies = [
  "avro-schema",
  "object_store",
@@ -5014,8 +5019,9 @@ dependencies = [
 
 [[package]]
 name = "polars-expr"
-version = "0.47.1"
-source = "git+https://github.com/pola-rs/polars?rev=fa9f3fe#fa9f3fe6f25ddbba36cc1ed873ea9ed561882da9"
+version = "0.48.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "a8ee1b10e599fb6b6820ea9027195e4b9d549861cc7f6cc36a9d4139830ef945"
 dependencies = [
  "bitflags 2.9.1",
  "hashbrown 0.15.3",
@@ -5036,8 +5042,9 @@ dependencies = [
 
 [[package]]
 name = "polars-io"
-version = "0.47.1"
-source = "git+https://github.com/pola-rs/polars?rev=fa9f3fe#fa9f3fe6f25ddbba36cc1ed873ea9ed561882da9"
+version = "0.48.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "7e7b1bb4d8686f370cf0405dc760eead4f1a56b07b15ce6fe10f076d791f2d98"
 dependencies = [
  "async-trait",
  "atoi_simd",
@@ -5082,8 +5089,9 @@ dependencies = [
 
 [[package]]
 name = "polars-json"
-version = "0.47.1"
-source = "git+https://github.com/pola-rs/polars?rev=fa9f3fe#fa9f3fe6f25ddbba36cc1ed873ea9ed561882da9"
+version = "0.48.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ca5dab789dd604fe5cc0a6798147a4bb1e2085fd027ba65dc48380813c796945"
 dependencies = [
  "chrono",
  "chrono-tz 0.10.3",
@@ -5103,8 +5111,9 @@ dependencies = [
 
 [[package]]
 name = "polars-lazy"
-version = "0.47.1"
-source = "git+https://github.com/pola-rs/polars?rev=fa9f3fe#fa9f3fe6f25ddbba36cc1ed873ea9ed561882da9"
+version = "0.48.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "9e658df3117e5f382eff1c97a7df76b04eaeb231d63139b8e6fee7de32ee06e2"
 dependencies = [
  "bitflags 2.9.1",
  "chrono",
@@ -5131,8 +5140,9 @@ dependencies = [
 
 [[package]]
 name = "polars-mem-engine"
-version = "0.47.1"
-source = "git+https://github.com/pola-rs/polars?rev=fa9f3fe#fa9f3fe6f25ddbba36cc1ed873ea9ed561882da9"
+version = "0.48.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "95c7a92f7231cab82294c4f4c41104431417141ce91bf9fd4611e477fde719b2"
 dependencies = [
  "futures",
  "memmap2",
@@ -5153,8 +5163,9 @@ dependencies = [
 
 [[package]]
 name = "polars-ops"
-version = "0.47.1"
-source = "git+https://github.com/pola-rs/polars?rev=fa9f3fe#fa9f3fe6f25ddbba36cc1ed873ea9ed561882da9"
+version = "0.48.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "665d4c023850ffdb506833aa3277666e51febb2f94aa18303ca7938cb4f7f111"
 dependencies = [
  "argminmax",
  "base64",
@@ -5189,8 +5200,9 @@ dependencies = [
 
 [[package]]
 name = "polars-parquet"
-version = "0.47.1"
-source = "git+https://github.com/pola-rs/polars?rev=fa9f3fe#fa9f3fe6f25ddbba36cc1ed873ea9ed561882da9"
+version = "0.48.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "dd2184473f4876e485fa890e62b14499f7ac70508ee43d6d10d90afde3b7a7b3"
 dependencies = [
  "async-stream",
  "base64",
@@ -5226,8 +5238,9 @@ dependencies = [
 
 [[package]]
 name = "polars-pipe"
-version = "0.47.1"
-source = "git+https://github.com/pola-rs/polars?rev=fa9f3fe#fa9f3fe6f25ddbba36cc1ed873ea9ed561882da9"
+version = "0.48.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "7c6f2cf43fc3ad2eba7e49864a6e3fbe5d221ed9f5de216164124c974804518c"
 dependencies = [
  "crossbeam-channel",
  "crossbeam-queue",
@@ -5252,8 +5265,9 @@ dependencies = [
 
 [[package]]
 name = "polars-plan"
-version = "0.47.1"
-source = "git+https://github.com/pola-rs/polars?rev=fa9f3fe#fa9f3fe6f25ddbba36cc1ed873ea9ed561882da9"
+version = "0.48.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "4d9795038f5d3a83ea273407715e92054bd355e3e251a5d729ba397f66e80282"
 dependencies = [
  "bitflags 2.9.1",
  "bytemuck",
@@ -5285,8 +5299,9 @@ dependencies = [
 
 [[package]]
 name = "polars-row"
-version = "0.47.1"
-source = "git+https://github.com/pola-rs/polars?rev=fa9f3fe#fa9f3fe6f25ddbba36cc1ed873ea9ed561882da9"
+version = "0.48.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "7510a28ef2a835bb88aceb83f41dd84b65182b9943b760e8919ae4882bfe27d1"
 dependencies = [
  "bitflags 2.9.1",
  "bytemuck",
@@ -5298,8 +5313,9 @@ dependencies = [
 
 [[package]]
 name = "polars-schema"
-version = "0.47.1"
-source = "git+https://github.com/pola-rs/polars?rev=fa9f3fe#fa9f3fe6f25ddbba36cc1ed873ea9ed561882da9"
+version = "0.48.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d94e88bc9dda80ced9a9222de5178f5a5990a50e8e9a0d7e6ddfb65ee27eeb3d"
 dependencies = [
  "indexmap",
  "polars-error",
@@ -5310,8 +5326,9 @@ dependencies = [
 
 [[package]]
 name = "polars-sql"
-version = "0.47.1"
-source = "git+https://github.com/pola-rs/polars?rev=fa9f3fe#fa9f3fe6f25ddbba36cc1ed873ea9ed561882da9"
+version = "0.48.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "75e79a010b3b792b5de78807547ead5d63b3c52d7e369a8afe1cf8e014bfc99e"
 dependencies = [
  "bitflags 2.9.1",
  "hex",
@@ -5330,8 +5347,9 @@ dependencies = [
 
 [[package]]
 name = "polars-stream"
-version = "0.47.1"
-source = "git+https://github.com/pola-rs/polars?rev=fa9f3fe#fa9f3fe6f25ddbba36cc1ed873ea9ed561882da9"
+version = "0.48.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "0a141963c30085a32dc8b6d3b302b6c7dfb1b180667a067f1170b73bd96e040f"
 dependencies = [
  "async-channel",
  "async-trait",
@@ -5366,8 +5384,9 @@ dependencies = [
 
 [[package]]
 name = "polars-time"
-version = "0.47.1"
-source = "git+https://github.com/pola-rs/polars?rev=fa9f3fe#fa9f3fe6f25ddbba36cc1ed873ea9ed561882da9"
+version = "0.48.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "75f865898802fadffe0af007963175b2a708f9048851a000737ad0b51309a988"
 dependencies = [
  "atoi_simd",
  "bytemuck",
@@ -5389,8 +5408,9 @@ dependencies = [
 
 [[package]]
 name = "polars-utils"
-version = "0.47.1"
-source = "git+https://github.com/pola-rs/polars?rev=fa9f3fe#fa9f3fe6f25ddbba36cc1ed873ea9ed561882da9"
+version = "0.48.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "25f245314e05f1d1a96162bca2ffd3378835269be7c9de14f082c5cdad5705fc"
 dependencies = [
  "bincode",
  "bytemuck",
@@ -8483,7 +8503,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "c5ee8f3d025738cb02bad7868bbb5f8a6327501e870bf51f1b455b0a2454a419"
 dependencies = [
  "windows-collections",
- "windows-core 0.61.1",
+ "windows-core 0.61.2",
  "windows-future",
  "windows-link",
  "windows-numerics",
@@ -8495,7 +8515,7 @@ version = "0.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "3beeceb5e5cfd9eb1d76b381630e82c4241ccd0d27f1a39ed41b2760b255c5e8"
 dependencies = [
- "windows-core 0.61.1",
+ "windows-core 0.61.2",
 ]
 
 [[package]]
@@ -8522,15 +8542,15 @@ dependencies = [
 
 [[package]]
 name = "windows-core"
-version = "0.61.1"
+version = "0.61.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "46ec44dc15085cea82cf9c78f85a9114c463a369786585ad2882d1ff0b0acf40"
+checksum = "c0fdd3ddb90610c7638aa2b3a3ab2904fb9e5cdbecc643ddb3647212781c4ae3"
 dependencies = [
  "windows-implement 0.60.0",
  "windows-interface 0.59.1",
  "windows-link",
- "windows-result 0.3.3",
- "windows-strings 0.4.1",
+ "windows-result 0.3.4",
+ "windows-strings 0.4.2",
 ]
 
 [[package]]
@@ -8539,7 +8559,7 @@ version = "0.2.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "fc6a41e98427b19fe4b73c550f060b59fa592d7d686537eebf9385621bfbad8e"
 dependencies = [
- "windows-core 0.61.1",
+ "windows-core 0.61.2",
  "windows-link",
  "windows-threading",
 ]
@@ -8600,7 +8620,7 @@ version = "0.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "9150af68066c4c5c07ddc0ce30421554771e528bde427614c61038bc2c92c2b1"
 dependencies = [
- "windows-core 0.61.1",
+ "windows-core 0.61.2",
  "windows-link",
 ]
 
@@ -8610,7 +8630,7 @@ version = "0.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "4286ad90ddb45071efd1a66dfa43eb02dd0dfbae1545ad6cc3c51cf34d7e8ba3"
 dependencies = [
- "windows-result 0.3.3",
+ "windows-result 0.3.4",
  "windows-strings 0.3.1",
  "windows-targets 0.53.0",
 ]
@@ -8626,9 +8646,9 @@ dependencies = [
 
 [[package]]
 name = "windows-result"
-version = "0.3.3"
+version = "0.3.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4b895b5356fc36103d0f64dd1e94dfa7ac5633f1c9dd6e80fe9ec4adef69e09d"
+checksum = "56f42bd332cc6c8eac5af113fc0c1fd6a8fd2aa08a0119358686e5160d0586c6"
 dependencies = [
  "windows-link",
 ]
@@ -8644,9 +8664,9 @@ dependencies = [
 
 [[package]]
 name = "windows-strings"
-version = "0.4.1"
+version = "0.4.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2a7ab927b2637c19b3dbe0965e75d8f2d30bdd697a1516191cad2ec4df8fb28a"
+checksum = "56e6c93f3a0c3b36176cb1327a4958a0353d5d166c2a35cb268ace15e91d3b57"
 dependencies = [
  "windows-link",
 ]
