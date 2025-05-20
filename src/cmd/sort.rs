@@ -24,7 +24,7 @@ sort options:
     -u, --unique            When set, identical consecutive lines will be dropped
                             to keep only one line per sorted value.
 
-    --random                Random order
+    --random                Randomize (scramble) the data by row
     --seed <number>         Random Number Generator (RNG) seed to use if --random is set
     --rng <kind>            The RNG algorithm to use if --random is set.
                             Three RNGs are supported:
@@ -42,7 +42,7 @@ sort options:
                             When not set, the number of jobs is set to the
                             number of CPUs detected.
     --faster                When set, the sort will be faster. This is done by
-                            using a faster sorting algorithm that is not stable
+                            using a faster sorting algorithm that is not "stable"
                             (i.e. the order of identical values is not guaranteed
                             to be preserved). It has the added side benefit that the
                             sort will also be in-place (i.e. does not allocate),
@@ -261,8 +261,8 @@ pub fn run(argv: &[&str]) -> CliResult<()> {
     let mut wtr = Config::new(args.flag_output.as_ref()).writer()?;
     let mut prev: Option<csv::ByteRecord> = None;
     rconfig.write_headers(&mut rdr, &mut wtr)?;
-    for r in all {
-        if args.flag_unique {
+    if args.flag_unique {
+        for r in all {
             match prev {
                 Some(other_r) => match iter_cmp(sel.select(&r), sel.select(&other_r)) {
                     cmp::Ordering::Equal => (),
@@ -274,9 +274,10 @@ pub fn run(argv: &[&str]) -> CliResult<()> {
                     wtr.write_byte_record(&r)?;
                 },
             }
-
             prev = Some(r);
-        } else {
+        }
+    } else {
+        for r in all {
             wtr.write_byte_record(&r)?;
         }
     }
@@ -342,7 +343,10 @@ fn compare_num(n1: Number, n2: Number) -> cmp::Ordering {
     }
 }
 
-#[inline]
+#[allow(clippy::inline_always)]
+// This function is part of a performance-critical hot path. Inlining it
+// avoids the overhead of a function call, improving performance.
+#[inline(always)]
 fn compare_float(f1: f64, f2: f64) -> cmp::Ordering {
     f1.partial_cmp(&f2).unwrap_or(cmp::Ordering::Equal)
 }
