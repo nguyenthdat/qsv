@@ -6,7 +6,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [5.0.0] - 2025-05-21
+## [5.0.1] - 2025-05-21
 
 ### Added
 * `edit`: add `--in-place` (and test) which uses tempfile by @rzmk in https://github.com/dathere/qsv/pull/2744
@@ -25,6 +25,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 * `geocode`: bump geosuggest crate to use much faster rkyv serialization by @estin in https://github.com/dathere/qsv/pull/2734
 * `sort`: microoptimize https://github.com/dathere/qsv/pull/2748
+* feat: update completions for qsv v5.0 by @rzmk in https://github.com/dathere/qsv/pull/2752
 * Improved Polars Schema support https://github.com/dathere/qsv/pull/2703
 * Bump polars from 0.46.0 to 0.47.0 https://github.com/dathere/qsv/commit/87bf7b7f5e0b5af754afabf2939ced3914eb276f
 * Bump polars py-1.30.0-beta-1 https://github.com/dathere/qsv/pull/2747
@@ -66,7 +67,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * @estin made their first contribution in https://github.com/dathere/qsv/pull/2734
 * @HarrisonMc555 made their first contribution in https://github.com/dathere/qsv/pull/2743
 
-**Full Changelog**: https://github.com/dathere/qsv/compare/4.0.0...5.0.0
+**Full Changelog**: https://github.com/dathere/qsv/compare/4.0.0...5.0.1
 
 ## [4.0.0] - 2025-04-13
 
