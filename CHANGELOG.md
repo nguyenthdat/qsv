@@ -6,55 +6,67 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## What's Changed
-* feat: add CSV input and GeoJSONL output to geoconvert, and use buf by @rzmk in https://github.com/dathere/qsv/pull/2690
-* build(deps): bump libc from 0.2.171 to 0.2.172 by @dependabot in https://github.com/dathere/qsv/pull/2696
-* feat: qsvdp now include geocode, geoconvert & luau commands by default by @jqnatividad in https://github.com/dathere/qsv/pull/2697
-* feat: add stdin support to qsv geoconvert (except for SHP input) by @rzmk in https://github.com/dathere/qsv/pull/2699
-* build(deps): bump rand from 0.9.0 to 0.9.1 by @dependabot in https://github.com/dathere/qsv/pull/2702
-* build(deps): bump simd-json from 0.15.0 to 0.15.1 by @dependabot in https://github.com/dathere/qsv/pull/2701
-* `feat`: Better Polars Schema support by @jqnatividad in https://github.com/dathere/qsv/pull/2703
-* build(deps): bump jsonschema from 0.29.1 to 0.30.0 by @dependabot in https://github.com/dathere/qsv/pull/2704
-* fix: `split` save stdin to tempfile by @jqnatividad in https://github.com/dathere/qsv/pull/2706
-* feat: --latitude and --longitude for geoconvert by @rzmk in https://github.com/dathere/qsv/pull/2707
-* build(deps): bump pyo3 from 0.24.1 to 0.24.2 by @dependabot in https://github.com/dathere/qsv/pull/2708
-* `feat`: `stats` QSV_STATS_STRING_MAX_LENGTH env var by @jqnatividad in https://github.com/dathere/qsv/pull/2709
-* feat: add `geoconvert --max-length` option by @jqnatividad in https://github.com/dathere/qsv/pull/2711
+## [5.0.0] - 2025-05-21
+
+### Added
+* `edit`: add `--in-place` (and test) which uses tempfile by @rzmk in https://github.com/dathere/qsv/pull/2744
+* `geoconvert`: add CSV input and GeoJSONL output and use buf by @rzmk in https://github.com/dathere/qsv/pull/2690
+* `geoconvert`: add stdin support (except for SHP input) by @rzmk in https://github.com/dathere/qsv/pull/2699
+* `geoconvert`: add `--latitude` and `--longitude` options by @rzmk in https://github.com/dathere/qsv/pull/2707
+* `geoconvert`: add `--max-length` option https://github.com/dathere/qsv/pull/2711
+* `geocode`: add `iplookup` and `iplookupnow` subcommands https://github.com/dathere/qsv/pull/2741
+* tests: `geoconvert` - add basic tests and move tests to test_geoconvert.rs by @rzmk in https://github.com/dathere/qsv/pull/2717
+* `qsvdp` now include geocode, geoconvert & luau commands by default https://github.com/dathere/qsv/pull/2697
+* `stats`: QSV_STATS_STRING_MAX_LENGTH env var https://github.com/dathere/qsv/pull/2709
+* `to`: add `--all-strings` option https://github.com/dathere/qsv/pull/2746
+* docs: add conda install command by @rzmk in https://github.com/dathere/qsv/pull/2718
+* docs: add qsv download badges and update install instructions by @rzmk in https://github.com/dathere/qsv/pull/2721
+
+### Changed
+* `geocode`: bump geosuggest crate to use much faster rkyv serialization by @estin in https://github.com/dathere/qsv/pull/2734
+* `sort`: microoptimize https://github.com/dathere/qsv/pull/2748
+* Improved Polars Schema support https://github.com/dathere/qsv/pull/2703
+* Bump polars from 0.46.0 to 0.47.0 https://github.com/dathere/qsv/commit/87bf7b7f5e0b5af754afabf2939ced3914eb276f
+* Bump polars py-1.30.0-beta-1 https://github.com/dathere/qsv/pull/2747
+* Bump polars to 0.48.0 https://github.com/dathere/qsv/commit/5a037eeff1d353f3f4b8f16a7d6ec6b3074b2f8c
+* build(deps): bump polars from 0.48.0 to 0.48.1 by @dependabot in https://github.com/dathere/qsv/pull/2750
+* build(deps): bump polars-ops from 0.48.0 to 0.48.1 by @dependabot in https://github.com/dathere/qsv/pull/2751
 * build(deps): bump actions/setup-python from 5.5.0 to 5.6.0 by @dependabot in https://github.com/dathere/qsv/pull/2713
+* build(deps): bump actix-web from 4.10.2 to 4.11.0 by @dependabot in https://github.com/dathere/qsv/pull/2742
+* build(deps): bump bytemuck from 1.22.0 to 1.23.0 by @dependabot in https://github.com/dathere/qsv/pull/2719
+* build(deps): bump chrono from 0.4.40 to 0.4.41 by @dependabot in https://github.com/dathere/qsv/pull/2722
+* build(deps): bump ext-sort from 0.1.4 to 0.1.5 by @dependabot in https://github.com/dathere/qsv/pull/2736
+* build(deps): bump file-format from 0.26.0 to 0.27.0 by @dependabot in https://github.com/dathere/qsv/pull/2735
+* build(deps): bump pyo3 from 0.24.1 to 0.24.2 by @dependabot in https://github.com/dathere/qsv/pull/2708
 * build(deps): bump jaq-json from 1.1.1 to 1.1.2 by @dependabot in https://github.com/dathere/qsv/pull/2714
 * build(deps): bump jaq-std from 2.1.0 to 2.1.1 by @dependabot in https://github.com/dathere/qsv/pull/2715
 * build(deps): bump jaq-core from 2.1.1 to 2.2.0 by @dependabot in https://github.com/dathere/qsv/pull/2716
-* tests: add basic geoconvert test and move tests to test_geoconvert.rs by @rzmk in https://github.com/dathere/qsv/pull/2717
-* docs: add conda install command by @rzmk in https://github.com/dathere/qsv/pull/2718
-* build(deps): bump bytemuck from 1.22.0 to 1.23.0 by @dependabot in https://github.com/dathere/qsv/pull/2719
-* docs: add qsv download badges and update install instructions by @rzmk in https://github.com/dathere/qsv/pull/2721
-* build(deps): bump chrono from 0.4.40 to 0.4.41 by @dependabot in https://github.com/dathere/qsv/pull/2722
+* build(deps): bump jsonschema from 0.29.1 to 0.30.0 by @dependabot in https://github.com/dathere/qsv/pull/2704
+* build(deps): bump libc from 0.2.171 to 0.2.172 by @dependabot in https://github.com/dathere/qsv/pull/2696
 * build(deps): bump sysinfo from 0.34.2 to 0.35.0 by @dependabot in https://github.com/dathere/qsv/pull/2724
 * build(deps): bump minijinja from 2.9.0 to 2.10.0 by @dependabot in https://github.com/dathere/qsv/pull/2727
-* build(deps): bump minijinja-contrib from 2.9.0 to 2.10.0 by @dependabot in https://github.com/dathere/qsv/pull/2728
-* build(deps): bump mlua from 0.10.3 to 0.10.4 by @dependabot in https://github.com/dathere/qsv/pull/2730
-* build(deps): bump tokio from 1.44.2 to 1.45.0 by @dependabot in https://github.com/dathere/qsv/pull/2731
 * build(deps): bump minijinja from 2.10.1 to 2.10.2 by @dependabot in https://github.com/dathere/qsv/pull/2732
+* build(deps): bump minijinja-contrib from 2.9.0 to 2.10.0 by @dependabot in https://github.com/dathere/qsv/pull/2728
 * build(deps): bump minijinja-contrib from 2.10.1 to 2.10.2 by @dependabot in https://github.com/dathere/qsv/pull/2733
-* build(deps): bump file-format from 0.26.0 to 0.27.0 by @dependabot in https://github.com/dathere/qsv/pull/2735
-* build(deps): bump ext-sort from 0.1.4 to 0.1.5 by @dependabot in https://github.com/dathere/qsv/pull/2736
-* feat: geosuggest rkyv serialization by @estin in https://github.com/dathere/qsv/pull/2734
-* build(deps): bump tempfile from 3.19.1 to 3.20.0 by @dependabot in https://github.com/dathere/qsv/pull/2739
-* build(deps): bump sysinfo from 0.35.0 to 0.35.1 by @dependabot in https://github.com/dathere/qsv/pull/2740
-* feat: `geocode` add iplookup and iplookupnow subcommands by @jqnatividad in https://github.com/dathere/qsv/pull/2741
-* build(deps): bump actix-web from 4.10.2 to 4.11.0 by @dependabot in https://github.com/dathere/qsv/pull/2742
-* docs: fix typo in apply operations replace example by @HarrisonMc555 in https://github.com/dathere/qsv/pull/2743
-* feat: `edit` add `--in-place` (and test) which uses tempfile by @rzmk in https://github.com/dathere/qsv/pull/2744
 * build(deps): bump pyo3 from 0.24.2 to 0.25.0 by @dependabot in https://github.com/dathere/qsv/pull/2745
-* `feat`: `to` add `--all-strings` option by @jqnatividad in https://github.com/dathere/qsv/pull/2746
-* Bump polars py 1.30.0 beta 1 by @jqnatividad in https://github.com/dathere/qsv/pull/2747
-* perf: `sort` microoptimize by @jqnatividad in https://github.com/dathere/qsv/pull/2748
+* build(deps): bump rand from 0.9.0 to 0.9.1 by @dependabot in https://github.com/dathere/qsv/pull/2702
+* build(deps): bump simd-json from 0.15.0 to 0.15.1 by @dependabot in https://github.com/dathere/qsv/pull/2701
+* build(deps): bump sysinfo from 0.35.0 to 0.35.1 by @dependabot in https://github.com/dathere/qsv/pull/2740
+* build(deps): bump tempfile from 3.19.1 to 3.20.0 by @dependabot in https://github.com/dathere/qsv/pull/2739
+* build(deps): bump tokio from 1.44.2 to 1.45.0 by @dependabot in https://github.com/dathere/qsv/pull/2731
+* bump indirect dependencies
+* apply select clippy lint suggestions
+* bump MRSV to 1.87.0
+
+### Fixed:
+* docs: fix typo in apply operations replace example by @HarrisonMc555 in https://github.com/dathere/qsv/pull/2743
+* fix: `split` save stdin to tempfile https://github.com/dathere/qsv/pull/2706
 
 ## New Contributors
 * @estin made their first contribution in https://github.com/dathere/qsv/pull/2734
 * @HarrisonMc555 made their first contribution in https://github.com/dathere/qsv/pull/2743
 
-**Full Changelog**: https://github.com/dathere/qsv/compare/4.0.0...4.1.0
+**Full Changelog**: https://github.com/dathere/qsv/compare/4.0.0...5.0.0
 
 ## [4.0.0] - 2025-04-13
 
@@ -104,7 +116,7 @@ This is a major release with numerous improvements!
 * `qsvdp` binary variant can now use the `geocode` & `geoconvert` commands https://github.com/dathere/qsv/commit/50f004608d396602b8f6eb048a72dcc56630d26a
 * `geocode` feature now gates the `geocode` & `geoconvert` command https://github.com/dathere/qsv/commit/9d046e8da107c088f1e0b3bb20e64ab79fde05d8
 * feat: setting QSV_DOTENV_PATH to sentinel value "\<NONE>\" disables dotenv processing https://github.com/dathere/qsv/pull/2684
-* refactor: polars special formats support by @jqnatividad in https://github.com/dathere/qsv/pull/2683
+* refactor: polars special formats support https://github.com/dathere/qsv/pull/2683
 * `contrib(completions)`: update completions to v3.3.0 by @rzmk in https://github.com/dathere/qsv/pull/2626
 * `contrib(completions)`: update completions for qsv v4.0.0 by @rzmk in https://github.com/dathere/qsv/pull/2677
 * deps: bump polars to 0.46.0 at py-1.27.1 tag https://github.com/dathere/qsv/pull/2675 and https://github.com/dathere/qsv/commit/e5d29d7f192bf10f6528d0d423347179d785e40f
