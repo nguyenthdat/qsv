@@ -12,6 +12,7 @@ pub fn to_cmd() -> Command {
         arg!(--evolve),
         arg!(--pipe),
         arg!(--separator),
+        arg!(--"all-strings"),
         arg!(--jobs),
         arg!(--delimiter),
     ];
