@@ -48,6 +48,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * build(deps): bump pyo3 from 0.24.2 to 0.25.0 by @dependabot in https://github.com/dathere/qsv/pull/2745
 * `feat`: `to` add `--all-strings` option by @jqnatividad in https://github.com/dathere/qsv/pull/2746
 * Bump polars py 1.30.0 beta 1 by @jqnatividad in https://github.com/dathere/qsv/pull/2747
+* perf: `sort` microoptimize by @jqnatividad in https://github.com/dathere/qsv/pull/2748
 
 ## New Contributors
 * @estin made their first contribution in https://github.com/dathere/qsv/pull/2734
