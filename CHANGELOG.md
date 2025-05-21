@@ -6,7 +6,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [5.0.1] - 2025-05-21
+## [5.0.2] - 2025-05-21
 
 ### Added
 * `edit`: add `--in-place` (and test) which uses tempfile by @rzmk in https://github.com/dathere/qsv/pull/2744
@@ -16,7 +16,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * `geoconvert`: add `--max-length` option https://github.com/dathere/qsv/pull/2711
 * `geocode`: add `iplookup` and `iplookupnow` subcommands https://github.com/dathere/qsv/pull/2741
 * tests: `geoconvert` - add basic tests and move tests to test_geoconvert.rs by @rzmk in https://github.com/dathere/qsv/pull/2717
-* `qsvdp` now include geocode, geoconvert & luau commands by default https://github.com/dathere/qsv/pull/2697
+* `qsvdp` now include geocode & geoconvert commands by default https://github.com/dathere/qsv/pull/2697
 * `stats`: QSV_STATS_STRING_MAX_LENGTH env var https://github.com/dathere/qsv/pull/2709
 * `to`: add `--all-strings` option https://github.com/dathere/qsv/pull/2746
 * docs: add conda install command by @rzmk in https://github.com/dathere/qsv/pull/2718
@@ -67,7 +67,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * @estin made their first contribution in https://github.com/dathere/qsv/pull/2734
 * @HarrisonMc555 made their first contribution in https://github.com/dathere/qsv/pull/2743
 
-**Full Changelog**: https://github.com/dathere/qsv/compare/4.0.0...5.0.1
+**Full Changelog**: https://github.com/dathere/qsv/compare/4.0.0...5.0.2
 
 ## [4.0.0] - 2025-04-13
 
