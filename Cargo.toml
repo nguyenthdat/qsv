@@ -1,6 +1,6 @@
 [package]
 name          = "qsv"
-version       = "5.0.0"                                                                    #:version
+version       = "5.0.1"                                                                    #:version
 authors       = ["Joel Natividad <joel@datHere.com>"]
 description   = "A Blazing-Fast Data-wrangling toolkit."
 documentation = "https://github.com/dathere/qsv#qsv-ultra-fast-csv-data-wrangling-toolkit"
@@ -415,7 +415,7 @@ python = ["pyo3"]
 to = ["csvs_convert", "spreadsheet-ods"]
 lens = ["csvlens"]
 lite = []
-datapusher_plus = ["geocode", "luau","self_update"]
+datapusher_plus = ["geocode", "self_update"]
 ui = ["clipboard", "prompt", "lens"]
 feature_capable = []
 nightly = [
