@@ -23,6 +23,7 @@ pub mod fmt;
 pub mod foreach;
 pub mod frequency;
 pub mod geocode;
+pub mod geoconvert;
 pub mod headers;
 pub mod index;
 pub mod input;

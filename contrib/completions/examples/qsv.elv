@@ -50,6 +50,7 @@ set edit:completion:arg-completer[qsv] = {|@words|
             cand foreach 'foreach'
             cand frequency 'frequency'
             cand geocode 'geocode'
+            cand geoconvert 'geoconvert'
             cand headers 'headers'
             cand index 'index'
             cand input 'input'
@@ -335,8 +336,9 @@ set edit:completion:arg-completer[qsv] = {|@words|
             cand --help 'Print help'
         }
         &'qsv;edit'= {
-            cand --output 'output'
             cand --no-headers 'no-headers'
+            cand --in-place 'in-place'
+            cand --output 'output'
             cand -h 'Print help'
             cand --help 'Print help'
         }
@@ -580,6 +582,8 @@ set edit:completion:arg-completer[qsv] = {|@words|
             cand reversenow 'reversenow'
             cand countryinfo 'countryinfo'
             cand countryinfonow 'countryinfonow'
+            cand iplookup 'iplookup'
+            cand iplookupnow 'iplookupnow'
             cand index-load 'index-load'
             cand index-check 'index-check'
             cand index-update 'index-update'
@@ -724,6 +728,52 @@ set edit:completion:arg-completer[qsv] = {|@words|
             cand -h 'Print help'
             cand --help 'Print help'
         }
+        &'qsv;geocode;iplookup'= {
+            cand --new-column 'new-column'
+            cand --rename 'rename'
+            cand --country 'country'
+            cand --min-score 'min-score'
+            cand --admin1 'admin1'
+            cand --k_weight 'k_weight'
+            cand --formatstr 'formatstr'
+            cand --language 'language'
+            cand --invalid-result 'invalid-result'
+            cand --jobs 'jobs'
+            cand --batch 'batch'
+            cand --timeout 'timeout'
+            cand --cache-dir 'cache-dir'
+            cand --languages 'languages'
+            cand --cities-url 'cities-url'
+            cand --force 'force'
+            cand --output 'output'
+            cand --delimiter 'delimiter'
+            cand --progressbar 'progressbar'
+            cand -h 'Print help'
+            cand --help 'Print help'
+        }
+        &'qsv;geocode;iplookupnow'= {
+            cand --new-column 'new-column'
+            cand --rename 'rename'
+            cand --country 'country'
+            cand --min-score 'min-score'
+            cand --admin1 'admin1'
+            cand --k_weight 'k_weight'
+            cand --formatstr 'formatstr'
+            cand --language 'language'
+            cand --invalid-result 'invalid-result'
+            cand --jobs 'jobs'
+            cand --batch 'batch'
+            cand --timeout 'timeout'
+            cand --cache-dir 'cache-dir'
+            cand --languages 'languages'
+            cand --cities-url 'cities-url'
+            cand --force 'force'
+            cand --output 'output'
+            cand --delimiter 'delimiter'
+            cand --progressbar 'progressbar'
+            cand -h 'Print help'
+            cand --help 'Print help'
+        }
         &'qsv;geocode;index-load'= {
             cand --new-column 'new-column'
             cand --rename 'rename'
@@ -823,6 +873,8 @@ set edit:completion:arg-completer[qsv] = {|@words|
             cand reversenow 'reversenow'
             cand countryinfo 'countryinfo'
             cand countryinfonow 'countryinfonow'
+            cand iplookup 'iplookup'
+            cand iplookupnow 'iplookupnow'
             cand index-load 'index-load'
             cand index-check 'index-check'
             cand index-update 'index-update'
@@ -841,6 +893,10 @@ set edit:completion:arg-completer[qsv] = {|@words|
         }
         &'qsv;geocode;help;countryinfonow'= {
         }
+        &'qsv;geocode;help;iplookup'= {
+        }
+        &'qsv;geocode;help;iplookupnow'= {
+        }
         &'qsv;geocode;help;index-load'= {
         }
         &'qsv;geocode;help;index-check'= {
@@ -850,6 +906,15 @@ set edit:completion:arg-completer[qsv] = {|@words|
         &'qsv;geocode;help;index-reset'= {
         }
         &'qsv;geocode;help;help'= {
+        }
+        &'qsv;geoconvert'= {
+            cand --geometry 'geometry'
+            cand --latitude 'latitude'
+            cand --longitude 'longitude'
+            cand --max-length 'max-length'
+            cand --output 'output'
+            cand -h 'Print help'
+            cand --help 'Print help'
         }
         &'qsv;headers'= {
             cand --just-names 'just-names'
@@ -1538,6 +1603,7 @@ set edit:completion:arg-completer[qsv] = {|@words|
             cand --evolve 'evolve'
             cand --pipe 'pipe'
             cand --separator 'separator'
+            cand --all-strings 'all-strings'
             cand --jobs 'jobs'
             cand --delimiter 'delimiter'
             cand -h 'Print help'
@@ -1561,6 +1627,7 @@ set edit:completion:arg-completer[qsv] = {|@words|
             cand --evolve 'evolve'
             cand --pipe 'pipe'
             cand --separator 'separator'
+            cand --all-strings 'all-strings'
             cand --jobs 'jobs'
             cand --delimiter 'delimiter'
             cand -h 'Print help'
@@ -1577,6 +1644,7 @@ set edit:completion:arg-completer[qsv] = {|@words|
             cand --evolve 'evolve'
             cand --pipe 'pipe'
             cand --separator 'separator'
+            cand --all-strings 'all-strings'
             cand --jobs 'jobs'
             cand --delimiter 'delimiter'
             cand -h 'Print help'
@@ -1593,6 +1661,7 @@ set edit:completion:arg-completer[qsv] = {|@words|
             cand --evolve 'evolve'
             cand --pipe 'pipe'
             cand --separator 'separator'
+            cand --all-strings 'all-strings'
             cand --jobs 'jobs'
             cand --delimiter 'delimiter'
             cand -h 'Print help'
@@ -1609,6 +1678,7 @@ set edit:completion:arg-completer[qsv] = {|@words|
             cand --evolve 'evolve'
             cand --pipe 'pipe'
             cand --separator 'separator'
+            cand --all-strings 'all-strings'
             cand --jobs 'jobs'
             cand --delimiter 'delimiter'
             cand -h 'Print help'
@@ -1625,6 +1695,7 @@ set edit:completion:arg-completer[qsv] = {|@words|
             cand --evolve 'evolve'
             cand --pipe 'pipe'
             cand --separator 'separator'
+            cand --all-strings 'all-strings'
             cand --jobs 'jobs'
             cand --delimiter 'delimiter'
             cand -h 'Print help'
@@ -1641,6 +1712,7 @@ set edit:completion:arg-completer[qsv] = {|@words|
             cand --evolve 'evolve'
             cand --pipe 'pipe'
             cand --separator 'separator'
+            cand --all-strings 'all-strings'
             cand --jobs 'jobs'
             cand --delimiter 'delimiter'
             cand -h 'Print help'
@@ -1736,6 +1808,7 @@ set edit:completion:arg-completer[qsv] = {|@words|
             cand foreach 'foreach'
             cand frequency 'frequency'
             cand geocode 'geocode'
+            cand geoconvert 'geoconvert'
             cand headers 'headers'
             cand index 'index'
             cand input 'input'
@@ -1852,6 +1925,8 @@ set edit:completion:arg-completer[qsv] = {|@words|
             cand reversenow 'reversenow'
             cand countryinfo 'countryinfo'
             cand countryinfonow 'countryinfonow'
+            cand iplookup 'iplookup'
+            cand iplookupnow 'iplookupnow'
             cand index-load 'index-load'
             cand index-check 'index-check'
             cand index-update 'index-update'
@@ -1869,6 +1944,10 @@ set edit:completion:arg-completer[qsv] = {|@words|
         }
         &'qsv;help;geocode;countryinfonow'= {
         }
+        &'qsv;help;geocode;iplookup'= {
+        }
+        &'qsv;help;geocode;iplookupnow'= {
+        }
         &'qsv;help;geocode;index-load'= {
         }
         &'qsv;help;geocode;index-check'= {
@@ -1876,6 +1955,8 @@ set edit:completion:arg-completer[qsv] = {|@words|
         &'qsv;help;geocode;index-update'= {
         }
         &'qsv;help;geocode;index-reset'= {
+        }
+        &'qsv;help;geoconvert'= {
         }
         &'qsv;help;headers'= {
         }

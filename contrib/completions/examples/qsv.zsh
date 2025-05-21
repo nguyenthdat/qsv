@@ -361,8 +361,9 @@ _arguments "${_arguments_options[@]}" : \
 ;;
 (edit)
 _arguments "${_arguments_options[@]}" : \
-'--output[]' \
 '--no-headers[]' \
+'--in-place[]' \
+'--output[]' \
 '-h[Print help]' \
 '--help[Print help]' \
 && ret=0
@@ -790,6 +791,56 @@ _arguments "${_arguments_options[@]}" : \
 '--help[Print help]' \
 && ret=0
 ;;
+(iplookup)
+_arguments "${_arguments_options[@]}" : \
+'--new-column[]' \
+'--rename[]' \
+'--country[]' \
+'--min-score[]' \
+'--admin1[]' \
+'--k_weight[]' \
+'--formatstr[]' \
+'--language[]' \
+'--invalid-result[]' \
+'--jobs[]' \
+'--batch[]' \
+'--timeout[]' \
+'--cache-dir[]' \
+'--languages[]' \
+'--cities-url[]' \
+'--force[]' \
+'--output[]' \
+'--delimiter[]' \
+'--progressbar[]' \
+'-h[Print help]' \
+'--help[Print help]' \
+&& ret=0
+;;
+(iplookupnow)
+_arguments "${_arguments_options[@]}" : \
+'--new-column[]' \
+'--rename[]' \
+'--country[]' \
+'--min-score[]' \
+'--admin1[]' \
+'--k_weight[]' \
+'--formatstr[]' \
+'--language[]' \
+'--invalid-result[]' \
+'--jobs[]' \
+'--batch[]' \
+'--timeout[]' \
+'--cache-dir[]' \
+'--languages[]' \
+'--cities-url[]' \
+'--force[]' \
+'--output[]' \
+'--delimiter[]' \
+'--progressbar[]' \
+'-h[Print help]' \
+'--help[Print help]' \
+&& ret=0
+;;
 (index-load)
 _arguments "${_arguments_options[@]}" : \
 '--new-column[]' \
@@ -926,6 +977,14 @@ _arguments "${_arguments_options[@]}" : \
 _arguments "${_arguments_options[@]}" : \
 && ret=0
 ;;
+(iplookup)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+(iplookupnow)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
 (index-load)
 _arguments "${_arguments_options[@]}" : \
 && ret=0
@@ -953,6 +1012,17 @@ esac
         esac
     ;;
 esac
+;;
+(geoconvert)
+_arguments "${_arguments_options[@]}" : \
+'--geometry[]' \
+'--latitude[]' \
+'--longitude[]' \
+'--max-length[]' \
+'--output[]' \
+'-h[Print help]' \
+'--help[Print help]' \
+&& ret=0
 ;;
 (headers)
 _arguments "${_arguments_options[@]}" : \
@@ -1834,6 +1904,7 @@ _arguments "${_arguments_options[@]}" : \
 '--evolve[]' \
 '--pipe[]' \
 '--separator[]' \
+'--all-strings[]' \
 '--jobs[]' \
 '--delimiter[]' \
 '-h[Print help]' \
@@ -1860,6 +1931,7 @@ _arguments "${_arguments_options[@]}" : \
 '--evolve[]' \
 '--pipe[]' \
 '--separator[]' \
+'--all-strings[]' \
 '--jobs[]' \
 '--delimiter[]' \
 '-h[Print help]' \
@@ -1878,6 +1950,7 @@ _arguments "${_arguments_options[@]}" : \
 '--evolve[]' \
 '--pipe[]' \
 '--separator[]' \
+'--all-strings[]' \
 '--jobs[]' \
 '--delimiter[]' \
 '-h[Print help]' \
@@ -1896,6 +1969,7 @@ _arguments "${_arguments_options[@]}" : \
 '--evolve[]' \
 '--pipe[]' \
 '--separator[]' \
+'--all-strings[]' \
 '--jobs[]' \
 '--delimiter[]' \
 '-h[Print help]' \
@@ -1914,6 +1988,7 @@ _arguments "${_arguments_options[@]}" : \
 '--evolve[]' \
 '--pipe[]' \
 '--separator[]' \
+'--all-strings[]' \
 '--jobs[]' \
 '--delimiter[]' \
 '-h[Print help]' \
@@ -1932,6 +2007,7 @@ _arguments "${_arguments_options[@]}" : \
 '--evolve[]' \
 '--pipe[]' \
 '--separator[]' \
+'--all-strings[]' \
 '--jobs[]' \
 '--delimiter[]' \
 '-h[Print help]' \
@@ -1950,6 +2026,7 @@ _arguments "${_arguments_options[@]}" : \
 '--evolve[]' \
 '--pipe[]' \
 '--separator[]' \
+'--all-strings[]' \
 '--jobs[]' \
 '--delimiter[]' \
 '-h[Print help]' \
@@ -2247,6 +2324,14 @@ _arguments "${_arguments_options[@]}" : \
 _arguments "${_arguments_options[@]}" : \
 && ret=0
 ;;
+(iplookup)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+(iplookupnow)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
 (index-load)
 _arguments "${_arguments_options[@]}" : \
 && ret=0
@@ -2266,6 +2351,10 @@ _arguments "${_arguments_options[@]}" : \
         esac
     ;;
 esac
+;;
+(geoconvert)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
 ;;
 (headers)
 _arguments "${_arguments_options[@]}" : \
@@ -2584,6 +2673,7 @@ _qsv_commands() {
 'foreach:' \
 'frequency:' \
 'geocode:' \
+'geoconvert:' \
 'headers:' \
 'index:' \
 'input:' \
@@ -2867,6 +2957,8 @@ _qsv__geocode_commands() {
 'reversenow:' \
 'countryinfo:' \
 'countryinfonow:' \
+'iplookup:' \
+'iplookupnow:' \
 'index-load:' \
 'index-check:' \
 'index-update:' \
@@ -2894,6 +2986,8 @@ _qsv__geocode__help_commands() {
 'reversenow:' \
 'countryinfo:' \
 'countryinfonow:' \
+'iplookup:' \
+'iplookupnow:' \
 'index-load:' \
 'index-check:' \
 'index-update:' \
@@ -2937,6 +3031,16 @@ _qsv__geocode__help__index-update_commands() {
     local commands; commands=()
     _describe -t commands 'qsv geocode help index-update commands' commands "$@"
 }
+(( $+functions[_qsv__geocode__help__iplookup_commands] )) ||
+_qsv__geocode__help__iplookup_commands() {
+    local commands; commands=()
+    _describe -t commands 'qsv geocode help iplookup commands' commands "$@"
+}
+(( $+functions[_qsv__geocode__help__iplookupnow_commands] )) ||
+_qsv__geocode__help__iplookupnow_commands() {
+    local commands; commands=()
+    _describe -t commands 'qsv geocode help iplookupnow commands' commands "$@"
+}
 (( $+functions[_qsv__geocode__help__reverse_commands] )) ||
 _qsv__geocode__help__reverse_commands() {
     local commands; commands=()
@@ -2977,6 +3081,16 @@ _qsv__geocode__index-update_commands() {
     local commands; commands=()
     _describe -t commands 'qsv geocode index-update commands' commands "$@"
 }
+(( $+functions[_qsv__geocode__iplookup_commands] )) ||
+_qsv__geocode__iplookup_commands() {
+    local commands; commands=()
+    _describe -t commands 'qsv geocode iplookup commands' commands "$@"
+}
+(( $+functions[_qsv__geocode__iplookupnow_commands] )) ||
+_qsv__geocode__iplookupnow_commands() {
+    local commands; commands=()
+    _describe -t commands 'qsv geocode iplookupnow commands' commands "$@"
+}
 (( $+functions[_qsv__geocode__reverse_commands] )) ||
 _qsv__geocode__reverse_commands() {
     local commands; commands=()
@@ -2996,6 +3110,11 @@ _qsv__geocode__suggest_commands() {
 _qsv__geocode__suggestnow_commands() {
     local commands; commands=()
     _describe -t commands 'qsv geocode suggestnow commands' commands "$@"
+}
+(( $+functions[_qsv__geoconvert_commands] )) ||
+_qsv__geoconvert_commands() {
+    local commands; commands=()
+    _describe -t commands 'qsv geoconvert commands' commands "$@"
 }
 (( $+functions[_qsv__headers_commands] )) ||
 _qsv__headers_commands() {
@@ -3030,6 +3149,7 @@ _qsv__help_commands() {
 'foreach:' \
 'frequency:' \
 'geocode:' \
+'geoconvert:' \
 'headers:' \
 'index:' \
 'input:' \
@@ -3245,6 +3365,8 @@ _qsv__help__geocode_commands() {
 'reversenow:' \
 'countryinfo:' \
 'countryinfonow:' \
+'iplookup:' \
+'iplookupnow:' \
 'index-load:' \
 'index-check:' \
 'index-update:' \
@@ -3282,6 +3404,16 @@ _qsv__help__geocode__index-update_commands() {
     local commands; commands=()
     _describe -t commands 'qsv help geocode index-update commands' commands "$@"
 }
+(( $+functions[_qsv__help__geocode__iplookup_commands] )) ||
+_qsv__help__geocode__iplookup_commands() {
+    local commands; commands=()
+    _describe -t commands 'qsv help geocode iplookup commands' commands "$@"
+}
+(( $+functions[_qsv__help__geocode__iplookupnow_commands] )) ||
+_qsv__help__geocode__iplookupnow_commands() {
+    local commands; commands=()
+    _describe -t commands 'qsv help geocode iplookupnow commands' commands "$@"
+}
 (( $+functions[_qsv__help__geocode__reverse_commands] )) ||
 _qsv__help__geocode__reverse_commands() {
     local commands; commands=()
@@ -3301,6 +3433,11 @@ _qsv__help__geocode__suggest_commands() {
 _qsv__help__geocode__suggestnow_commands() {
     local commands; commands=()
     _describe -t commands 'qsv help geocode suggestnow commands' commands "$@"
+}
+(( $+functions[_qsv__help__geoconvert_commands] )) ||
+_qsv__help__geoconvert_commands() {
+    local commands; commands=()
+    _describe -t commands 'qsv help geoconvert commands' commands "$@"
 }
 (( $+functions[_qsv__help__headers_commands] )) ||
 _qsv__help__headers_commands() {
