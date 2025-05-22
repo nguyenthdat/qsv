@@ -304,7 +304,7 @@ use crate::{
     cmd::joinp::tsvssv_delim,
     config::{Config, DEFAULT_WTR_BUFFER_CAPACITY, Delimiter},
     util,
-    util::{get_stats_records, process_input},
+    util::process_input,
 };
 
 static DEFAULT_GZIP_COMPRESSION_LEVEL: u8 = 6;
@@ -764,7 +764,7 @@ pub fn run(argv: &[&str]) -> CliResult<()> {
                 if !valid_schema_exists {
                     // we don't have a valid pschema.json file,
                     // check if we have stats, as we can derive pschema.json file from it
-                    valid_schema_exists = infer_polars_schema(
+                    valid_schema_exists = crate::cmd::schema::infer_polars_schema(
                         args.flag_delimiter,
                         debuglog_flag,
                         table,
@@ -812,7 +812,7 @@ pub fn run(argv: &[&str]) -> CliResult<()> {
                 } else {
                     // First try didn't work.
                     // Second try, infer a schema and try again
-                    valid_schema_exists = infer_polars_schema(
+                    valid_schema_exists = crate::cmd::schema::infer_polars_schema(
                         args.flag_delimiter,
                         debuglog_flag,
                         table,
@@ -959,115 +959,6 @@ pub fn run(argv: &[&str]) -> CliResult<()> {
     }
 
     Ok(())
-}
-
-pub fn infer_polars_schema(
-    delimiter: Option<Delimiter>,
-    debuglog_flag: bool,
-    table: &Path,
-    schema_file: &PathBuf,
-) -> Result<bool, crate::clitypes::CliError> {
-    let schema_args = util::SchemaArgs {
-        flag_enum_threshold:  0,
-        flag_ignore_case:     false,
-        flag_strict_dates:    false,
-        // we still get all the stats columns so we can use the stats cache
-        flag_pattern_columns: crate::select::SelectColumns::parse("").unwrap(),
-        flag_dates_whitelist: String::new(),
-        flag_prefer_dmy:      false,
-        flag_force:           false,
-        flag_stdout:          false,
-        flag_jobs:            Some(util::njobs(None)),
-        flag_polars:          false,
-        flag_no_headers:      false,
-        flag_delimiter:       delimiter,
-        arg_input:            Some(table.to_string_lossy().into_owned()),
-        flag_memcheck:        false,
-    };
-    let (csv_fields, csv_stats, _) =
-        get_stats_records(&schema_args, util::StatsMode::PolarsSchema)?;
-    let mut schema = Schema::with_capacity(csv_stats.len());
-    for (idx, stat) in csv_stats.iter().enumerate() {
-        schema.insert(
-            PlSmallStr::from_str(simdutf8::basic::from_utf8(csv_fields.get(idx).unwrap()).unwrap()),
-            {
-                let datatype = &stat.r#type;
-                #[allow(clippy::match_same_arms)]
-                match datatype.as_str() {
-                    "String" => polars::datatypes::DataType::String,
-                    "Integer" => {
-                        let min = stat.min.as_ref().unwrap();
-                        let max = stat.max.as_ref().unwrap();
-
-                        // Check if all values are non-negative to
-                        // use unsigned types
-                        if let (Ok(min_val), Ok(max_val)) = (min.parse::<i64>(), max.parse::<i64>())
-                        {
-                            if min_val >= 0 {
-                                // Use smallest unsigned type that can hold
-                                // the max value
-                                if max_val <= u8::MAX as i64 {
-                                    polars::datatypes::DataType::UInt8
-                                } else if max_val <= u16::MAX as i64 {
-                                    polars::datatypes::DataType::UInt16
-                                } else if max_val <= u32::MAX as i64 {
-                                    polars::datatypes::DataType::UInt32
-                                } else {
-                                    polars::datatypes::DataType::UInt64
-                                }
-                            } else {
-                                // Use signed types for negative values
-                                if min_val >= i32::MIN as i64 && max_val <= i32::MAX as i64 {
-                                    polars::datatypes::DataType::Int32
-                                } else {
-                                    polars::datatypes::DataType::Int64
-                                }
-                            }
-                        } else {
-                            // Fallback to Int64 if parsing fails
-                            polars::datatypes::DataType::Int64
-                        }
-                    },
-                    "Float" => {
-                        let min = stat.min.as_ref().unwrap();
-                        let max = stat.max.as_ref().unwrap();
-                        let precision = stat.max_precision.unwrap_or(0);
-
-                        // As we use f64 internally, its unlikely that we have more
-                        // than 16 digits of precision, but we do this anyway to
-                        // document it as the polars engine does support it
-                        if precision > 16 {
-                            // For very high precision, use Decimal type
-                            polars::datatypes::DataType::Decimal(
-                                Some(precision as usize),
-                                // polars will infer scale from the data if None
-                                None,
-                            )
-                        } else if precision > 7
-                            || min.parse::<f32>().is_err()
-                            || max.parse::<f32>().is_err()
-                        {
-                            polars::datatypes::DataType::Float64
-                        } else {
-                            polars::datatypes::DataType::Float32
-                        }
-                    },
-                    "Boolean" => polars::datatypes::DataType::Boolean,
-                    "Date" => polars::datatypes::DataType::Date,
-                    _ => polars::datatypes::DataType::String,
-                }
-            },
-        );
-    }
-    let stats_schema = Arc::new(schema);
-    let stats_schema_json = serde_json::to_string_pretty(&stats_schema)?;
-    let mut file = BufWriter::new(File::create(schema_file)?);
-    file.write_all(stats_schema_json.as_bytes())?;
-    file.flush()?;
-    if debuglog_flag {
-        log::debug!("Saved stats_schema to file: {}", schema_file.display());
-    }
-    Ok(true)
 }
 
 /// if the output ends with ".sz", we snappy compress the output
