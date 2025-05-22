@@ -6,10 +6,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [5.0.2] - 2025-05-21
+## [5.0.3] - 2025-05-22
 
 ### Added
 * `edit`: add `--in-place` (and test) which uses tempfile by @rzmk in https://github.com/dathere/qsv/pull/2744
+* `foreach`: add "/" to splitter pattern https://github.com/dathere/qsv/pull/2754
 * `geoconvert`: add CSV input and GeoJSONL output and use buf by @rzmk in https://github.com/dathere/qsv/pull/2690
 * `geoconvert`: add stdin support (except for SHP input) by @rzmk in https://github.com/dathere/qsv/pull/2699
 * `geoconvert`: add `--latitude` and `--longitude` options by @rzmk in https://github.com/dathere/qsv/pull/2707
@@ -67,7 +68,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * @estin made their first contribution in https://github.com/dathere/qsv/pull/2734
 * @HarrisonMc555 made their first contribution in https://github.com/dathere/qsv/pull/2743
 
-**Full Changelog**: https://github.com/dathere/qsv/compare/4.0.0...5.0.2
+**Full Changelog**: https://github.com/dathere/qsv/compare/4.0.0...5.0.3
 
 ## [4.0.0] - 2025-04-13
 
