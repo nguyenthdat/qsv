@@ -1,4 +1,4 @@
-name: Publish glibc 2.31/musl 1.2.3 binaries
+name: Publish glibc 2.31/musl 1.2.3 binaries - RETIRED
 
 on:
   workflow_dispatch:
