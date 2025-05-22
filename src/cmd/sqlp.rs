@@ -764,7 +764,7 @@ pub fn run(argv: &[&str]) -> CliResult<()> {
                 if !valid_schema_exists {
                     // we don't have a valid pschema.json file,
                     // check if we have stats, as we can derive pschema.json file from it
-                    valid_schema_exists = crate::cmd::schema::infer_polars_schema(
+                    valid_schema_exists = util::infer_polars_schema(
                         args.flag_delimiter,
                         debuglog_flag,
                         table,
@@ -812,7 +812,7 @@ pub fn run(argv: &[&str]) -> CliResult<()> {
                 } else {
                     // First try didn't work.
                     // Second try, infer a schema and try again
-                    valid_schema_exists = crate::cmd::schema::infer_polars_schema(
+                    valid_schema_exists = util::infer_polars_schema(
                         args.flag_delimiter,
                         debuglog_flag,
                         table,
