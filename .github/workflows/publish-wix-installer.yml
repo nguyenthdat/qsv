@@ -1,4 +1,4 @@
-name: qsv Windows Installer
+name: qsv Windows Installer - RETIRED now that we have EasyInstaller
 
 on:
   workflow_dispatch:
