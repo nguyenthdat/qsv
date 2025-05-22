@@ -229,3 +229,22 @@ echo $1 $REVERSED_NAME"#,
     let expected = "sh multiple_commands.sh John\nsh multiple_commands.sh Mary";
     similar_asserts::assert_eq!(got, expected);
 }
+
+#[test]
+fn foreach_issue_2753() {
+    let wrk = Workdir::new("foreach_issue_2753");
+    wrk.create("data.csv", vec![svec!["a", "b"], svec!["1", "1/"]]);
+    let mut cmd = wrk.command("foreach");
+    cmd.arg("b").arg("echo {}test").arg("data.csv");
+
+    let got: String = wrk.stdout(&mut cmd);
+    let expected = r#"echo 1/test"#;
+    assert_eq!(got, expected);
+
+    let mut cmd = wrk.command("foreach");
+    cmd.arg("b").arg(r#"echo {}/test"#).arg("data.csv");
+
+    let got: String = wrk.stdout(&mut cmd);
+    let expected = r#"echo 1//test"#;
+    assert_eq!(got, expected);
+}
