@@ -23,9 +23,11 @@ fn flowers_json_to_csv() {
         .spawn()
         .unwrap();
     let mut table_stdin = table_child.stdin.take().unwrap();
-    std::thread::spawn(move || {
+    let handle = std::thread::spawn(move || {
         table_stdin.write_all(json_stdout.as_bytes()).unwrap();
     });
+    // Wait for the writing thread to complete
+    handle.join().unwrap();
     let output = table_child.wait_with_output().unwrap();
     let got = String::from_utf8_lossy(&output.stdout);
 
@@ -60,9 +62,11 @@ fn flowers_nested_json_to_csv() {
         .spawn()
         .unwrap();
     let mut table_stdin = table_child.stdin.take().unwrap();
-    std::thread::spawn(move || {
+    let handle = std::thread::spawn(move || {
         table_stdin.write_all(json_stdout.as_bytes()).unwrap();
     });
+    // Wait for the writing thread to complete
+    handle.join().unwrap();
     let output = table_child.wait_with_output().unwrap();
     let got = String::from_utf8_lossy(&output.stdout);
 
