@@ -25,10 +25,18 @@ fn flowers_json_to_csv() {
     let mut table_stdin = table_child.stdin.take().unwrap();
     let handle = std::thread::spawn(move || {
         table_stdin.write_all(json_stdout.as_bytes()).unwrap();
+        // Explicitly drop stdin to signal EOF
+        drop(table_stdin);
     });
     // Wait for the writing thread to complete
     handle.join().unwrap();
     let output = table_child.wait_with_output().unwrap();
+    // Verify the process exited successfully
+    assert!(
+        output.status.success(),
+        "table command failed: {:?}",
+        output.status
+    );
     let got = String::from_utf8_lossy(&output.stdout);
 
     let expected = r#"name       primary_color  available  quantity
@@ -64,10 +72,18 @@ fn flowers_nested_json_to_csv() {
     let mut table_stdin = table_child.stdin.take().unwrap();
     let handle = std::thread::spawn(move || {
         table_stdin.write_all(json_stdout.as_bytes()).unwrap();
+        // Explicitly drop stdin to signal EOF
+        drop(table_stdin);
     });
     // Wait for the writing thread to complete
     handle.join().unwrap();
     let output = table_child.wait_with_output().unwrap();
+    // Verify the process exited successfully
+    assert!(
+        output.status.success(),
+        "table command failed: {:?}",
+        output.status
+    );
     let got = String::from_utf8_lossy(&output.stdout);
 
     let expected = r#"color  quantity
