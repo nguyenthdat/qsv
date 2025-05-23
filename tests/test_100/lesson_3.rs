@@ -1,7 +1,7 @@
 // Lesson 3: qsv and JSON
 // https://100.dathere.com/lessons/3
 
-use std::{io::Write, process};
+use std::process;
 
 use crate::workdir::Workdir;
 
@@ -12,38 +12,24 @@ fn flowers_json_to_csv() {
     let wrk = Workdir::new("flowers_json_to_csv");
     let flowers_json_file = wrk.load_test_file("flowers.json");
 
+    // First convert JSON to CSV and save to a temporary file
     let mut json_cmd = process::Command::new(wrk.qsv_bin());
     json_cmd.args(vec!["json", flowers_json_file.as_str()]);
     let json_stdout: String = wrk.stdout(&mut json_cmd);
 
-    let mut table_child = process::Command::new(wrk.qsv_bin())
-        .stdin(std::process::Stdio::piped())
-        .stdout(std::process::Stdio::piped())
-        .args(vec!["table"])
-        .spawn()
-        .unwrap();
-    let mut table_stdin = table_child.stdin.take().unwrap();
-    let handle = std::thread::spawn(move || {
-        table_stdin.write_all(json_stdout.as_bytes()).unwrap();
-        // Explicitly drop stdin to signal EOF
-        drop(table_stdin);
-    });
-    // Wait for the writing thread to complete
-    handle.join().unwrap();
-    let output = table_child.wait_with_output().unwrap();
-    // Verify the process exited successfully
-    assert!(
-        output.status.success(),
-        "table command failed: {:?}",
-        output.status
-    );
-    let got = String::from_utf8_lossy(&output.stdout);
+    // Write the intermediate CSV to a temporary file
+    let temp_csv = wrk.path("temp.csv").to_string_lossy().to_string();
+    std::fs::write(&temp_csv, json_stdout).unwrap();
+
+    // Now use the temporary file as input for the table command
+    let mut table_cmd = process::Command::new(wrk.qsv_bin());
+    table_cmd.args(vec!["table", &temp_csv]);
+    let got: String = wrk.stdout(&mut table_cmd);
 
     let expected = r#"name       primary_color  available  quantity
 tulip      purple         true       4
 rose       red            true       6
-sunflower  yellow         false      0
-"#;
+sunflower  yellow         false      0"#;
     similar_asserts::assert_eq!(got, expected);
 }
 
@@ -54,6 +40,7 @@ fn flowers_nested_json_to_csv() {
     let wrk = Workdir::new("flowers_nested_json_to_csv");
     let flowers_nested_json_file = wrk.load_test_file("flowers_nested.json");
 
+    // First convert JSON to CSV and save to a temporary file
     let mut json_cmd = process::Command::new(wrk.qsv_bin());
     json_cmd.args(vec![
         "json",
@@ -63,34 +50,19 @@ fn flowers_nested_json_to_csv() {
     ]);
     let json_stdout: String = wrk.stdout(&mut json_cmd);
 
-    let mut table_child = process::Command::new(wrk.qsv_bin())
-        .stdin(std::process::Stdio::piped())
-        .stdout(std::process::Stdio::piped())
-        .args(vec!["table"])
-        .spawn()
-        .unwrap();
-    let mut table_stdin = table_child.stdin.take().unwrap();
-    let handle = std::thread::spawn(move || {
-        table_stdin.write_all(json_stdout.as_bytes()).unwrap();
-        // Explicitly drop stdin to signal EOF
-        drop(table_stdin);
-    });
-    // Wait for the writing thread to complete
-    handle.join().unwrap();
-    let output = table_child.wait_with_output().unwrap();
-    // Verify the process exited successfully
-    assert!(
-        output.status.success(),
-        "table command failed: {:?}",
-        output.status
-    );
-    let got = String::from_utf8_lossy(&output.stdout);
+    // Write the intermediate CSV to a temporary file
+    let temp_csv = wrk.path("temp.csv").to_string_lossy().to_string();
+    std::fs::write(&temp_csv, json_stdout).unwrap();
+
+    // Now use the temporary file as input for the table command
+    let mut table_cmd = process::Command::new(wrk.qsv_bin());
+    table_cmd.args(vec!["table", &temp_csv]);
+    let got: String = wrk.stdout(&mut table_cmd);
 
     let expected = r#"color  quantity
 red    4
 white  1
-pink   1
-"#;
+pink   1"#;
     similar_asserts::assert_eq!(got, expected);
 }
 
