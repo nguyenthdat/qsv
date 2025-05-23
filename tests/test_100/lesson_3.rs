@@ -10,16 +10,12 @@ fn flowers_json_to_csv() {
     let wrk = Workdir::new("flowers_json_to_csv");
     let flowers_json_file = wrk.load_test_file("flowers.json");
 
-    // First convert JSON to CSV and save to a temporary file
-    let mut json_cmd = wrk.command("json");
-    json_cmd.arg(flowers_json_file.as_str());
-    let json_stdout: String = wrk.stdout(&mut json_cmd);
-
-    // Write the intermediate CSV to a temporary file
     let temp_csv = wrk.path("temp.csv").to_string_lossy().to_string();
-    std::fs::write(&temp_csv, json_stdout).unwrap();
 
-    // Now use the temporary file as input for the table command
+    let mut json_cmd = wrk.command("json");
+    json_cmd.args(vec![flowers_json_file.as_str(), "--output", &temp_csv]);
+    wrk.assert_success(&mut json_cmd);
+
     let mut table_cmd = wrk.command("table");
     table_cmd.arg(&temp_csv);
     let got: String = wrk.stdout(&mut table_cmd);
@@ -38,16 +34,18 @@ fn flowers_nested_json_to_csv() {
     let wrk = Workdir::new("flowers_nested_json_to_csv");
     let flowers_nested_json_file = wrk.load_test_file("flowers_nested.json");
 
-    // First convert JSON to CSV and save to a temporary file
-    let mut json_cmd = wrk.command("json");
-    json_cmd.args(vec![flowers_nested_json_file.as_str(), "--jaq", ".roses"]);
-    let json_stdout: String = wrk.stdout(&mut json_cmd);
-
-    // Write the intermediate CSV to a temporary file
     let temp_csv = wrk.path("temp.csv").to_string_lossy().to_string();
-    std::fs::write(&temp_csv, json_stdout).unwrap();
+    let mut cmd = wrk.command("json");
+    cmd.args(vec![
+        flowers_nested_json_file.as_str(),
+        "--jaq",
+        ".roses",
+        "--output",
+        &temp_csv,
+    ]);
 
-    // Now use the temporary file as input for the table command
+    wrk.assert_success(&mut cmd);
+
     let mut table_cmd = wrk.command("table");
     table_cmd.arg(&temp_csv);
     let got: String = wrk.stdout(&mut table_cmd);
