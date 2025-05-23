@@ -1,8 +1,6 @@
 // Lesson 3: qsv and JSON
 // https://100.dathere.com/lessons/3
 
-use std::process;
-
 use crate::workdir::Workdir;
 
 // Task 1
@@ -13,8 +11,8 @@ fn flowers_json_to_csv() {
     let flowers_json_file = wrk.load_test_file("flowers.json");
 
     // First convert JSON to CSV and save to a temporary file
-    let mut json_cmd = process::Command::new(wrk.qsv_bin());
-    json_cmd.args(vec!["json", flowers_json_file.as_str()]);
+    let mut json_cmd = wrk.command("json");
+    json_cmd.arg(flowers_json_file.as_str());
     let json_stdout: String = wrk.stdout(&mut json_cmd);
 
     // Write the intermediate CSV to a temporary file
@@ -22,8 +20,8 @@ fn flowers_json_to_csv() {
     std::fs::write(&temp_csv, json_stdout).unwrap();
 
     // Now use the temporary file as input for the table command
-    let mut table_cmd = process::Command::new(wrk.qsv_bin());
-    table_cmd.args(vec!["table", &temp_csv]);
+    let mut table_cmd = wrk.command("table");
+    table_cmd.arg(&temp_csv);
     let got: String = wrk.stdout(&mut table_cmd);
 
     let expected = r#"name       primary_color  available  quantity
@@ -41,13 +39,8 @@ fn flowers_nested_json_to_csv() {
     let flowers_nested_json_file = wrk.load_test_file("flowers_nested.json");
 
     // First convert JSON to CSV and save to a temporary file
-    let mut json_cmd = process::Command::new(wrk.qsv_bin());
-    json_cmd.args(vec![
-        "json",
-        flowers_nested_json_file.as_str(),
-        "--jaq",
-        ".roses",
-    ]);
+    let mut json_cmd = wrk.command("json");
+    json_cmd.args(vec![flowers_nested_json_file.as_str(), "--jaq", ".roses"]);
     let json_stdout: String = wrk.stdout(&mut json_cmd);
 
     // Write the intermediate CSV to a temporary file
@@ -55,8 +48,8 @@ fn flowers_nested_json_to_csv() {
     std::fs::write(&temp_csv, json_stdout).unwrap();
 
     // Now use the temporary file as input for the table command
-    let mut table_cmd = process::Command::new(wrk.qsv_bin());
-    table_cmd.args(vec!["table", &temp_csv]);
+    let mut table_cmd = wrk.command("table");
+    table_cmd.arg(&temp_csv);
     let got: String = wrk.stdout(&mut table_cmd);
 
     let expected = r#"color  quantity
@@ -72,8 +65,8 @@ pink   1"#;
 fn buses_csv_to_json() {
     let wrk = Workdir::new("buses_csv_to_json");
     let buses_csv_file = wrk.load_test_file("buses.csv");
-    let mut cmd = process::Command::new(wrk.qsv_bin());
-    cmd.args(vec!["slice", buses_csv_file.as_str(), "--json"]);
+    let mut cmd = wrk.command("slice");
+    cmd.arg(buses_csv_file.as_str()).arg("--json");
 
     let got: String = wrk.stdout(&mut cmd);
     let expected = r#"[{"id":"001","primary_color":"black","secondary_color":"blue","length":"full","air_conditioner":"true","amenities":"wheelchair ramp, tissue boxes, cup holders, USB ports"},{"id":"002","primary_color":"black","secondary_color":"red","length":"full","air_conditioner":"true","amenities":"wheelchair ramp, tissue boxes, USB ports"},{"id":"003","primary_color":"white","secondary_color":"blue","length":"half","air_conditioner":"true","amenities":"wheelchair ramp, tissue boxes"},{"id":"004","primary_color":"orange","secondary_color":"blue","length":"full","air_conditioner":"false","amenities":"wheelchair ramp, tissue boxes, USB ports"},{"id":"005","primary_color":"black","secondary_color":"blue","length":"full","air_conditioner":"true","amenities":"wheelchair ramp, tissue boxes, cup holders, USB ports"}]"#;
