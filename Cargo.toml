@@ -336,6 +336,9 @@ rfd = { git = "https://github.com/PolyMeilex/rfd", rev = "9ef8cfc" }
 # use our patched fork of rust_xlsxwriter until our PR is merged
 rust_xlsxwriter = { git = "https://github.com/jqnatividad/rust_xlsxwriter", branch = "bump-zip-to-4" }
 
+# use our patched fork of self_update to bump zip 2 to 4
+self_update = { git = "https://github.com/jqnatividad/self_update", branch = "bump-zip-2-to-4" }
+
 # use our patched fork of sled to get rid of unmaintained instant
 sled = { git = "https://github.com/dathere/sled", branch = "v0.34.7-bumped-parking_lot_to_0.12" }
 
