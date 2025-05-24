@@ -14,6 +14,9 @@ fn flowers_json_to_csv() {
 
     let mut json_cmd = wrk.command("json");
     json_cmd.args(vec![flowers_json_file.as_str(), "--output", &temp_csv]);
+
+    wrk.run(&mut json_cmd);
+
     wrk.assert_success(&mut json_cmd);
 
     let mut table_cmd = wrk.command("table");
@@ -43,6 +46,8 @@ fn flowers_nested_json_to_csv() {
         "--output",
         &temp_csv,
     ]);
+
+    wrk.run(&mut cmd);
 
     wrk.assert_success(&mut cmd);
 
