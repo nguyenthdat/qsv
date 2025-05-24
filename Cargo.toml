@@ -342,8 +342,8 @@ self_update = { git = "https://github.com/jqnatividad/self_update", branch = "bu
 # use our patched fork of sled to get rid of unmaintained instant
 sled = { git = "https://github.com/dathere/sled", branch = "v0.34.7-bumped-parking_lot_to_0.12" }
 
-# use the latest upstream now that our PRs have been merged
-spreadsheet-ods = { git = "https://github.com/thscharler/spreadsheet-ods", rev = "6d9ab8e" }
+# use our patched fork of spreadsheet-ods to bump zip 2 to 4
+spreadsheet-ods = { git = "https://github.com/jqnatividad/spreadsheet-ods", branch = "bump-zip-2-to-4" }
 
 # Polars has a much higher release tempo for its Python bindings compared
 # to its underlying Rust library. See https://github.com/pola-rs/polars/releases

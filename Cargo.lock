@@ -1291,7 +1291,7 @@ dependencies = [
  "log",
  "quick-xml",
  "serde",
- "zip 4.0.0",
+ "zip",
 ]
 
 [[package]]
@@ -1856,7 +1856,7 @@ dependencies = [
  "threadpool",
  "typed-builder",
  "walkdir",
- "zip 4.0.0",
+ "zip",
 ]
 
 [[package]]
@@ -2814,7 +2814,7 @@ dependencies = [
  "rkyv 0.8.10",
  "serde",
  "tokio",
- "zip 4.0.0",
+ "zip",
 ]
 
 [[package]]
@@ -5816,7 +5816,7 @@ dependencies = [
  "uuid",
  "whatlang",
  "xxhash-rust",
- "zip 4.0.0",
+ "zip",
 ]
 
 [[package]]
@@ -6566,7 +6566,7 @@ version = "0.87.0"
 source = "git+https://github.com/jqnatividad/rust_xlsxwriter?branch=bump-zip-to-4#b72af849ec65e456bc0b1c0c233f3bd0291db4a4"
 dependencies = [
  "tempfile",
- "zip 4.0.0",
+ "zip",
 ]
 
 [[package]]
@@ -6797,7 +6797,7 @@ dependencies = [
  "serde_json",
  "tempfile",
  "urlencoding",
- "zip 4.0.0",
+ "zip",
  "zipsign-api",
 ]
 
@@ -7220,7 +7220,7 @@ dependencies = [
 [[package]]
 name = "spreadsheet-ods"
 version = "0.24.0"
-source = "git+https://github.com/thscharler/spreadsheet-ods?rev=6d9ab8e#6d9ab8e073b5fd3cdd931b19d50e419913b1e7c8"
+source = "git+https://github.com/jqnatividad/spreadsheet-ods?branch=bump-zip-2-to-4#898680508c6066228e6a0859ba037060d39248af"
 dependencies = [
  "base64",
  "chrono",
@@ -7236,7 +7236,7 @@ dependencies = [
  "rust_decimal",
  "rust_decimal_macros",
  "string_cache",
- "zip 2.4.2",
+ "zip",
 ]
 
 [[package]]
@@ -9154,24 +9154,6 @@ dependencies = [
  "proc-macro2",
  "quote",
  "syn 2.0.101",
-]
-
-[[package]]
-name = "zip"
-version = "2.4.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "fabe6324e908f85a1c52063ce7aa26b68dcb7eb6dbc83a2d148403c9bc3eba50"
-dependencies = [
- "arbitrary",
- "crc32fast",
- "crossbeam-utils",
- "displaydoc",
- "flate2",
- "indexmap",
- "memchr",
- "thiserror 2.0.12",
- "time",
- "zopfli",
 ]
 
 [[package]]
