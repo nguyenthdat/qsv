@@ -305,9 +305,19 @@ There are four binary variants of qsv:
 Unfortunately, this prevents us from cross-compiling binaries with the `luau` feature enabled as doing so requires statically linking the host OS libc library. If you need the `luau` feature on `musl`, you will need to compile from source on your own musl-based Linux Distro (e.g. Alpine, Void, [etc.](https://wiki.musl-libc.org/projects-using-musl)).  
 
 ### Shell Completion
-qsv has extensive, extendable [shell completion](https://en.wikipedia.org/wiki/Command-line_completion) support. It currently supports the following shells: `bash`, `zsh`, `powershell`, `fish`, `nushell`, `fig` & `elvish`.
+qsv has extensive, extendable [shell completion](https://en.wikipedia.org/wiki/Command-line_completion) support. It currently supports the following shells: `bash`, `zsh`, `powershell`, `fish`, `nushell`, `fig` & `elvish`. You may download a shell completions script for your shell by clicking one of the badges below:
 
-To enable shell completion, see the [Shell Completion](contrib/completions/README.md) documentation. If you're using Bash, you can also follow the step-by-step tutorial at [100.dathere.com](https://100.dathere.com/exercises-setup.html#optional-set-up-qsv-completions).  
+<div style="display: flex; gap: 1rem;">
+<a download href="https://qsv.dathere.com/download/bash-shell"><img src="https://github.com/user-attachments/assets/3e35edf8-27d0-485d-84b1-36d8f1ef7075" width="140" /></a>
+<a download target="_blank" href="https://qsv.dathere.com/download/powershell-shell"><img src="https://github.com/user-attachments/assets/738358c8-c925-4778-b9c1-ef4ae1f2c52d" width="140" /></a>
+<a download target="_blank" href="https://qsv.dathere.com/download/zsh-shell"><img src="https://github.com/user-attachments/assets/a633e577-143c-47d3-bb5a-c4ca102bc007" width="140" /></a>
+<a download target="_blank" href="https://qsv.dathere.com/download/fish-shell"><img src="https://github.com/user-attachments/assets/cd24def7-bb75-4842-aa74-f92b5bc659ed" width="140" /></a>
+<a download target="_blank" href="https://qsv.dathere.com/download/nushell-shell"><img src="https://github.com/user-attachments/assets/fa76664e-8e3b-4663-bf16-ad489a42bdef" width="140" /></a>
+<a download target="_blank" href="https://qsv.dathere.com/download/fig-shell" width="160" /><img src="https://github.com/user-attachments/assets/7151e8ac-903b-4fa4-b63b-aceaaa0e2a9e" width="140" /></a>
+<a download target="_blank" href="https://qsv.dathere.com/download/elvish-shell"><img src="https://github.com/user-attachments/assets/9d2aa23e-73a7-4f77-8ab2-f168bf8ca216" width="140" /></a>
+</div>
+
+To customize shell completions, see the [Shell Completion](contrib/completions/README.md) documentation. If you're using Bash, you can also follow the step-by-step tutorial at [100.dathere.com](https://100.dathere.com/exercises-setup.html#optional-set-up-qsv-completions) to learn how to enable the Bash shell completions.
 
 ## Regular Expression Syntax
 
