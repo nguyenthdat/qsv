@@ -275,7 +275,7 @@ pub fn run(argv: &[&str]) -> CliResult<()> {
 
         let flattener = Flattener::new();
         let intermediate_csv_writer = csv::WriterBuilder::new()
-            .buffer_capacity(config::DEFAULT_WTR_BUFFER_CAPACITY)
+            .has_headers(true)
             .from_path(intermediate_csv.clone())?;
         Json2Csv::new(flattener).convert_from_array(values, intermediate_csv_writer)?;
     }
