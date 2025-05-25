@@ -6563,7 +6563,7 @@ dependencies = [
 [[package]]
 name = "rust_xlsxwriter"
 version = "0.87.0"
-source = "git+https://github.com/jqnatividad/rust_xlsxwriter?branch=bump-zip-to-4#b72af849ec65e456bc0b1c0c233f3bd0291db4a4"
+source = "git+https://github.com/jmcnamara/rust_xlsxwriter?rev=d584e31#d584e31f78056402f6e2c851069573d23aaaad43"
 dependencies = [
  "tempfile",
  "zip",
