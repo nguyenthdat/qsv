@@ -10,24 +10,22 @@ fn flowers_json_to_csv() {
     let wrk = Workdir::new("flowers_json_to_csv");
     let flowers_json_file = wrk.load_test_file("flowers.json");
 
-    let temp_csv = wrk.path("temp.csv").to_string_lossy().to_string();
-
     let mut json_cmd = wrk.command("json");
-    json_cmd.args(vec![flowers_json_file.as_str(), "--output", &temp_csv]);
+    json_cmd.arg(flowers_json_file.as_str());
 
     wrk.run(&mut json_cmd);
 
     wrk.assert_success(&mut json_cmd);
 
-    let mut table_cmd = wrk.command("table");
-    table_cmd.arg(&temp_csv);
-    let got: String = wrk.stdout(&mut table_cmd);
+    let got: Vec<Vec<String>> = wrk.read_stdout(&mut json_cmd);
 
-    let expected = r#"name       primary_color  available  quantity
-tulip      purple         true       4
-rose       red            true       6
-sunflower  yellow         false      0"#;
-    similar_asserts::assert_eq!(got, expected);
+    let expected = vec![
+        svec!["name", "primary_color", "available", "quantity"],
+        svec!["tulip", "purple", "true", "4"],
+        svec!["rose", "red", "true", "6"],
+        svec!["sunflower", "yellow", "false", "0"],
+    ];
+    assert_eq!(got, expected);
 }
 
 // Task 2
@@ -37,29 +35,21 @@ fn flowers_nested_json_to_csv() {
     let wrk = Workdir::new("flowers_nested_json_to_csv");
     let flowers_nested_json_file = wrk.load_test_file("flowers_nested.json");
 
-    let temp_csv = wrk.path("temp.csv").to_string_lossy().to_string();
     let mut cmd = wrk.command("json");
-    cmd.args(vec![
-        flowers_nested_json_file.as_str(),
-        "--jaq",
-        ".roses",
-        "--output",
-        &temp_csv,
-    ]);
+    cmd.args(vec![flowers_nested_json_file.as_str(), "--jaq", ".roses"]);
 
     wrk.run(&mut cmd);
 
     wrk.assert_success(&mut cmd);
 
-    let mut table_cmd = wrk.command("table");
-    table_cmd.arg(&temp_csv);
-    let got: String = wrk.stdout(&mut table_cmd);
-
-    let expected = r#"color  quantity
-red    4
-white  1
-pink   1"#;
-    similar_asserts::assert_eq!(got, expected);
+    let got: Vec<Vec<String>> = wrk.read_stdout(&mut cmd);
+    let expected = vec![
+        svec!["color", "quantity"],
+        svec!["red", "4"],
+        svec!["white", "1"],
+        svec!["pink", "1"],
+    ];
+    assert_eq!(got, expected);
 }
 
 // Task 3
