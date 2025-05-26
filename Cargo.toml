@@ -323,10 +323,6 @@ csvlens = { git = "https://github.com/YS-L/csvlens", rev = "a1af5ca" }
 # use our patched fork of csvs_convert with bumped dependencies
 csvs_convert = { git = "https://github.com/jqnatividad/csvs_convert", branch = "bump-deps-202505" }
 
-# use our patched fork of geosuggest-core and geosuggest-utils to bump zip to 4
-geosuggest-core = { git = "https://github.com/jqnatividad/geosuggest", branch = "bump-zip-to-4" }
-geosuggest-utils = { git = "https://github.com/jqnatividad/geosuggest", branch = "bump-zip-to-4" }
-
 # needed to get latest dependencies and unreleased fixes
 grex = { git = "https://github.com/jqnatividad/grex", branch = "bumped-dependencies-202502" }
 
