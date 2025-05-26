@@ -23,6 +23,7 @@ lens options:
                                    are present in the search string
   -f, --freeze-columns <num>       Freeze the first N columns
                                    [default: 1]
+  -m, --monochrome                 Disable color output
       --echo-column <column_name>  Print the value of this column to stdout for the selected row
       --debug                      Show stats for debugging
 
@@ -49,6 +50,7 @@ struct Args {
     flag_find:           Option<String>,
     flag_ignore_case:    bool,
     flag_freeze_columns: Option<u64>,
+    flag_monochrome:     bool,
     flag_echo_column:    Option<String>,
     flag_debug:          bool,
 }
@@ -95,6 +97,7 @@ pub fn run(argv: &[&str]) -> CliResult<()> {
         echo_column:        args.flag_echo_column,
         debug:              args.flag_debug,
         freeze_cols_offset: args.flag_freeze_columns,
+        color_columns:      !args.flag_monochrome,
     };
 
     let out = run_csvlens_with_options(options)

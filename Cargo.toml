@@ -318,7 +318,7 @@ calamine = { git = "https://github.com/prophittcorey/calamine", branch = "fix/zi
 
 # use upstream with 2024 edition now that our PR has been merged
 # but a new release hasn't been made yet
-csvlens = { git = "https://github.com/YS-L/csvlens", rev = "a1af5ca" }
+csvlens = { git = "https://github.com/YS-L/csvlens", rev = "bed024e" }
 
 # use our patched fork of csvs_convert with bumped dependencies
 csvs_convert = { git = "https://github.com/jqnatividad/csvs_convert", branch = "bump-deps-202505" }
