@@ -326,6 +326,9 @@ csvs_convert = { git = "https://github.com/jqnatividad/csvs_convert", branch = "
 # needed to get latest dependencies and unreleased fixes
 grex = { git = "https://github.com/jqnatividad/grex", branch = "bumped-dependencies-202502" }
 
+# use latest upstream with unreleased fixes
+jsonschema = { git = "https://github.com/Stranger6667/jsonschema", rev = "0b1afc6" }
+
 # use latest upstream now that our PR has been merged, but a new release hasn't been made yet
 rfd = { git = "https://github.com/PolyMeilex/rfd", rev = "9ef8cfc" }
 
