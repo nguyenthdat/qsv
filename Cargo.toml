@@ -262,7 +262,7 @@ simdutf8 = "0.1"
 sled = { version = "0.34", optional = true }
 smallvec = "1"
 snap = "1"
-spreadsheet-ods = { version = "0.24", optional = true }
+spreadsheet-ods = { version = "0.25", optional = true }
 strsim = { version = "0.11", optional = true }
 strum = { version = "0.27", features = ["phf"] }
 strum_macros = "0.27"
@@ -337,9 +337,6 @@ self_update = { git = "https://github.com/jqnatividad/self_update", branch = "bu
 
 # use our patched fork of sled to get rid of unmaintained instant
 sled = { git = "https://github.com/dathere/sled", branch = "v0.34.7-bumped-parking_lot_to_0.12" }
-
-# use our patched fork of spreadsheet-ods to bump zip 2 to 4
-spreadsheet-ods = { git = "https://github.com/jqnatividad/spreadsheet-ods", branch = "bump-zip-2-to-4" }
 
 # Polars has a much higher release tempo for its Python bindings compared
 # to its underlying Rust library. See https://github.com/pola-rs/polars/releases

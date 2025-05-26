@@ -1827,7 +1827,7 @@ dependencies = [
 [[package]]
 name = "csvs_convert"
 version = "0.12.0"
-source = "git+https://github.com/jqnatividad/csvs_convert?branch=bump-deps-202505#8db89d7be545e620cfbd36c8af1f7c92e83e17c8"
+source = "git+https://github.com/jqnatividad/csvs_convert?branch=bump-deps-202505#3ef6cb6a19f1fcf3ef1677f3971ee33868231fcd"
 dependencies = [
  "arrow",
  "chrono",
@@ -3874,9 +3874,9 @@ dependencies = [
 
 [[package]]
 name = "libsqlite3-sys"
-version = "0.33.0"
+version = "0.34.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "947e6816f7825b2b45027c2c32e7085da9934defa535de4a6a46b10a4d5257fa"
+checksum = "91632f3b4fb6bd1d72aa3d78f41ffecfcf2b1a6648d8c241dbe7dbfaf4875e15"
 dependencies = [
  "cc",
  "pkg-config",
@@ -6524,9 +6524,9 @@ dependencies = [
 
 [[package]]
 name = "rusqlite"
-version = "0.35.0"
+version = "0.36.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a22715a5d6deef63c637207afbe68d0c72c3f8d0022d7cf9714c442d6157606b"
+checksum = "3de23c3319433716cf134eed225fe9986bc24f63bed9be9f20c329029e672dc7"
 dependencies = [
  "bitflags 2.9.1",
  "fallible-iterator 0.3.0",
@@ -7221,8 +7221,9 @@ dependencies = [
 
 [[package]]
 name = "spreadsheet-ods"
-version = "0.24.0"
-source = "git+https://github.com/jqnatividad/spreadsheet-ods?branch=bump-zip-2-to-4#898680508c6066228e6a0859ba037060d39248af"
+version = "0.25.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "9c03e50b07309dcacb07d7334c11eb462a7cf7c197b4bb88b43fb1d9916827d7"
 dependencies = [
  "base64",
  "chrono",
@@ -7233,7 +7234,6 @@ dependencies = [
  "lazy_static",
  "nom",
  "nom_locate",
- "num-traits",
  "quick-xml",
  "rust_decimal",
  "rust_decimal_macros",
