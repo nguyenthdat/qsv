@@ -167,10 +167,14 @@ Validate arguments:
 
 Validate options:
     --trim                     Trim leading and trailing whitespace from fields before validating.
+    --no-format-validation     Disable JSON Schema format validation. Ignores all JSON Schema
+                               "format" keywords (e.g. date,email, uri, currency, etc.). This is
+                               useful when you want to validate the structure of the CSV file
+                               w/o worrying about the data types and domain/range of the fields.
     --fail-fast                Stops on first error.
     --valid <suffix>           Valid record output file suffix. [default: valid]
     --invalid <suffix>         Invalid record output file suffix. [default: invalid]
-    --json                     When validating without a schema, return the RFC 4180 check
+    --json                     When validating without a JSON Schema, return the RFC 4180 check
                                as a JSON file instead of a message.
     --pretty-json              Same as --json, but pretty printed.
     --valid-output <file>      Change validation mode behavior so if ALL rows are valid, to pass it to
@@ -294,26 +298,27 @@ macro_rules! fail_validation_error {
 #[derive(Deserialize)]
 #[allow(dead_code)]
 struct Args {
-    cmd_schema:        bool,
-    flag_trim:         bool,
-    flag_fail_fast:    bool,
-    flag_valid:        Option<String>,
-    flag_invalid:      Option<String>,
-    flag_json:         bool,
-    flag_pretty_json:  bool,
-    flag_valid_output: Option<String>,
-    flag_jobs:         Option<usize>,
-    flag_batch:        usize,
-    flag_no_headers:   bool,
-    flag_delimiter:    Option<Delimiter>,
-    flag_progressbar:  bool,
-    flag_quiet:        bool,
-    arg_input:         Option<String>,
-    arg_json_schema:   Option<String>,
-    flag_timeout:      u16,
-    flag_cache_dir:    String,
-    flag_ckan_api:     String,
-    flag_ckan_token:   Option<String>,
+    cmd_schema:                bool,
+    flag_trim:                 bool,
+    flag_no_format_validation: bool,
+    flag_fail_fast:            bool,
+    flag_valid:                Option<String>,
+    flag_invalid:              Option<String>,
+    flag_json:                 bool,
+    flag_pretty_json:          bool,
+    flag_valid_output:         Option<String>,
+    flag_jobs:                 Option<usize>,
+    flag_batch:                usize,
+    flag_no_headers:           bool,
+    flag_delimiter:            Option<Delimiter>,
+    flag_progressbar:          bool,
+    flag_quiet:                bool,
+    arg_input:                 Option<String>,
+    arg_json_schema:           Option<String>,
+    flag_timeout:              u16,
+    flag_cache_dir:            String,
+    flag_ckan_api:             String,
+    flag_ckan_token:           Option<String>,
 }
 
 enum JSONtypes {
@@ -1335,7 +1340,7 @@ pub fn run(argv: &[&str]) -> CliResult<()> {
                             .with_format("currency", currency_format_checker)
                             .with_keyword("dynamicEnum", dyn_enum_validator_factory)
                             .with_keyword("uniqueCombinedWith", unique_combined_with_validator_factory)
-                            .should_validate_formats(true)
+                            .should_validate_formats(!args.flag_no_format_validation)
                             .build(&json)
                         {
                             Ok(schema) => (json, schema),
