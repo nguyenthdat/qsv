@@ -1389,3 +1389,95 @@ fn validate_unique_combined_with_mixed_names_and_indices() {
 
     wrk.assert_err(&mut cmd);
 }
+
+#[test]
+fn validate_no_format_validation() {
+    let wrk = Workdir::new("validate_no_format_validation").flexible(true);
+
+    // Create test data with invalid format values
+    wrk.create(
+        "data.csv",
+        vec![
+            svec!["id", "name", "email", "website", "fee"],
+            svec![
+                "1",
+                "John Doe",
+                "john@example.com",
+                "https://example.com",
+                "$100.00"
+            ],
+            svec![
+                "2",
+                "Jane Smith",
+                "not-an-email",
+                "not-a-url",
+                "not-currency"
+            ], // Invalid formats
+            svec!["3", "Bob Wilson", "bob.wilson", "ftp://invalid", "€ 50.00"], // Invalid formats
+        ],
+    );
+
+    // Create schema with format validation
+    wrk.create_from_string(
+        "schema.json",
+        r#"{
+            "$schema": "https://json-schema.org/draft/2020-12/schema",
+            "type": "object",
+            "properties": {
+                "id": { "type": "string" },
+                "name": { "type": "string" },
+                "email": { 
+                    "type": "string",
+                    "format": "email"
+                },
+                "website": { 
+                    "type": "string",
+                    "format": "uri"
+                },
+                "fee": { 
+                    "type": "string",
+                    "format": "currency"
+                }
+            }
+        }"#,
+    );
+
+    // First, run validation WITH format validation (default behavior)
+    let mut cmd = wrk.command("validate");
+    cmd.arg("data.csv").arg("schema.json");
+    wrk.output(&mut cmd);
+
+    wrk.assert_err(&mut cmd);
+
+    // Check that format validation errors are present
+    let validation_errors = wrk
+        .read_to_string("data.csv.validation-errors.tsv")
+        .unwrap();
+
+    // Should have format validation errors
+    assert!(validation_errors.contains("is not a \"email\""));
+    assert!(validation_errors.contains("is not a \"uri\""));
+    assert!(validation_errors.contains("is not a \"currency\""));
+
+    // Clean up output files for next test
+    let _ = std::fs::remove_file(wrk.path("data.csv.valid"));
+    let _ = std::fs::remove_file(wrk.path("data.csv.invalid"));
+    let _ = std::fs::remove_file(wrk.path("data.csv.validation-errors.tsv"));
+
+    // Now run validation WITHOUT format validation
+    let mut cmd = wrk.command("validate");
+    cmd.arg("--no-format-validation")
+        .arg("data.csv")
+        .arg("schema.json");
+
+    wrk.assert_success(&mut cmd);
+
+    // Should not create any error files since all records are valid
+    // when format validation is disabled
+    assert!(!wrk.path("data.csv.invalid").exists());
+    assert!(!wrk.path("data.csv.validation-errors.tsv").exists());
+
+    let got: String = wrk.output_stderr(&mut cmd);
+    let expected = "All 3 records valid.\n";
+    assert_eq!(got, expected);
+}
