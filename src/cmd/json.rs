@@ -281,15 +281,28 @@ pub fn run(argv: &[&str]) -> CliResult<()> {
     }
 
     // STEP 2: select the columns to use in the final output
-    // if --select is not specified, select in the order of the first dict's keys
-    // safety: we checked that first_dict is not empty so headers is not empty
-    let sel_cols = args
-        .flag_select
-        .unwrap_or_else(|| SelectColumns::parse(&first_dict_headers.join(",")).unwrap());
-
+    // Read the intermediate CSV to get the actual headers (which are sorted alphabetically)
     let sel_rconfig = config::Config::new(Some(intermediate_csv).as_ref()).no_headers(false);
     let mut intermediate_csv_rdr = sel_rconfig.reader()?;
     let byteheaders = intermediate_csv_rdr.byte_headers()?;
+
+    // Convert byte headers to string headers for easier processing
+    let actual_headers: Vec<&str> = byteheaders
+        .iter()
+        .map(|h| std::str::from_utf8(h).unwrap_or(""))
+        .collect();
+
+    // If --select is not specified, use the order of the first dict's keys, but only include
+    // headers that actually exist in the intermediate CSV
+    let sel_cols = args.flag_select.unwrap_or_else(|| {
+        // Filter first_dict_headers to only include headers that exist in the actual CSV
+        let existing_headers: Vec<&str> = first_dict_headers
+            .iter()
+            .filter(|h| actual_headers.contains(h))
+            .copied()
+            .collect();
+        SelectColumns::parse(&existing_headers.join(",")).unwrap()
+    });
 
     // and write the selected columns to the final CSV file
     let sel = sel_rconfig.select(sel_cols).selection(byteheaders)?;
