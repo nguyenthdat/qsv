@@ -3310,6 +3310,92 @@ fn sqlp_split_part() {
     similar_asserts::assert_eq!(got, expected);
 }
 
+#[test]
+fn sqlp_corr() {
+    let wrk = Workdir::new("sqlp_corr");
+    wrk.create(
+        "data.csv",
+        vec![
+            svec!["foo", "bar"],
+            svec!["1", "2"],
+            svec!["2", "4"],
+            svec!["3", "7"],
+            svec!["4", "5"],
+            svec!["5", "9"],
+        ],
+    );
+
+    let mut cmd = wrk.command("sqlp");
+    cmd.arg("data.csv")
+        .arg("SELECT CORR(foo, bar) AS corr FROM data")
+        .args(["--float-precision", "6"]);
+
+    wrk.assert_success(&mut cmd);
+
+    let got: Vec<Vec<String>> = wrk.read_stdout(&mut cmd);
+    let expected = vec![svec!["corr"], svec!["0.877809"]];
+    similar_asserts::assert_eq!(got, expected);
+}
+
+#[test]
+fn sqlp_covar_pop() {
+    let wrk = Workdir::new("sqlp_covar_pop");
+    wrk.create(
+        "data.csv",
+        vec![
+            svec!["foo", "bar"],
+            svec!["1", "2"],
+            svec!["2", "4"],
+            svec!["3", "7"],
+            svec!["4", "5"],
+            svec!["5", "9"],
+        ],
+    );
+
+    let mut cmd = wrk.command("sqlp");
+    cmd.arg("data.csv")
+        .arg("SELECT COVAR(foo, bar) AS covar FROM data")
+        .args(["--float-precision", "2"]);
+
+    wrk.assert_success(&mut cmd);
+    let got: Vec<Vec<String>> = wrk.read_stdout(&mut cmd);
+    let expected = vec![svec!["covar"], svec!["3.75"]];
+    similar_asserts::assert_eq!(got, expected);
+}
+
+#[test]
+fn sqlp_corr_covar_covar_pop() {
+    let wrk = Workdir::new("sqlp_corr_covar_covar_pop");
+    wrk.create(
+        "data.csv",
+        vec![
+            svec!["foo", "bar"],
+            svec!["1", "2"],
+            svec!["2", "4"],
+            svec!["3", "7"],
+            svec!["4", "5"],
+            svec!["5", "9"],
+        ],
+    );
+
+    let mut cmd = wrk.command("sqlp");
+    cmd.arg("data.csv")
+        .arg(
+            "SELECT CORR(foo, bar) AS corr, COVAR(foo, bar) AS covar, COVAR_POP(foo, bar) AS \
+             covar_pop FROM data",
+        )
+        .args(["--float-precision", "2"]);
+
+    wrk.assert_success(&mut cmd);
+
+    let got: Vec<Vec<String>> = wrk.read_stdout(&mut cmd);
+    let expected = vec![
+        svec!["corr", "covar", "covar_pop"],
+        svec!["0.88", "3.75", "3.00"],
+    ];
+    similar_asserts::assert_eq!(got, expected);
+}
+
 // #[test]
 // fn sqlp_generate_graphviz_plan() {
 //     let wrk = Workdir::new("sqlp_generate_graphviz_plan");
