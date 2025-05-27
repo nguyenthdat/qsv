@@ -262,7 +262,6 @@ simdutf8 = "0.1"
 sled = { version = "0.34", optional = true }
 smallvec = "1"
 snap = "1"
-spreadsheet-ods = { version = "0.25", optional = true }
 strsim = { version = "0.11", optional = true }
 strum = { version = "0.27", features = ["phf"] }
 strum_macros = "0.27"
@@ -320,8 +319,8 @@ calamine = { git = "https://github.com/prophittcorey/calamine", branch = "fix/zi
 # but a new release hasn't been made yet
 csvlens = { git = "https://github.com/YS-L/csvlens", rev = "bed024e" }
 
-# use our patched fork of csvs_convert with bumped dependencies
-csvs_convert = { git = "https://github.com/jqnatividad/csvs_convert", branch = "bump-deps-202505" }
+# use latest upstream now that our PR has been merged, but a new release hasn't been made yet
+csvs_convert = { git = "https://github.com/kindly/csvs_convert", rev = "017ce1c" }
 
 # needed to get latest dependencies and unreleased fixes
 grex = { git = "https://github.com/jqnatividad/grex", branch = "bumped-dependencies-202502" }
@@ -420,7 +419,7 @@ luau = ["mlua", "sanitize-filename"]
 polars = ["dep:polars", "bytemuck",  "dep:polars-ops"]
 prompt = ["rfd"]
 python = ["pyo3"]
-to = ["csvs_convert", "spreadsheet-ods"]
+to = ["csvs_convert"]
 lens = ["csvlens"]
 lite = []
 datapusher_plus = ["geocode", "self_update"]

@@ -742,9 +742,9 @@ dependencies = [
 
 [[package]]
 name = "async-process"
-version = "2.3.0"
+version = "2.3.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "63255f1dc2381611000436537bbedfe83183faa303a5a0edaf191edef06526bb"
+checksum = "cde3f4e40e6021d7acffc90095cbd6dc54cb593903d1de5832f435eb274b85dc"
 dependencies = [
  "async-channel",
  "async-io",
@@ -755,7 +755,7 @@ dependencies = [
  "cfg-if",
  "event-listener",
  "futures-lite",
- "rustix 0.38.44",
+ "rustix 1.0.7",
  "tracing",
 ]
 
@@ -1828,7 +1828,7 @@ dependencies = [
 [[package]]
 name = "csvs_convert"
 version = "0.12.0"
-source = "git+https://github.com/jqnatividad/csvs_convert?branch=bump-deps-202505#3ef6cb6a19f1fcf3ef1677f3971ee33868231fcd"
+source = "git+https://github.com/kindly/csvs_convert?rev=017ce1c#017ce1c8bea9fbff1321a543ec13d9d7b82b0e11"
 dependencies = [
  "arrow",
  "chrono",
@@ -5783,7 +5783,6 @@ dependencies = [
  "sled",
  "smallvec",
  "snap",
- "spreadsheet-ods",
  "strsim",
  "strum 0.27.1",
  "strum_macros 0.27.1",
