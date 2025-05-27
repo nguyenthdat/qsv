@@ -287,9 +287,9 @@ pub fn run(argv: &[&str]) -> CliResult<()> {
     let byteheaders = intermediate_csv_rdr.byte_headers()?;
 
     // Convert byte headers to string headers for easier processing
-    let actual_headers: Vec<&str> = byteheaders
+    let actual_headers: Vec<String> = byteheaders
         .iter()
-        .map(|h| std::str::from_utf8(h).unwrap_or(""))
+        .map(|h| String::from_utf8_lossy(h).to_string())
         .collect();
 
     // If --select is not specified, use the order of the first dict's keys, but only include
@@ -298,7 +298,7 @@ pub fn run(argv: &[&str]) -> CliResult<()> {
         // Filter first_dict_headers to only include headers that exist in the actual CSV
         let existing_headers: Vec<&str> = first_dict_headers
             .iter()
-            .filter(|h| actual_headers.contains(h))
+            .filter(|&h| actual_headers.iter().any(|ah| ah == h))
             .copied()
             .collect();
         SelectColumns::parse(&existing_headers.join(",")).unwrap()
