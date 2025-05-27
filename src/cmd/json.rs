@@ -292,16 +292,18 @@ pub fn run(argv: &[&str]) -> CliResult<()> {
         .map(|h| String::from_utf8_lossy(h).to_string())
         .collect();
 
-    // If --select is not specified, use the order of the first dict's keys, but only include
-    // headers that actually exist in the intermediate CSV
+    // If --select is not specified, reorder the actual headers to match the first dict's key order
     let sel_cols = args.flag_select.unwrap_or_else(|| {
-        // Filter first_dict_headers to only include headers that exist in the actual CSV
-        let existing_headers: Vec<&str> = first_dict_headers
+        // If all expected headers exist, use the original order
+        if first_dict_headers
             .iter()
-            .filter(|&h| actual_headers.iter().any(|ah| ah == h))
-            .copied()
-            .collect();
-        SelectColumns::parse(&existing_headers.join(",")).unwrap()
+            .all(|&h| actual_headers.contains(&h.to_string()))
+        {
+            SelectColumns::parse(&first_dict_headers.join(",")).unwrap()
+        } else {
+            // Otherwise, just use the headers as they appear in the CSV
+            SelectColumns::parse(&actual_headers.join(",")).unwrap()
+        }
     });
 
     // and write the selected columns to the final CSV file
