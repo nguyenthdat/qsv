@@ -314,7 +314,7 @@ use std::{str::FromStr, sync::OnceLock};
 
 use base62;
 use censor::{Censor, Sex, Zealous};
-use cpc::{eval, units::Unit};
+use cpc::eval;
 use crc32fast;
 use data_encoding::BASE64;
 use dynfmt2::Format;
@@ -685,7 +685,7 @@ pub fn run(argv: &[&str]) -> CliResult<()> {
                             } else {
                                 &cell
                             };
-                            match eval(cell_for_eval, true, Unit::Celsius, false) {
+                            match eval(cell_for_eval, true, false) {
                                 Ok(answer) => {
                                     if append_unit {
                                         format!("{} {:?}", answer.value, answer.unit)
