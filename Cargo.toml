@@ -328,6 +328,9 @@ grex = { git = "https://github.com/jqnatividad/grex", branch = "bumped-dependenc
 # use latest upstream with unreleased fixes
 jsonschema = { git = "https://github.com/Stranger6667/jsonschema", rev = "0b1afc6" }
 
+# use our patched fork of localzone to bump dependencies until our PR is merged
+localzone = { git = "https://github.com/jqnatividad/localzone", branch = "bump-deps-may2025" }
+
 # use latest upstream now that our PR has been merged, but a new release hasn't been made yet
 rfd = { git = "https://github.com/PolyMeilex/rfd", rev = "db842f5" }
 
