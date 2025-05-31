@@ -36,11 +36,11 @@ qsv also supports two custom keywords - `dynamicEnum` and `uniqueCombinedWith`.
 
 dynamicEnum
 ===========
-`dynamicEnum` allows for dynamic validation against a CSV.
-This is useful for validating against a set of values unknown at the time of schema creation or
-when the set of valid values is dynamic or too large to hardcode into the JSON Schema.
-`dynamicEnum` can be used to validate against a CSV file on the local filesystem or a URL
-(http/https, dathere and ckan schemes supported). The "dynamicEnum" value has the form:
+`dynamicEnum` allows for dynamic validation against a reference CSV file.
+It can be used to validate against a set of values unknown at the time of schema creation or
+when the set of valid values is dynamic or too large to hardcode into the JSON Schema with `enum`.
+The reference CSV file can be local or a URL (http/https, dathere & ckan schemes supported).
+The "dynamicEnum" value has the form:
 
   // qsvlite binary variant only supports URIs which can be files on the local filesystem
   // or remote files (http and https schemes supported)
@@ -103,6 +103,9 @@ are unique. It can be used with either column names or column indices (0-based).
 When a duplicate combination is found, the validation will fail and the error message will indicate
 which columns had duplicate combinations (named columns first, then indexed columns). The invalid
 records will be written to the .invalid file, while valid records will be written to the .valid file.
+
+`uniqueCombinedWith` complements the standard `uniqueItems` keyword, which can only validate
+uniqueness across a single column. 
 
 -------------------------------------------------------
 
