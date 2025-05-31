@@ -15,6 +15,11 @@ from representative CSV data, fine-tune the JSON schema file as needed, and then
 the `validate` command to validate other CSV data with the same structure using the
 generated JSON schema.
 
+After manually fine-tuning the JSON schema file, note that you can also use the
+`validate` command to validate the JSON Schema file as well:
+
+  `qsv validate schema manually-tuned-jsonschema.json`
+
 The generated JSON schema file has `.schema.json` suffix appended. For example, 
 for input `mydata.csv`, the generated JSON schema is `mydata.csv.schema.json`.
 
