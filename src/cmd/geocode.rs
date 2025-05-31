@@ -1771,15 +1771,11 @@ fn add_dyncols(
             // US FIPS fields
             "us_state_fips_code" => {
                 let us_state_code = if let Some(admin1) = cityrecord.admin_division.as_ref() {
-                    if let Some(state_fips_code) = admin1.code.strip_prefix("US.") {
-                        // admin1 code is a US state code, the two-letter state code
-                        // is the last two characters of the admin1 code
-                        state_fips_code
-                    } else {
-                        // admin1 code is not a US state code
-                        // set to empty string
-                        ""
-                    }
+                    // admin1 code is a US state code, the two-letter state code
+                    // is the last two characters of the admin1 code
+                    // e.g. US.NY -> NY
+                    // if not a US state code, return empty string
+                    admin1.code.strip_prefix("US.").unwrap_or_default()
                 } else {
                     // no admin1 code
                     // set to empty string
@@ -1979,18 +1975,8 @@ fn format_result(
                 // set US state FIPS code
                 "us_state_fips_code" => {
                     let us_state_code = if let Some(admin1) = cityrecord.admin_division.as_ref() {
-                        if let Some(state_fips_code) = admin1.code.strip_prefix("US.") {
-                            // admin1 code is a US state code, the two-letter state code
-                            // is the last two characters of the admin1 code
-                            state_fips_code
-                        } else {
-                            // admin1 code is not a US state code
-                            // set to empty string
-                            ""
-                        }
+                        admin1.code.strip_prefix("US.").unwrap_or_default()
                     } else {
-                        // no admin1 code
-                        // set to empty string
                         ""
                     };
                     cityrecord_map.insert(
@@ -2243,18 +2229,8 @@ fn lookup_us_state_fips_code(state: &str) -> Option<&'static str> {
 
 fn get_us_fips_codes(cityrecord: &CitiesRecord, nameslang: &NamesLang) -> serde_json::Value {
     let us_state_code = if let Some(admin1) = cityrecord.admin_division.as_ref() {
-        if let Some(state_fips_code) = admin1.code.strip_prefix("US.") {
-            // admin1 code is a US state code, the two-letter state code
-            // is the last two characters of the admin1 code
-            state_fips_code
-        } else {
-            // admin1 code is not a US state code
-            // set to empty string
-            ""
-        }
+        admin1.code.strip_prefix("US.").unwrap_or_default()
     } else {
-        // no admin1 code
-        // set to empty string
         ""
     };
     let us_state_fips_code = lookup_us_state_fips_code(us_state_code).unwrap_or("null");
