@@ -440,6 +440,15 @@ use crate::{
     util::replace_column_value,
 };
 
+// Cached regex patterns used throughout the geocode module
+// Using module-level statics for better performance
+static ADMIN1_CODE_REGEX: fn() -> &'static Regex = || regex_oncelock!(r"^[A-Z]{2}\.[A-Z0-9]{1,8}$");
+
+static LOCATION_REGEX: fn() -> &'static Regex =
+    || regex_oncelock!(r"(?-u)([+-]?(?:\d+\.?\d*|\.\d+)),\s*([+-]?(?:\d+\.?\d*|\.\d+))");
+
+static FORMATSTR_REGEX: fn() -> &'static Regex = || regex_oncelock!(r"\{(?P<key>\w+)\}");
+
 #[derive(Deserialize)]
 struct Args {
     arg_column:          String,
@@ -1094,7 +1103,7 @@ async fn geocode_main(args: Args) -> CliResult<()> {
             // see https://download.geonames.org/export/dump/admin1CodesASCII.txt for valid codes
             if let Some(admin1_list) = args.flag_admin1.clone() {
                 // this regex matches admin1 codes (e.g. US.NY, JP.40, CN.23, HK.NYL, GG.6417214)
-                let admin1_code_re = Regex::new(r"^[A-Z]{2}.[A-Z0-9]{1,8}$").unwrap();
+                let admin1_code_re = ADMIN1_CODE_REGEX();
                 let admin1_list_work = Some(
                     admin1_list
                         .split(',')
@@ -1666,8 +1675,7 @@ fn search_index(
     // the regex validates for "(lat, long)" or "lat, long"
     // note that it is not pinned to the start of the string, so it can be in the middle
     // of a string, e.g. "The location of the incident is 40.7128, -74.0060"
-    let locregex: &'static Regex =
-        regex_oncelock!(r"(?-u)([+-]?[0-9]+\.?[0-9]*|\.[0-9]+),\s*([+-]?[0-9]+\.?[0-9]*|\.[0-9]+)");
+    let locregex = LOCATION_REGEX();
 
     let loccaps = locregex.captures(cell);
     if let Some(loccaps) = loccaps {
@@ -1940,9 +1948,9 @@ fn format_result(
         // the hashmap lookup. We do this so we only populate the hashmap with fields
         // that are actually used in the formatstr.
         let mut dynfmt_fields = Vec::with_capacity(10); // 10 is a reasonable default to save allocs
-        let formatstr_re: &'static Regex = crate::regex_oncelock!(r"\{(?P<key>\w+)?\}");
+        let formatstr_re = FORMATSTR_REGEX();
         for format_fields in formatstr_re.captures_iter(formatstr) {
-            // safety: we know that the regex will always have a "key" group per the regex above
+            // safety: the regex will always have a "key" group per the regex above
             dynfmt_fields.push(format_fields.name("key").unwrap().as_str());
         }
 
@@ -2113,7 +2121,7 @@ fn get_countryinfo(
         // we do this so we only populate the hashmap with fields that are actually used
         // in the formatstr.
         let mut dynfmt_fields = Vec::with_capacity(10); // 10 is a reasonable default to save allocs
-        let formatstr_re: &'static Regex = crate::regex_oncelock!(r"\{(?P<key>\w+)?\}");
+        let formatstr_re = FORMATSTR_REGEX();
         for format_fields in formatstr_re.captures_iter(formatstr) {
             // safety: the regex will always have a "key" group per the regex above
             dynfmt_fields.push(format_fields.name("key").unwrap().as_str());
