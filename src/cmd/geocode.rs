@@ -1336,7 +1336,7 @@ async fn geocode_main(args: Args) -> CliResult<()> {
 }
 
 /// check if index_file exists and ends with a .rkyv extension
-fn check_index_file(index_file: &String) -> CliResult<()> {
+fn check_index_file(index_file: &str) -> CliResult<()> {
     // check if index_file is a u16 with the values 500, 1000, 5000 or 15000
     // if it is, return OK
     if let Ok(i) = index_file.parse::<u16>() {
@@ -1722,7 +1722,7 @@ fn search_index(
     }
 
     // not a valid lat, long
-    return None;
+    None
 }
 
 #[cached]
@@ -1766,19 +1766,19 @@ fn add_dyncols(
                     if let Some(state_fips_code) = admin1.code.strip_prefix("US.") {
                         // admin1 code is a US state code, the two-letter state code
                         // is the last two characters of the admin1 code
-                        state_fips_code.to_string()
+                        state_fips_code
                     } else {
                         // admin1 code is not a US state code
                         // set to empty string
-                        String::new()
+                        ""
                     }
                 } else {
                     // no admin1 code
                     // set to empty string
-                    String::new()
+                    ""
                 };
                 // lookup US state FIPS code
-                record.push_field(lookup_us_state_fips_code(&us_state_code).unwrap_or_default());
+                record.push_field(lookup_us_state_fips_code(us_state_code).unwrap_or_default());
             },
             "us_county_fips_code" => {
                 let us_county_fips_code = if let Some(admin2) = cityrecord.admin2_division.as_ref()
@@ -1788,7 +1788,7 @@ fn add_dyncols(
                         // is the last three characters of the admin2 code
                         // start at index 7 to skip the US. prefix
                         // e.g. US.NY.061 -> 061
-                        format!("{:0>3}", admin2.code[7..].to_string())
+                        format!("{:0>3}", &admin2.code[7..])
                     } else {
                         // admin2 code is not a US county code
                         // set to empty string
@@ -1864,11 +1864,11 @@ fn format_result(
             },
             "%state" | "%admin1" => nameslang.admin1name.clone(),
             "%county" | "%admin2" => nameslang.admin2name.clone(),
-            "%country" => country.to_owned(),
+            "%country" => country.to_string(),
             "%country_name" => nameslang.countryname.clone(),
-            "%id" => format!("{}", cityrecord.id),
-            "%capital" => capital.to_owned(),
-            "%population" => format!("{}", cityrecord.population),
+            "%id" => cityrecord.id.to_string(),
+            "%capital" => capital.to_string(),
+            "%population" => cityrecord.population.to_string(),
             "%timezone" => cityrecord.timezone.to_string(),
             "%cityrecord" => format!("{cityrecord:?}"),
             "%admin1record" => format!("{:?}", cityrecord.admin_division),
@@ -1882,7 +1882,7 @@ fn format_result(
                     serde_json::to_string(cityrecord).unwrap_or_else(|_| "null".to_string());
                 let country_json =
                     serde_json::to_string(countryrecord).unwrap_or_else(|_| "null".to_string());
-                let us_fips_codes_json = get_us_fips_codes(cityrecord, nameslang).to_string();
+                let us_fips_codes_json = get_us_fips_codes(cityrecord, nameslang);
                 format!(
                     "{{\"cityrecord\":{cr_json}, \"countryrecord\":{country_json} \
                      \"us_fips_codes\":{us_fips_codes_json}}}",
@@ -1955,13 +1955,13 @@ fn format_result(
                 "name" => cityrecord_map.insert("name", nameslang.cityname.clone()),
                 "latitude" => cityrecord_map.insert("latitude", cityrecord.latitude.to_string()),
                 "longitude" => cityrecord_map.insert("longitude", cityrecord.longitude.to_string()),
-                "country" => cityrecord_map.insert("country", country.to_owned()),
+                "country" => cityrecord_map.insert("country", country.to_string()),
                 "country_name" => {
                     cityrecord_map.insert("country_name", nameslang.countryname.clone())
                 },
                 "admin1" => cityrecord_map.insert("admin1", nameslang.admin1name.clone()),
                 "admin2" => cityrecord_map.insert("admin2", nameslang.admin2name.clone()),
-                "capital" => cityrecord_map.insert("capital", capital.to_owned()),
+                "capital" => cityrecord_map.insert("capital", capital.to_string()),
                 "timezone" => cityrecord_map.insert("timezone", cityrecord.timezone.to_string()),
                 "population" => {
                     cityrecord_map.insert("population", cityrecord.population.to_string())
@@ -1974,21 +1974,21 @@ fn format_result(
                         if let Some(state_fips_code) = admin1.code.strip_prefix("US.") {
                             // admin1 code is a US state code, the two-letter state code
                             // is the last two characters of the admin1 code
-                            state_fips_code.to_string()
+                            state_fips_code
                         } else {
                             // admin1 code is not a US state code
                             // set to empty string
-                            String::new()
+                            ""
                         }
                     } else {
                         // no admin1 code
                         // set to empty string
-                        String::new()
+                        ""
                     };
                     cityrecord_map.insert(
                         "us_state_fips_code",
-                        lookup_us_state_fips_code(&us_state_code)
-                            .unwrap_or_default()
+                        lookup_us_state_fips_code(us_state_code)
+                            .unwrap_or("")
                             .to_string(),
                     )
                 },
@@ -2002,7 +2002,7 @@ fn format_result(
                                 // is the last three characters of the admin2 code
                                 // start at index 7 to skip the US. prefix
                                 // e.g. US.NY.061 -> 061
-                                format!("{:0>3}", admin2.code[7..].to_string())
+                                format!("{:0>3}", &admin2.code[7..])
                             } else {
                                 // admin2 code is not a US county code
                                 // set to empty string
@@ -2238,18 +2238,18 @@ fn get_us_fips_codes(cityrecord: &CitiesRecord, nameslang: &NamesLang) -> serde_
         if let Some(state_fips_code) = admin1.code.strip_prefix("US.") {
             // admin1 code is a US state code, the two-letter state code
             // is the last two characters of the admin1 code
-            state_fips_code.to_string()
+            state_fips_code
         } else {
             // admin1 code is not a US state code
             // set to empty string
-            String::new()
+            ""
         }
     } else {
         // no admin1 code
         // set to empty string
-        String::new()
+        ""
     };
-    let us_state_fips_code = lookup_us_state_fips_code(&us_state_code).unwrap_or("null");
+    let us_state_fips_code = lookup_us_state_fips_code(us_state_code).unwrap_or("null");
 
     let us_county_code = match cityrecord.admin2_division.as_ref() {
         Some(admin2) => {
@@ -2258,7 +2258,7 @@ fn get_us_fips_codes(cityrecord: &CitiesRecord, nameslang: &NamesLang) -> serde_
                 // is the last three characters of the admin2 code
                 // start at index 7 to skip the US. prefix
                 // e.g. US.NY.061 -> 061
-                format!("{:0>3}", admin2.code[7..].to_string())
+                format!("{:0>3}", &admin2.code[7..])
             } else {
                 // admin2 code is not a US county code
                 // set to empty string
