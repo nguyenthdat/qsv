@@ -1334,18 +1334,33 @@ pub fn run(argv: &[&str]) -> CliResult<()> {
         // safety: we know the schema is_some() because we checked above
         match load_json(&args.arg_json_schema.clone().unwrap()) {
             Ok(s) => {
+                // Check for custom formats and keywords before parsing
+                let has_currency_format = s.contains(r#""format": "currency""#);
+                let has_dynamic_enum = s.contains("dynamicEnum");
+                let has_unique_combined = s.contains("uniqueCombinedWith");
+
                 // parse JSON string
                 let mut s_slice = s.as_bytes().to_vec();
-                match simd_json::serde::from_slice(&mut s_slice) {
+                match simd_json::serde::from_slice::<Value>(&mut s_slice) {
                     Ok(json) => {
                         // compile JSON Schema
-                        match Validator::options()
-                            .with_format("currency", currency_format_checker)
-                            .with_keyword("dynamicEnum", dyn_enum_validator_factory)
-                            .with_keyword("uniqueCombinedWith", unique_combined_with_validator_factory)
-                            .should_validate_formats(!args.flag_no_format_validation)
-                            .build(&json)
-                        {
+                        let mut validator_options = Validator::options()
+                            .should_validate_formats(!args.flag_no_format_validation);
+
+                        // Add custom validators based on pre-checked flags
+                        if has_currency_format {
+                            validator_options = validator_options.with_format("currency", currency_format_checker);
+                        }
+
+                        if has_dynamic_enum {
+                            validator_options = validator_options.with_keyword("dynamicEnum", dyn_enum_validator_factory);
+                        }
+
+                        if has_unique_combined {
+                            validator_options = validator_options.with_keyword("uniqueCombinedWith", unique_combined_with_validator_factory);
+                        }
+
+                        match validator_options.build(&json) {
                             Ok(schema) => (json, schema),
                             Err(e) => {
                                 return fail_clierror!(r#"Cannot compile JSONschema. error: {e}
