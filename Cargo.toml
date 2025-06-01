@@ -95,7 +95,7 @@ csv = "1.3"
 csv-core = "0.1"
 csv-diff = "0.1"
 csv-index = "0.1"
-csvlens = { version = "0.12", optional = true, default-features = false, features = [
+csvlens = { version = "0.13", optional = true, default-features = false, features = [
     "clipboard",
 ] }
 csvs_convert = { version = "0.12", default-features = false, features = [
@@ -314,10 +314,6 @@ csv-index = { git = "https://github.com/dathere/rust-csv", branch = "qsv-optimiz
 
 # use fork fixing zip dependency until PR is merged
 calamine = { git = "https://github.com/prophittcorey/calamine", branch = "fix/zip-3.0" }
-
-# use upstream with 2024 edition now that our PR has been merged
-# but a new release hasn't been made yet
-csvlens = { git = "https://github.com/YS-L/csvlens", rev = "bed024e" }
 
 # use latest upstream now that our PR has been merged, but a new release hasn't been made yet
 csvs_convert = { git = "https://github.com/kindly/csvs_convert", rev = "017ce1c" }
