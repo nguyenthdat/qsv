@@ -16,14 +16,25 @@ lens options:
                                    "auto" to auto-detect the delimiter
   -t, --tab-separated              Use tab separation. Shortcut for -d '\t'
       --no-headers                 Do not interpret the first row as headers
-      --columns <regex>            Use this regex to select columns to display by default
-      --filter <regex>             Use this regex to filter rows to display by default
-      --find <regex>               Use this regex to find and highlight matches by default
+
+      --columns <regex>            Use this regex to select columns to display by default.
+                                   Example: "col1|col2|col3" to select columns "col1", "col2" and "col3"
+                                   and also columns like "col1_1", "col22" and "col3-more".
+      --filter <regex>             Use this regex to filter rows to display by default.
+                                   The regex is matched against each cell in every column.
+                                   Example: "val1|val2" filters rows with any cells containing "val1", "val2"
+                                   or text like "my_val1" or "val234".
+      --find <regex>               Use this regex to find and highlight matches by default.
+                                   The regex is matched against each cell in every column.
+                                   Example: "val1|val2" highlights text containing "val1", "val2" or
+                                   longer text like "val1_ok" or "val2_error".
+
   -i, --ignore-case                Searches ignore case. Ignored if any uppercase letters
                                    are present in the search string
   -f, --freeze-columns <num>       Freeze the first N columns
                                    [default: 1]
   -m, --monochrome                 Disable color output
+      --prompt <prompt>            Set a custom prompt in the status bar.
       --echo-column <column_name>  Print the value of this column to stdout for the selected row
       --debug                      Show stats for debugging
 
@@ -51,6 +62,7 @@ struct Args {
     flag_ignore_case:    bool,
     flag_freeze_columns: Option<u64>,
     flag_monochrome:     bool,
+    flag_prompt:         Option<String>,
     flag_echo_column:    Option<String>,
     flag_debug:          bool,
 }
@@ -98,6 +110,7 @@ pub fn run(argv: &[&str]) -> CliResult<()> {
         debug:              args.flag_debug,
         freeze_cols_offset: args.flag_freeze_columns,
         color_columns:      !args.flag_monochrome,
+        prompt:             args.flag_prompt,
     };
 
     let out = run_csvlens_with_options(options)

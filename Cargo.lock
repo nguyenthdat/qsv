@@ -292,6 +292,19 @@ dependencies = [
 ]
 
 [[package]]
+name = "ansi-to-tui"
+version = "7.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "67555e1f1ece39d737e28c8a017721287753af3f93225e4a445b29ccb0f5912c"
+dependencies = [
+ "nom",
+ "ratatui",
+ "simdutf8",
+ "smallvec",
+ "thiserror 1.0.69",
+]
+
+[[package]]
 name = "anstream"
 version = "0.6.18"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1320,9 +1333,9 @@ dependencies = [
 
 [[package]]
 name = "cc"
-version = "1.2.24"
+version = "1.2.25"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "16595d3be041c03b09d08d0858631facccee9221e579704070e6e9e4915d3bc7"
+checksum = "d0fc897dc1e865cc67c0e05a836d9d3f1df3cbe442aa4a9473b18e12624a4951"
 dependencies = [
  "jobserver",
  "libc",
@@ -1794,9 +1807,11 @@ dependencies = [
 
 [[package]]
 name = "csvlens"
-version = "0.12.0"
-source = "git+https://github.com/YS-L/csvlens?rev=bed024e#bed024ea6c64f50a71b48d9c91cdd33390873504"
+version = "0.13.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "15ead0fb4c6741290e26a30805b2cc1a80c0ac6b695835afb18036ed8f03df99"
 dependencies = [
+ "ansi-to-tui",
  "anyhow",
  "arboard",
  "arrow",
