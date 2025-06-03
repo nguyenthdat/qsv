@@ -1632,21 +1632,21 @@ fn do_json_validation(
     record: &ByteRecord,
     schema_compiled: &Validator,
 ) -> Option<String> {
-    // Keep raw bytes until we actually need the string
-    let row_number_bytes = &record[header_len];
-
     let json_instance = match to_json_instance(header_types, header_len, record) {
         Ok(obj) => obj,
         Err(e) => {
             // Only convert to string when we have an error
-            let row_number_string = simdutf8::basic::from_utf8(row_number_bytes).unwrap();
+            // safety: row number was added as last column. We can do index access, not use get(),
+            // and unwrap safely since we know its there
+            let row_number_string = simdutf8::basic::from_utf8(&record[header_len]).unwrap();
             return Some(format!("{row_number_string}\t<RECORD>\t{e}"));
         },
     };
 
     validate_json_instance(&json_instance, schema_compiled).map(|validation_errors| {
         // Only convert to string when we have validation errors
-        let row_number_string = simdutf8::basic::from_utf8(row_number_bytes).unwrap();
+        // safety: see safety comment above
+        let row_number_string = simdutf8::basic::from_utf8(&record[header_len]).unwrap();
 
         // squash multiple errors into one long String with linebreaks
         validation_errors
