@@ -1408,6 +1408,7 @@ Try running `qsv validate schema {}` to check the JSON Schema file."#, args.arg_
     let mut valid_flags: Vec<bool> = Vec::with_capacity(batch_size);
     let mut validation_error_messages: Vec<String> = Vec::with_capacity(50);
     let flag_trim = args.flag_trim;
+    let flag_fail_fast = args.flag_fail_fast;
     let mut itoa_buffer = itoa::Buffer::new();
 
     // main loop to read CSV and construct batches for parallel processing.
@@ -1466,7 +1467,7 @@ Try running `qsv validate schema {}` to check the JSON Schema file."#, args.arg_
         batch.clear();
 
         // for fail-fast, exit loop if batch has any error
-        if args.flag_fail_fast && invalid_count > 0 {
+        if flag_fail_fast && invalid_count > 0 {
             break 'batch_loop;
         }
     } // end batch loop
