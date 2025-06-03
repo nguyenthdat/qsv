@@ -1408,6 +1408,7 @@ Try running `qsv validate schema {}` to check the JSON Schema file."#, args.arg_
     let mut valid_flags: Vec<bool> = Vec::with_capacity(batch_size);
     let mut validation_error_messages: Vec<String> = Vec::with_capacity(50);
     let flag_trim = args.flag_trim;
+    let mut itoa_buffer = itoa::Buffer::new();
 
     // main loop to read CSV and construct batches for parallel processing.
     // each batch is processed via Rayon parallel iterator.
@@ -1417,7 +1418,7 @@ Try running `qsv validate schema {}` to check the JSON Schema file."#, args.arg_
             match rdr.read_byte_record(&mut record) {
                 Ok(true) => {
                     row_number += 1;
-                    record.push_field(itoa::Buffer::new().format(row_number).as_bytes());
+                    record.push_field(itoa_buffer.format(row_number).as_bytes());
                     if flag_trim {
                         record.trim();
                     }
