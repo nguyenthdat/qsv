@@ -1786,6 +1786,80 @@ fn get_json_types(headers: &ByteRecord, schema: &Value) -> CliResult<Vec<(String
     Ok(header_types)
 }
 
+/// Validate JSON instance against compiled JSON Schema
+/// If invalid, returns Some(Vec<(String,String)>) holding the error messages
+#[inline]
+fn validate_json_instance(
+    instance: &Value,
+    schema_compiled: &Validator,
+) -> Option<Vec<(String, String)>> {
+    match schema_compiled.apply(instance).basic() {
+        BasicOutput::Valid(_) => None,
+        BasicOutput::Invalid(errors) => Some(
+            errors
+                .iter()
+                .map(|e| {
+                    (
+                        e.instance_location().to_string(),
+                        e.error_description().to_string(),
+                    )
+                })
+                .collect(),
+        ),
+    }
+}
+
+fn load_json(uri: &str) -> Result<String, String> {
+    let json_string = match uri {
+        url if url.to_lowercase().starts_with("http") => {
+            use reqwest::blocking::Client;
+
+            let client_timeout =
+                std::time::Duration::from_secs(TIMEOUT_SECS.load(Ordering::Relaxed) as u64);
+
+            let client = match Client::builder()
+                // safety: we're using a validated QSV_USER_AGENT or the default user agent
+                .user_agent(util::set_user_agent(None).unwrap())
+                .brotli(true)
+                .gzip(true)
+                .deflate(true)
+                .zstd(true)
+                .use_rustls_tls()
+                .http2_adaptive_window(true)
+                .connection_verbose(
+                    log_enabled!(log::Level::Debug) || log_enabled!(log::Level::Trace),
+                )
+                .timeout(client_timeout)
+                .build()
+            {
+                Ok(c) => c,
+                Err(e) => {
+                    return fail_format!("Cannot build reqwest client: {e}.");
+                },
+            };
+
+            match client.get(url).send() {
+                Ok(response) => response.text().unwrap_or_default(),
+                Err(e) => return fail_format!("Cannot read JSON at url {url}: {e}."),
+            }
+        },
+        path => {
+            let mut buffer = String::new();
+            match File::open(path) {
+                Ok(p) => {
+                    BufReader::new(p)
+                        .read_to_string(&mut buffer)
+                        .unwrap_or_default();
+                },
+                Err(e) => return fail_format!("Cannot read JSON file {path}: {e}."),
+            }
+            buffer
+        },
+    };
+
+    Ok(json_string)
+}
+
 #[cfg(test)]
 mod tests_for_csv_to_json_conversion {
 
@@ -1894,80 +1968,6 @@ mod tests_for_csv_to_json_conversion {
         let error = result.err().unwrap().to_string();
         similar_asserts::assert_eq!("Can't cast into Integer. key: C, value: 3.0e8", error);
     }
-}
-
-/// Validate JSON instance against compiled JSON Schema
-/// If invalid, returns Some(Vec<(String,String)>) holding the error messages
-#[inline]
-fn validate_json_instance(
-    instance: &Value,
-    schema_compiled: &Validator,
-) -> Option<Vec<(String, String)>> {
-    match schema_compiled.apply(instance).basic() {
-        BasicOutput::Valid(_) => None,
-        BasicOutput::Invalid(errors) => Some(
-            errors
-                .iter()
-                .map(|e| {
-                    (
-                        e.instance_location().to_string(),
-                        e.error_description().to_string(),
-                    )
-                })
-                .collect(),
-        ),
-    }
-}
-
-fn load_json(uri: &str) -> Result<String, String> {
-    let json_string = match uri {
-        url if url.to_lowercase().starts_with("http") => {
-            use reqwest::blocking::Client;
-
-            let client_timeout =
-                std::time::Duration::from_secs(TIMEOUT_SECS.load(Ordering::Relaxed) as u64);
-
-            let client = match Client::builder()
-                // safety: we're using a validated QSV_USER_AGENT or the default user agent
-                .user_agent(util::set_user_agent(None).unwrap())
-                .brotli(true)
-                .gzip(true)
-                .deflate(true)
-                .zstd(true)
-                .use_rustls_tls()
-                .http2_adaptive_window(true)
-                .connection_verbose(
-                    log_enabled!(log::Level::Debug) || log_enabled!(log::Level::Trace),
-                )
-                .timeout(client_timeout)
-                .build()
-            {
-                Ok(c) => c,
-                Err(e) => {
-                    return fail_format!("Cannot build reqwest client: {e}.");
-                },
-            };
-
-            match client.get(url).send() {
-                Ok(response) => response.text().unwrap_or_default(),
-                Err(e) => return fail_format!("Cannot read JSON at url {url}: {e}."),
-            }
-        },
-        path => {
-            let mut buffer = String::new();
-            match File::open(path) {
-                Ok(p) => {
-                    BufReader::new(p)
-                        .read_to_string(&mut buffer)
-                        .unwrap_or_default();
-                },
-                Err(e) => return fail_format!("Cannot read JSON file {path}: {e}."),
-            }
-            buffer
-        },
-    };
-
-    Ok(json_string)
 }
 
 #[cfg(test)]
