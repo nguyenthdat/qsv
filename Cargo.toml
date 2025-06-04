@@ -315,8 +315,8 @@ csv-index = { git = "https://github.com/dathere/rust-csv", branch = "qsv-optimiz
 # use fork fixing zip dependency until PR is merged
 calamine = { git = "https://github.com/prophittcorey/calamine", branch = "fix/zip-3.0" }
 
-# use latest upstream now that our PR has been merged, but a new release hasn't been made yet
-csvs_convert = { git = "https://github.com/kindly/csvs_convert", rev = "017ce1c" }
+# use our patched fork of csvs_convert to bump dependencies until our PR is merged
+csvs_convert = { git = "https://github.com/jqnatividad/csvs_convert", branch = "bump-deps-202506" }
 
 # needed to get latest dependencies and unreleased fixes
 grex = { git = "https://github.com/jqnatividad/grex", branch = "bumped-dependencies-202502" }
