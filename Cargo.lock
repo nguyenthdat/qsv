@@ -2969,7 +2969,7 @@ dependencies = [
 [[package]]
 name = "grex"
 version = "1.4.5"
-source = "git+https://github.com/jqnatividad/grex?branch=bumped-dependencies-202502#1cd3b92057819586daa29047cb19d647b4d8fad6"
+source = "git+https://github.com/jqnatividad/grex?branch=bumped-dependencies-202502#7b9b6cc831f8090a81c48f6091a1ca36c35a498c"
 dependencies = [
  "itertools 0.14.0",
  "lazy_static",
