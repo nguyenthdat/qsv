@@ -258,8 +258,10 @@ pub fn run(argv: &[&str]) -> CliResult<()> {
     // as the order of the headers in the CSV file is not guaranteed to be the same as the order of
     // the keys in the JSON object
     let temp_dir = env::temp_dir();
-    let intermediate_csv = temp_dir
-        .join("intermediate.csv")
+    let intermediate_csv = tempfile::Builder::new()
+        .suffix(".csv")
+        .tempfile_in(&temp_dir)?
+        .into_temp_path()
         .to_string_lossy()
         .into_owned();
 
@@ -277,7 +279,9 @@ pub fn run(argv: &[&str]) -> CliResult<()> {
         let intermediate_csv_writer = csv::WriterBuilder::new()
             .has_headers(true)
             .from_path(intermediate_csv.clone())?;
-        Json2Csv::new(flattener).convert_from_array(values, intermediate_csv_writer)?;
+        Json2Csv::new(flattener)
+            .preserve_key_order(true)
+            .convert_from_array(values, intermediate_csv_writer)?;
     }
 
     // STEP 2: select the columns to use in the final output
