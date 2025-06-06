@@ -258,8 +258,10 @@ pub fn run(argv: &[&str]) -> CliResult<()> {
     // as the order of the headers in the CSV file is not guaranteed to be the same as the order of
     // the keys in the JSON object
     let temp_dir = env::temp_dir();
-    let intermediate_csv = temp_dir
-        .join("intermediate.csv")
+    let intermediate_csv = tempfile::Builder::new()
+        .suffix(".csv")
+        .tempfile_in(&temp_dir)?
+        .into_temp_path()
         .to_string_lossy()
         .into_owned();
 
