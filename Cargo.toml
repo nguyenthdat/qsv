@@ -318,6 +318,9 @@ calamine = { git = "https://github.com/prophittcorey/calamine", branch = "fix/zi
 # needed to get latest dependencies and unreleased fixes
 grex = { git = "https://github.com/jqnatividad/grex", branch = "bumped-dependencies-202502" }
 
+# use our patched fork of json-objects-to-csv to bump deps and to preserve order until our PR is merged
+json-objects-to-csv = { git = "https://github.com/jqnatividad/json-objects-to-csv", branch = "preserve_order_issue_10" }
+
 # use latest upstream with unreleased fixes
 jsonschema = { git = "https://github.com/Stranger6667/jsonschema", rev = "88c814f" }
 
@@ -330,7 +333,7 @@ rfd = { git = "https://github.com/PolyMeilex/rfd", rev = "db842f5" }
 # use latest upstream now that our PR has been merged while awaiting a new release
 rust_xlsxwriter = { git = "https://github.com/jmcnamara/rust_xlsxwriter", rev = "d584e31" }
 
-# use our patched fork of self_update to bump zip 2 to 4
+# use our patched fork of self_update to bump zip 2 to 4, until our PR is merged
 self_update = { git = "https://github.com/jqnatividad/self_update", branch = "bump-zip-2-to-4" }
 
 # use our patched fork of sled to get rid of unmaintained instant
