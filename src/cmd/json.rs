@@ -277,7 +277,9 @@ pub fn run(argv: &[&str]) -> CliResult<()> {
         let intermediate_csv_writer = csv::WriterBuilder::new()
             .has_headers(true)
             .from_path(intermediate_csv.clone())?;
-        Json2Csv::new(flattener).convert_from_array(values, intermediate_csv_writer)?;
+        Json2Csv::new(flattener)
+            .preserve_key_order(true)
+            .convert_from_array(values, intermediate_csv_writer)?;
     }
 
     // STEP 2: select the columns to use in the final output
