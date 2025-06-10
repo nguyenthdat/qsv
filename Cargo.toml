@@ -312,6 +312,10 @@ csv       = { git = "https://github.com/dathere/rust-csv", branch = "qsv-optimiz
 csv-core  = { git = "https://github.com/dathere/rust-csv", branch = "qsv-optimized-non-allocating-byterecord-trim" }
 csv-index = { git = "https://github.com/dathere/rust-csv", branch = "qsv-optimized-non-allocating-byterecord-trim" }
 
+# use our patched fork of cached; though our PR of hashbrown to 0.15 has been merged,
+# our redis PR is still pending
+cached = { git = "https://github.com/jqnatividad/cached", branch = "bump-redis-to-0.32-hashbrown-to-0.15" }
+
 # use fork fixing zip dependency until PR is merged
 calamine = { git = "https://github.com/prophittcorey/calamine", branch = "fix/zip-3.0" }
 
