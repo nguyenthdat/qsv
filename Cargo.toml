@@ -319,6 +319,9 @@ cached = { git = "https://github.com/jqnatividad/cached", branch = "bump-redis-t
 # use fork fixing zip dependency until PR is merged
 calamine = { git = "https://github.com/prophittcorey/calamine", branch = "fix/zip-3.0" }
 
+# use our patched fork of csvs_convert to bump dependencies until our PR is merged
+csvs_convert = { git = "https://github.com/jqnatividad/csvs_convert", branch = "bump-rust_xlsxwriter-to-0.88" }
+
 # needed to get latest dependencies and unreleased fixes
 grex = { git = "https://github.com/jqnatividad/grex", branch = "bumped-dependencies-202502" }
 
@@ -333,9 +336,6 @@ localzone = { git = "https://github.com/jqnatividad/localzone", branch = "bump-d
 
 # use latest upstream now that our PR has been merged, but a new release hasn't been made yet
 rfd = { git = "https://github.com/PolyMeilex/rfd", rev = "db842f5" }
-
-# use latest upstream now that our PR has been merged while awaiting a new release
-rust_xlsxwriter = { git = "https://github.com/jmcnamara/rust_xlsxwriter", rev = "d584e31" }
 
 # use our patched fork of self_update to bump zip 2 to 4, until our PR is merged
 self_update = { git = "https://github.com/jqnatividad/self_update", branch = "bump-zip-2-to-4" }
