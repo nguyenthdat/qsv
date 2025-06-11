@@ -1553,32 +1553,33 @@ impl Commute for WhichStats {
 struct Stats {
     // CACHE LINE 1: Most frequently accessed fields (hot data)
     // Group small, frequently accessed fields together
-    typ: FieldType,         // 1 byte - accessed in every add() call
-    is_ascii: bool,         // 1 byte - accessed for strings
-    max_precision: u16,     // 2 bytes - accessed for floats
+    typ:           FieldType, // 1 byte - accessed in every add() call
+    is_ascii:      bool,      // 1 byte - accessed for strings
+    max_precision: u16,       // 2 bytes - accessed for floats
+
     // 4 bytes padding here for alignment
-    
-    nullcount: u64,         // 8 bytes - frequently updated counter
-    sum_stotlen: u64,       // 8 bytes - frequently updated counter
-    
+    nullcount:   u64, // 8 bytes - frequently updated counter
+    sum_stotlen: u64, // 8 bytes - frequently updated counter
+
     // Configuration flags (accessed once during initialization)
-    which: WhichStats,      // 10 bytes - read-only after initialization
+    which: WhichStats, // 10 bytes - read-only after initialization
+
     // 6 bytes padding here to reach 64 bytes (cache line boundary)
-    
+
     // CACHE LINE 2+: Less frequently accessed but still important
     // Large Option types that may be None, grouped by usage pattern
-    sum: Option<TypedSum>,  // 32 bytes - updated in add() for numeric types
-    
+    sum: Option<TypedSum>, // 32 bytes - updated in add() for numeric types
+
     // CACHE LINE 3+: Statistics computation fields
-    online: Option<OnlineStats>,     // 48 bytes - used for mean/variance calculations  
+    online:     Option<OnlineStats>, // 48 bytes - used for mean/variance calculations
     online_len: Option<OnlineStats>, // 48 bytes - used for string length stats
-    
+
     // CACHE LINE 4+: Mode and cardinality computation
     modes: Option<Unsorted<Vec<u8>>>, // 32 bytes - used for mode/cardinality
-    
+
     // CACHE LINE 5+: Sorting-based statistics
     unsorted_stats: Option<Unsorted<f64>>, // 32 bytes - median/quartiles/percentiles
-    
+
     // CACHE LINE 6+: Min/Max tracking (largest field, least cache-friendly)
     minmax: Option<TypedMinMax>, // 432 bytes - largest field, accessed less frequently
 }
