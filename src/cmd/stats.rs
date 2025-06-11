@@ -1656,7 +1656,7 @@ impl Stats {
         // Process the frequently used Option-based statistics first
         // These are commonly enabled, so check them in order of likelihood
 
-        // Sum is always enabled
+        // safety: we know that sum is always Some()
         unsafe { self.sum.as_mut().unwrap_unchecked().add(t, sample) };
 
         // MinMax is almost always enabled
@@ -2606,7 +2606,7 @@ impl TypedMinMax {
             self.str_len.add(0);
             return;
         }
-        // safety: we can use unwrap below since we know the data type of the sample
+        // safety: we can use unwrap_unchecked below since we know the data type of the sample
         match typ {
             TString => {
                 self.str_len.add(sample_len);
