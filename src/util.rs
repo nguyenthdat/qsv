@@ -1761,6 +1761,11 @@ pub fn isutf8_file(path: &Path) -> Result<bool, CliError> {
 
 // check if a file is supported by process_input
 fn is_supported_file(path: &Path) -> bool {
+    // If QSV_SKIP_FORMAT_CHECK is set, consider all files as supported
+    if get_envvar_flag("QSV_SKIP_FORMAT_CHECK") {
+        return true;
+    }
+
     let ext = path
         .extension()
         .and_then(std::ffi::OsStr::to_str)
