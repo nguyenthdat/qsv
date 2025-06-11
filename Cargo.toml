@@ -334,6 +334,9 @@ jsonschema = { git = "https://github.com/Stranger6667/jsonschema", rev = "88c814
 # use our patched fork of localzone to bump dependencies until our PR is merged
 localzone = { git = "https://github.com/jqnatividad/localzone", branch = "bump-deps-may2025" }
 
+# use patched fork with latest quick-xml dependency until PR is merged
+plist = { git = "https://github.com/attila-lin/rust-plist", branch = "dev/xml" }
+
 # use latest upstream now that our PR has been merged, but a new release hasn't been made yet
 rfd = { git = "https://github.com/PolyMeilex/rfd", rev = "db842f5" }
 
