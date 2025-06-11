@@ -473,7 +473,8 @@ impl Args {
 
         let mut string_buf = String::with_capacity(100);
         for row in it {
-            row_buffer.clone_from(&row.unwrap());
+            // safety: we know the row is valid
+            row_buffer.clone_from(&unsafe { row.unwrap_unchecked() });
             for (i, field) in nsel.select(row_buffer.into_iter()).enumerate() {
                 // safety: all_unique_flag_vec is pre-computed to have exactly nsel_len elements,
                 // which matches the number of selected columns that we iterate over.
