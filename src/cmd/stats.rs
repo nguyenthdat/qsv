@@ -2525,13 +2525,17 @@ impl TypedSum {
             TInteger => {
                 if let Some(ref mut float) = self.float {
                     // safety: we know that the sample is a valid f64
-                    *float += fast_float2::parse::<f64, &[u8]>(sample).unwrap();
+                    unsafe {
+                        *float += fast_float2::parse::<f64, &[u8]>(sample).unwrap_unchecked()
+                    };
                 } else {
                     // so we don't panic on overflow/underflow, use saturating_add
-                    self.integer = self
-                        .integer
-                        // safety: we know that the sample is a valid i64
-                        .saturating_add(atoi_simd::parse::<i64>(sample).unwrap());
+                    unsafe {
+                        self.integer = self
+                            .integer
+                            // safety: we know that the sample is a valid i64
+                            .saturating_add(atoi_simd::parse::<i64>(sample).unwrap_unchecked())
+                    };
                 }
             },
             TString => {
@@ -2609,13 +2613,13 @@ impl TypedMinMax {
                 self.strings.add(sample.to_vec());
             },
             TFloat => {
-                let n = fast_float2::parse::<f64, &[u8]>(sample).unwrap();
+                let n = unsafe { fast_float2::parse::<f64, &[u8]>(sample).unwrap_unchecked() };
 
                 self.floats.add(n);
                 self.integers.add(n as i64);
             },
             TInteger => {
-                let n = atoi_simd::parse::<i64>(sample).unwrap();
+                let n = unsafe { atoi_simd::parse::<i64>(sample).unwrap_unchecked() };
                 self.integers.add(n);
                 #[allow(clippy::cast_precision_loss)]
                 self.floats.add(n as f64);
@@ -2625,7 +2629,7 @@ impl TypedMinMax {
             // we use "_" here instead of "TDate | TDateTime" for the match to avoid
             // the overhead of matching on the OR value, however minor
             _ => {
-                let n = atoi_simd::parse::<i64>(sample).unwrap();
+                let n = unsafe { atoi_simd::parse::<i64>(sample).unwrap_unchecked() };
                 self.dates.add(n);
             },
         }
