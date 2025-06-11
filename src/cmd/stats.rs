@@ -1361,7 +1361,7 @@ impl Args {
         stats.extend(repeat_n(
             Stats::new(WhichStats {
                 include_nulls:   self.flag_nulls,
-                sum:             !self.flag_typesonly,
+                sum:             !self.flag_typesonly || self.flag_infer_boolean,
                 range:           !self.flag_typesonly || self.flag_infer_boolean,
                 dist:            !self.flag_typesonly,
                 cardinality:     self.flag_everything || self.flag_cardinality,
@@ -1645,31 +1645,45 @@ impl Stats {
         // we're inferring --typesonly, so don't add samples to compute statistics
         // unless we need to --infer-boolean. In which case, we need --cardinality
         // and --range, so we need to add samples.
+        // Early return for the uncommon typesonly case
+        // Most of the time we're NOT doing typesonly, so put this check first
         if self.which.typesonly && !infer_boolean {
             return;
         }
 
         let t = self.typ;
-        if let Some(v) = self.sum.as_mut() {
-            v.add(t, sample);
-        }
+
+        // Process the frequently used Option-based statistics first
+        // These are commonly enabled, so check them in order of likelihood
+
+        // Sum is always enabled
+        unsafe { self.sum.as_mut().unwrap_unchecked().add(t, sample) };
+
+        // MinMax is almost always enabled
         if let Some(v) = self.minmax.as_mut() {
+            // Common case: most samples are not dates (timestamp_val == 0)
             if timestamp_val == 0 {
                 v.add(t, sample);
             } else {
+                // Less common: date samples
                 v.add(t, itoa::Buffer::new().format(timestamp_val).as_bytes());
             }
         }
+
+        // Modes/cardinality less common but still frequent
         if let Some(v) = self.modes.as_mut() {
             v.add(sample.to_vec());
         }
+
+        // Handle null counting - most samples are NOT null
         if sample_type == TNull {
             self.nullcount += 1;
         }
+
+        // Process by type - organize by frequency (String most common, then numeric, then dates)
         match t {
             TString => {
-                // only check if the string is_ascii while it still is
-                // once it's false, don't needlessly call is_ascii()
+                // ASCII check: once false, it stays false, so check the flag first
                 if self.is_ascii {
                     self.is_ascii = sample.is_ascii();
                 }
@@ -1678,6 +1692,7 @@ impl Stats {
                 }
             },
             TFloat | TInteger => {
+                // Handle null case first (short-circuit if null)
                 if sample_type == TNull {
                     if self.which.include_nulls {
                         if let Some(v) = self.online.as_mut() {
@@ -1685,7 +1700,8 @@ impl Stats {
                         }
                     }
                 } else {
-                    // safety: we know the sample is a valid f64, so we can use unwrap
+                    // Common case: valid numeric samples
+                    // safety: we know the sample is a valid f64, so we can use unwrap_unchecked
                     let n = unsafe { fast_float2::parse(sample).unwrap_unchecked() };
                     if let Some(v) = self.unsorted_stats.as_mut() {
                         v.add(n);
@@ -1693,6 +1709,8 @@ impl Stats {
                     if let Some(v) = self.online.as_mut() {
                         v.add(&n);
                     }
+
+                    // Float precision calculation (only for floats, not integers)
                     if t == TFloat {
                         let mut ryu_buffer = ryu::Buffer::new();
                         // safety: we know that n is a valid f64
@@ -1717,17 +1735,16 @@ impl Stats {
             },
             TNull => {
                 if self.which.include_nulls {
-                    if let Some(v) = self.online.as_mut() {
-                        v.add_null();
-                    }
+                    // safety: we know that online is always Some()
+                    unsafe { self.online.as_mut().unwrap_unchecked().add_null() };
                 }
             },
             TDateTime | TDate => {
+                // Less common case: date/datetime processing
                 if sample_type == TNull {
                     if self.which.include_nulls {
-                        if let Some(v) = self.online.as_mut() {
-                            v.add_null();
-                        }
+                        // safety: we know that online is always Some()
+                        unsafe { self.online.as_mut().unwrap_unchecked().add_null() };
                     }
                 // if timestamp_val != 0, then we successfully inferred a date from the sample
                 } else if timestamp_val != 0 {

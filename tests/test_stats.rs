@@ -1190,6 +1190,8 @@ fn stats_typesonly_infer_boolean_t_f() {
         .arg("--dataset-stats")
         .arg(test_file);
 
+    wrk.assert_success(&mut cmd);
+
     let got: String = wrk.stdout(&mut cmd);
 
     let expected = wrk.load_test_resource("boston311-10-typesonly-boolean-tf-stats.csv");
