@@ -3666,7 +3666,7 @@ dependencies = [
 [[package]]
 name = "jsonschema"
 version = "0.30.0"
-source = "git+https://github.com/Stranger6667/jsonschema?rev=88c814f#88c814f1729c196161a99c42c62942a1631922ad"
+source = "git+https://github.com/Stranger6667/jsonschema?rev=1b5fc96#1b5fc96d4ab7e7c6fc7645f740265cd05518b8b9"
 dependencies = [
  "ahash 0.8.12",
  "base64",
@@ -6300,7 +6300,7 @@ dependencies = [
 [[package]]
 name = "referencing"
 version = "0.30.0"
-source = "git+https://github.com/Stranger6667/jsonschema?rev=88c814f#88c814f1729c196161a99c42c62942a1631922ad"
+source = "git+https://github.com/Stranger6667/jsonschema?rev=1b5fc96#1b5fc96d4ab7e7c6fc7645f740265cd05518b8b9"
 dependencies = [
  "ahash 0.8.12",
  "fluent-uri",
