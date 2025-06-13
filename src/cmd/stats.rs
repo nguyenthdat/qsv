@@ -1578,6 +1578,7 @@ struct Stats {
     modes: Option<Unsorted<Vec<u8>>>, // 32 bytes - used for mode/cardinality
 
     // CACHE LINE 5+: Sorting-based statistics
+    #[allow(clippy::struct_field_names)]
     unsorted_stats: Option<Unsorted<f64>>, // 32 bytes - median/quartiles/percentiles
 
     // CACHE LINE 6+: Min/Max tracking (largest field, least cache-friendly)
@@ -2497,6 +2498,7 @@ impl fmt::Debug for FieldType {
 /// `TypedSum` keeps a rolling sum of the data seen.
 /// It sums integers until it sees a float, at which point it sums floats.
 /// It also counts the total length of strings.
+#[allow(clippy::unsafe_derive_deserialize)]
 #[derive(Clone, Default, Serialize, Deserialize, PartialEq)]
 struct TypedSum {
     float:   Option<f64>,
@@ -2526,7 +2528,7 @@ impl TypedSum {
                 if let Some(ref mut float) = self.float {
                     // safety: we know that the sample is a valid f64
                     unsafe {
-                        *float += fast_float2::parse::<f64, &[u8]>(sample).unwrap_unchecked()
+                        *float += fast_float2::parse::<f64, &[u8]>(sample).unwrap_unchecked();
                     };
                 } else {
                     // so we don't panic on overflow/underflow, use saturating_add
@@ -2534,7 +2536,7 @@ impl TypedSum {
                         self.integer = self
                             .integer
                             // safety: we know that the sample is a valid i64
-                            .saturating_add(atoi_simd::parse::<i64>(sample).unwrap_unchecked())
+                            .saturating_add(atoi_simd::parse::<i64>(sample).unwrap_unchecked());
                     };
                 }
             },
@@ -2589,6 +2591,7 @@ impl Commute for TypedSum {
 
 /// `TypedMinMax` keeps track of minimum/maximum/range/sort_order values for each possible type
 /// where min/max/range/sort_order makes sense.
+#[allow(clippy::unsafe_derive_deserialize)]
 #[derive(Clone, Default, Serialize, Deserialize, PartialEq)]
 struct TypedMinMax {
     floats:   MinMax<f64>,
