@@ -162,6 +162,7 @@ const NULL_VAL: &[u8] = b"(NULL)";
 const NON_UTF8_ERR: &str = "<Non-UTF8 ERROR>";
 
 static UNIQUE_COLUMNS: OnceLock<Vec<usize>> = OnceLock::new();
+static COL_CARDINALITY_VEC: OnceLock<Vec<(String, u64)>> = OnceLock::new();
 static FREQ_ROW_COUNT: OnceLock<u64> = OnceLock::new();
 
 pub fn run(argv: &[&str]) -> CliResult<()> {
@@ -378,7 +379,7 @@ impl Args {
     pub fn sequential_ftables(&self) -> CliResult<(Headers, FTables)> {
         let mut rdr = self.rconfig().reader()?;
         let (headers, sel) = self.sel_headers(&mut rdr)?;
-        Ok((headers, self.ftables(&sel, rdr.byte_records())))
+        Ok((headers, self.ftables(&sel, rdr.byte_records(), true)))
     }
 
     pub fn parallel_ftables(
@@ -406,7 +407,7 @@ impl Args {
                 let mut idx = args.rconfig().indexed().unwrap().unwrap();
                 idx.seek((i * chunk_size) as u64).unwrap();
                 let it = idx.byte_records().take(chunk_size);
-                send.send(args.ftables(&sel, it)).unwrap();
+                send.send(args.ftables(&sel, it, false)).unwrap();
             });
         }
         drop(send);
@@ -414,14 +415,13 @@ impl Args {
     }
 
     #[inline]
-    fn ftables<I>(&self, sel: &Selection, it: I) -> FTables
+    fn ftables<I>(&self, sel: &Selection, it: I, sequential: bool) -> FTables
     where
         I: Iterator<Item = csv::Result<csv::ByteRecord>>,
     {
         let null = &b""[..].to_vec();
         let nsel = sel.normal();
         let nsel_len = nsel.len();
-        let mut freq_tables: Vec<_> = (0..nsel_len).map(|_| Frequencies::new()).collect();
 
         #[allow(unused_assignments)]
         // amortize allocations
@@ -440,6 +440,32 @@ impl Args {
         let all_unique_flag_vec: Vec<bool> = (0..nsel_len)
             .map(|i| all_unique_headers.contains(&i))
             .collect();
+
+        // optimize the capacity of the freq_tables based on the cardinality of the columns
+        // if sequential, use the cardinality from the stats cache
+        // if parallel, use a default capacity of 1000 for non-unique columns
+        let newvec = Vec::new();
+        let col_cardinality_vec = COL_CARDINALITY_VEC.get().unwrap_or(&newvec);
+        let mut freq_tables: Vec<_> = if col_cardinality_vec.is_empty() {
+            (0..nsel_len)
+                .map(|_| Frequencies::with_capacity(1000))
+                .collect()
+        } else {
+            (0..nsel_len)
+                .map(|i| {
+                    let capacity = if all_unique_flag_vec[i] {
+                        1
+                    } else if sequential {
+                        col_cardinality_vec
+                            .get(i)
+                            .map_or(1000, |(_, cardinality)| *cardinality as usize)
+                    } else {
+                        1000
+                    };
+                    Frequencies::with_capacity(capacity)
+                })
+                .collect()
+        };
 
         // Pre-compute function pointers for the hot path
         // instead of doing if chains repeatedly in the hot loop
@@ -579,6 +605,8 @@ impl Args {
                 all_unique_headers_vec.push(i);
             }
         }
+
+        COL_CARDINALITY_VEC.get_or_init(|| col_cardinality_vec);
 
         Ok(all_unique_headers_vec)
     }
