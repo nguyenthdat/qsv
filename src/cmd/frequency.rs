@@ -446,16 +446,19 @@ impl Args {
         // if parallel, use a default capacity of 1000 for non-unique columns
         let newvec = Vec::new();
         let col_cardinality_vec = COL_CARDINALITY_VEC.get().unwrap_or(&newvec);
-        let mut freq_tables: Vec<_>  = if col_cardinality_vec.is_empty() {
-            (0..nsel_len).map(|_| Frequencies::with_capacity(1000)).collect()
+        let mut freq_tables: Vec<_> = if col_cardinality_vec.is_empty() {
+            (0..nsel_len)
+                .map(|_| Frequencies::with_capacity(1000))
+                .collect()
         } else {
             (0..nsel_len)
                 .map(|i| {
                     let capacity = if all_unique_flag_vec[i] {
                         1
                     } else if sequential {
-                        col_cardinality_vec.get(i)
-                        .map_or(1000, |(_, cardinality)| *cardinality as usize)
+                        col_cardinality_vec
+                            .get(i)
+                            .map_or(1000, |(_, cardinality)| *cardinality as usize)
                     } else {
                         1000
                     };
