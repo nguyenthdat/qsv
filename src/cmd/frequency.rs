@@ -606,7 +606,7 @@ impl Args {
             }
         }
 
-        COL_CARDINALITY_VEC.set(col_cardinality_vec).unwrap();
+        COL_CARDINALITY_VEC.get_or_init(|| col_cardinality_vec);
 
         Ok(all_unique_headers_vec)
     }
