@@ -565,22 +565,13 @@ impl Args {
         let (csv_fields, csv_stats, dataset_stats) =
             get_stats_records(&schema_args, StatsMode::Frequency)?;
 
-        if csv_fields.is_empty() {
-            // the stats cache does not exist, just return an empty vector
+        if csv_fields.is_empty() || csv_stats.len() != csv_fields.len() {
+            // the stats cache does not exist or the number of fields & stats records
+            // do not match. Just return an empty vector.
             // we're not going to be able to get the cardinalities, so
             // this signals that we just compute frequencies for all columns
             return Ok(Vec::new());
         }
-
-        // safety: we know that csv_fields and csv_stats have the same length
-        // doing this as an assert also has the added benefit of eliminating bounds checking
-        // in the following hot iterator loop
-        assert!(
-            csv_fields.len() == csv_stats.len(),
-            "Mismatch between the number of fields: {} and stats records: {}",
-            csv_fields.len(),
-            csv_stats.len()
-        );
 
         let col_cardinality_vec: Vec<(String, u64)> = csv_stats
             .iter()
