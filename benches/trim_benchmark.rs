@@ -75,7 +75,10 @@ fn trim_spaces_only(bytes: &[u8]) -> &[u8] {
 
 fn bench_trim(c: &mut Criterion) {
     // Read the CSV file
-    let file = File::open("/tmp/NYC_311_SR_2010-2020-sample-1M.csv").unwrap();
+    let file_path = std::env::var("BENCHMARK_FILE_PATH")
+        .unwrap_or_else(|_| panic!("Environment variable BENCHMARK_FILE_PATH is not set."));
+    let file = File::open(&file_path)
+        .unwrap_or_else(|_| panic!("Failed to open file at path: {}", file_path));
     let mut rdr = Reader::from_reader(file);
     let records: Vec<csv::ByteRecord> = rdr.byte_records().map(|r| r.unwrap()).collect();
 
