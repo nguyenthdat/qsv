@@ -45,7 +45,7 @@ fn optimized_trim_bs_whitespace(bytes: &[u8]) -> &[u8] {
     let mut start = 0;
     let mut end = bytes.len();
 
-    // Find start by scanning forwardAdd commentMore actions
+    // Find start by scanning forward
     while start < end {
         if !WHITESPACE[unsafe { *bytes.get_unchecked(start) } as usize] {
             break;
@@ -83,6 +83,11 @@ fn trim_spaces_only(bytes: &[u8]) -> &[u8] {
 }
 
 fn bench_trim(c: &mut Criterion) {
+    // Configure Criterion to use 20 second target time and 200 samples
+    let mut c = c.benchmark_group("trim_bs_whitespace");
+    c.measurement_time(std::time::Duration::from_secs(20))
+        .sample_size(200);
+
     // Read the CSV file
     let file_path = std::env::var("QSV_BENCHMARK_FILE_PATH")
         .unwrap_or_else(|_| panic!("Environment variable QSV_BENCHMARK_FILE_PATH is not set."));
@@ -91,9 +96,7 @@ fn bench_trim(c: &mut Criterion) {
     let mut rdr = Reader::from_reader(file);
     let records: Vec<csv::ByteRecord> = rdr.byte_records().map(|r| r.unwrap()).collect();
 
-    let mut group = c.benchmark_group("trim_bs_whitespace");
-
-    group.bench_function("original", |b| {
+    c.bench_function("original", |b| {
         b.iter(|| {
             for record in &records {
                 for field in record.iter() {
@@ -103,7 +106,7 @@ fn bench_trim(c: &mut Criterion) {
         })
     });
 
-    group.bench_function("optimized", |b| {
+    c.bench_function("optimized", |b| {
         b.iter(|| {
             for record in &records {
                 for field in record.iter() {
@@ -113,7 +116,7 @@ fn bench_trim(c: &mut Criterion) {
         })
     });
 
-    group.bench_function("trim_ascii", |b| {
+    c.bench_function("trim_ascii", |b| {
         b.iter(|| {
             for record in &records {
                 for field in record.iter() {
@@ -123,7 +126,7 @@ fn bench_trim(c: &mut Criterion) {
         })
     });
 
-    group.bench_function("trim_spaces_only", |b| {
+    c.bench_function("trim_spaces_only", |b| {
         b.iter(|| {
             for record in &records {
                 for field in record.iter() {
@@ -133,7 +136,7 @@ fn bench_trim(c: &mut Criterion) {
         })
     });
 
-    group.finish();
+    c.finish();
 }
 
 criterion_group!(benches, bench_trim);
