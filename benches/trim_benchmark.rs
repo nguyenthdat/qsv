@@ -3,6 +3,17 @@ use std::fs::File;
 use criterion::{Criterion, black_box, criterion_group, criterion_main};
 use csv::Reader;
 
+// Module-level constant for ASCII whitespace characters
+const WHITESPACE: [bool; 256] = {
+    let mut table = [false; 256];
+    table[b' ' as usize] = true;
+    table[b'\t' as usize] = true;
+    table[b'\n' as usize] = true;
+    table[b'\r' as usize] = true;
+    table[b'\x0C' as usize] = true; // form feed
+    table
+};
+
 // per the trim_benchmark.rs criterion benchmark, this is the fastest
 // method for trimming whitespace from a byte slice.
 fn original_trim_bs_whitespace(bytes: &[u8]) -> &[u8] {
@@ -34,16 +45,14 @@ fn optimized_trim_bs_whitespace(bytes: &[u8]) -> &[u8] {
     let mut start = 0;
     let mut end = bytes.len();
 
-// Module-level constant for ASCII whitespace characters
-const WHITESPACE: [bool; 256] = {
-    let mut table = [false; 256];
-    table[b' ' as usize] = true;
-    table[b'\t' as usize] = true;
-    table[b'\n' as usize] = true;
-    table[b'\r' as usize] = true;
-    table[b'\x0C' as usize] = true; // form feed
-    table
-};
+    // Find start by scanning forwardAdd commentMore actions
+    while start < end {
+        if !WHITESPACE[unsafe { *bytes.get_unchecked(start) } as usize] {
+            break;
+        }
+        start += 1;
+    }
+
     // Find end by scanning backward
     while end > start {
         if !WHITESPACE[unsafe { *bytes.get_unchecked(end - 1) } as usize] {
@@ -75,8 +84,8 @@ fn trim_spaces_only(bytes: &[u8]) -> &[u8] {
 
 fn bench_trim(c: &mut Criterion) {
     // Read the CSV file
-    let file_path = std::env::var("BENCHMARK_FILE_PATH")
-        .unwrap_or_else(|_| panic!("Environment variable BENCHMARK_FILE_PATH is not set."));
+    let file_path = std::env::var("QSV_BENCHMARK_FILE_PATH")
+        .unwrap_or_else(|_| panic!("Environment variable QSV_BENCHMARK_FILE_PATH is not set."));
     let file = File::open(&file_path)
         .unwrap_or_else(|_| panic!("Failed to open file at path: {}", file_path));
     let mut rdr = Reader::from_reader(file);
