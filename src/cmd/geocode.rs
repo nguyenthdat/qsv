@@ -1739,7 +1739,7 @@ fn cached_dns_lookup(host: String) -> Option<IpAddr> {
         .map(|ips| {
             ips.into_iter()
                 .next()
-                .unwrap_or(IpAddr::V4(Ipv4Addr::new(0, 0, 0, 0)))
+                .unwrap_or(IpAddr::V4(Ipv4Addr::UNSPECIFIED))
         })
         .ok()
 }
