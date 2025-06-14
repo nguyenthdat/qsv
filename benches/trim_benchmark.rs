@@ -14,8 +14,6 @@ const WHITESPACE: [bool; 256] = {
     table
 };
 
-// per the trim_benchmark.rs criterion benchmark, this is the fastest
-// method for trimming whitespace from a byte slice.
 fn original_trim_bs_whitespace(bytes: &[u8]) -> &[u8] {
     let mut start = 0;
     let mut end = bytes.len();
@@ -64,6 +62,8 @@ fn optimized_trim_bs_whitespace(bytes: &[u8]) -> &[u8] {
     unsafe { bytes.get_unchecked(start..end) }
 }
 
+// per the trim_benchmark.rs criterion benchmark, this is the fastest
+// method for trimming whitespace from a byte slice.
 fn trim_ascii(bytes: &[u8]) -> &[u8] {
     let start = bytes
         .iter()
