@@ -73,7 +73,11 @@ fn trim_ascii(bytes: &[u8]) -> &[u8] {
         .iter()
         .rposition(|&b| !b.is_ascii_whitespace())
         .map_or(0, |i| i + 1);
-    &bytes[start..end]
+    if start > end {
+        &bytes[0..0]
+    } else {
+        &bytes[start..end]
+    }
 }
 
 fn trim_spaces_only(bytes: &[u8]) -> &[u8] {

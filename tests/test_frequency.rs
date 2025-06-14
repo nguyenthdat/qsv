@@ -803,6 +803,8 @@ fn frequency_vis_whitespace() {
         .args(["--limit", "0"])
         .arg("--vis-whitespace");
 
+    wrk.assert_success(&mut cmd);
+
     let got: Vec<Vec<String>> = wrk.read_stdout(&mut cmd);
     let expected = vec![
         svec!["field", "value", "count", "percentage"],
