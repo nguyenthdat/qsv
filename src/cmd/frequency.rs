@@ -379,7 +379,7 @@ impl Args {
     pub fn sequential_ftables(&self) -> CliResult<(Headers, FTables)> {
         let mut rdr = self.rconfig().reader()?;
         let (headers, sel) = self.sel_headers(&mut rdr)?;
-        Ok((headers, self.ftables(&sel, rdr.byte_records(), true)))
+        Ok((headers, self.ftables(&sel, rdr.byte_records(), 1)))
     }
 
     pub fn parallel_ftables(
@@ -407,7 +407,7 @@ impl Args {
                 let mut idx = args.rconfig().indexed().unwrap().unwrap();
                 idx.seek((i * chunk_size) as u64).unwrap();
                 let it = idx.byte_records().take(chunk_size);
-                send.send(args.ftables(&sel, it, false)).unwrap();
+                send.send(args.ftables(&sel, it, nchunks)).unwrap();
             });
         }
         drop(send);
@@ -415,7 +415,7 @@ impl Args {
     }
 
     #[inline]
-    fn ftables<I>(&self, sel: &Selection, it: I, sequential: bool) -> FTables
+    fn ftables<I>(&self, sel: &Selection, it: I, nchunks: usize) -> FTables
     where
         I: Iterator<Item = csv::Result<csv::ByteRecord>>,
     {
@@ -455,12 +455,16 @@ impl Args {
                 .map(|i| {
                     let capacity = if all_unique_flag_vec[i] {
                         1
-                    } else if sequential {
+                    } else if nchunks == 1 {
                         col_cardinality_vec
                             .get(i)
                             .map_or(1000, |(_, cardinality)| *cardinality as usize)
                     } else {
-                        1000
+                        // use cardinality and number of jobs to set the capacity
+                        let cardinality = col_cardinality_vec
+                            .get(i)
+                            .map_or(1000, |(_, cardinality)| *cardinality as usize);
+                        cardinality / nchunks
                     };
                     Frequencies::with_capacity(capacity)
                 })
@@ -524,6 +528,14 @@ impl Args {
                     }
                 }
             }
+        }
+        // shrink the capacity of the freq_tables to the actual number of elements.
+        // if sequential (nchunks == 1), we don't need to shrink the capacity as we
+        // use cardinality to set the capacity of the freq_tables
+        // if parallel (nchunks > 1), we need to shrink the capacity to avoid
+        // over-allocating memory
+        if nchunks > 1 {
+            freq_tables.shrink_to_fit();
         }
         freq_tables
     }
