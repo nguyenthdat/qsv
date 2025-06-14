@@ -3,6 +3,8 @@ use std::fs::File;
 use criterion::{Criterion, black_box, criterion_group, criterion_main};
 use csv::Reader;
 
+// per the trim_benchmark.rs criterion benchmark, this is the fastest
+// method for trimming whitespace from a byte slice.
 fn original_trim_bs_whitespace(bytes: &[u8]) -> &[u8] {
     let mut start = 0;
     let mut end = bytes.len();
