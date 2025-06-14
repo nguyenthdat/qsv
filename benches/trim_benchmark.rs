@@ -34,25 +34,16 @@ fn optimized_trim_bs_whitespace(bytes: &[u8]) -> &[u8] {
     let mut start = 0;
     let mut end = bytes.len();
 
-    // Lookup table for ASCII whitespace characters
-    const WHITESPACE: [bool; 256] = {
-        let mut table = [false; 256];
-        table[b' ' as usize] = true;
-        table[b'\t' as usize] = true;
-        table[b'\n' as usize] = true;
-        table[b'\r' as usize] = true;
-        table[b'\x0C' as usize] = true; // form feed
-        table
-    };
-
-    // Find start by scanning forward
-    while start < end {
-        if !WHITESPACE[unsafe { *bytes.get_unchecked(start) } as usize] {
-            break;
-        }
-        start += 1;
-    }
-
+// Module-level constant for ASCII whitespace characters
+const WHITESPACE: [bool; 256] = {
+    let mut table = [false; 256];
+    table[b' ' as usize] = true;
+    table[b'\t' as usize] = true;
+    table[b'\n' as usize] = true;
+    table[b'\r' as usize] = true;
+    table[b'\x0C' as usize] = true; // form feed
+    table
+};
     // Find end by scanning backward
     while end > start {
         if !WHITESPACE[unsafe { *bytes.get_unchecked(end - 1) } as usize] {
