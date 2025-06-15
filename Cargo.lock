@@ -1297,23 +1297,6 @@ version = "0.1.1"
 source = "git+https://github.com/jqnatividad/cached?branch=bump-redis-to-0.32-hashbrown-to-0.15#6e7eb046b4c5c846f46b7d8a2e824a390ffbbbc0"
 
 [[package]]
-name = "calamine"
-version = "0.27.0"
-source = "git+https://github.com/prophittcorey/calamine?branch=fix%2Fzip-3.0#18629d465f3166c03ab5b454dd5d72851ed99141"
-dependencies = [
- "atoi_simd",
- "byteorder",
- "chrono",
- "codepage",
- "encoding_rs",
- "fast-float2",
- "log",
- "quick-xml",
- "serde",
- "zip",
-]
-
-[[package]]
 name = "cassowary"
 version = "0.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -5879,7 +5862,6 @@ dependencies = [
  "byteorder",
  "bytes",
  "cached",
- "calamine",
  "censor",
  "chrono",
  "chrono-tz",
@@ -5946,6 +5928,7 @@ dependencies = [
  "polars-ops",
  "publicsuffix",
  "pyo3",
+ "qsv-calamine",
  "qsv-dateparser",
  "qsv-sniffer",
  "qsv-stats",
@@ -5991,6 +5974,24 @@ dependencies = [
  "uuid",
  "whatlang",
  "xxhash-rust",
+ "zip",
+]
+
+[[package]]
+name = "qsv-calamine"
+version = "0.27.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "65a1c3f598565334a9fae50d47b1ce7df45322fdefb6d2d6fb4500f9de736004"
+dependencies = [
+ "atoi_simd",
+ "byteorder",
+ "chrono",
+ "codepage",
+ "encoding_rs",
+ "fast-float2",
+ "log",
+ "quick-xml",
+ "serde",
  "zip",
 ]
 
