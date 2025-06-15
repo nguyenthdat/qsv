@@ -6,6 +6,42 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## What's Changed
+* build(deps): bump uuid from 1.16.0 to 1.17.0 by @dependabot in https://github.com/dathere/qsv/pull/2757
+* build(deps): bump mlua from 0.10.3 to 0.10.5 by @dependabot in https://github.com/dathere/qsv/pull/2758
+* build(deps): bump tokio from 1.45.0 to 1.45.1 by @dependabot in https://github.com/dathere/qsv/pull/2759
+* docs: add shell completions badges by @rzmk in https://github.com/dathere/qsv/pull/2760
+* feat: `lens` add `--monochrome` option, otherwise, columns displayed in diff colors by @jqnatividad in https://github.com/dathere/qsv/pull/2761
+* `feat`: `validate` add `--no-format-validation` option when in JSON Schema mode by @jqnatividad in https://github.com/dathere/qsv/pull/2762
+* build(deps): bump reqwest from 0.12.15 to 0.12.16 by @dependabot in https://github.com/dathere/qsv/pull/2764
+* build(deps): bump flexi_logger from 0.30.1 to 0.30.2 by @dependabot in https://github.com/dathere/qsv/pull/2765
+* build(deps): bump reqwest from 0.12.16 to 0.12.18 by @dependabot in https://github.com/dathere/qsv/pull/2767
+* build(deps): bump atoi_simd from 0.16.0 to 0.16.1 by @dependabot in https://github.com/dathere/qsv/pull/2766
+* build(deps): bump parking_lot from 0.12.3 to 0.12.4 by @dependabot in https://github.com/dathere/qsv/pull/2768
+* Bump cpc from 1.9 to 2 by @jqnatividad in https://github.com/dathere/qsv/pull/2770
+* build(deps): bump num_cpus from 1.16.0 to 1.17.0 by @dependabot in https://github.com/dathere/qsv/pull/2771
+* feat: `lens` add `--prompt` option, add examples to regex-enabled options by @jqnatividad in https://github.com/dathere/qsv/pull/2772
+* build(deps): bump reqwest from 0.12.18 to 0.12.19 by @dependabot in https://github.com/dathere/qsv/pull/2773
+* build(deps): bump sysinfo from 0.35.1 to 0.35.2 by @dependabot in https://github.com/dathere/qsv/pull/2774
+* build(deps): bump titlecase from 3.5.0 to 3.6.0 by @dependabot in https://github.com/dathere/qsv/pull/2775
+* feat: `json` preserve key order by @jqnatividad in https://github.com/dathere/qsv/pull/2777
+* build(deps): bump flate2 from 1.1.1 to 1.1.2 by @dependabot in https://github.com/dathere/qsv/pull/2781
+* build(deps): bump smallvec from 1.15.0 to 1.15.1 by @dependabot in https://github.com/dathere/qsv/pull/2780
+* build(deps): bump hashbrown from 0.15.3 to 0.15.4 by @dependabot in https://github.com/dathere/qsv/pull/2779
+* build(deps): bump bytemuck from 1.23.0 to 1.23.1 by @dependabot in https://github.com/dathere/qsv/pull/2778
+* build(deps): bump reqwest from 0.12.19 to 0.12.20 by @dependabot in https://github.com/dathere/qsv/pull/2782
+* fix: `util::process_input` helper does not honor QSV_SKIP_FORMAT_CHECK when processing dir input by @jqnatividad in https://github.com/dathere/qsv/pull/2784
+* build(deps): bump pyo3 from 0.25.0 to 0.25.1 by @dependabot in https://github.com/dathere/qsv/pull/2785
+* deps: upgrade qsv-stats from 0.32 to 0.33 by @jqnatividad in https://github.com/dathere/qsv/pull/2786
+* build(deps): bump libc from 0.2.172 to 0.2.173 by @dependabot in https://github.com/dathere/qsv/pull/2787
+* build(deps): bump rust_decimal from 1.37.1 to 1.37.2 by @dependabot in https://github.com/dathere/qsv/pull/2788
+* feat: criterion microbenchmarks by @jqnatividad in https://github.com/dathere/qsv/pull/2789
+* chore: temporarily use qsv-calamine until a new calamine is released by @jqnatividad in https://github.com/dathere/qsv/pull/2790
+* deps: bump criterion from 0.5 to 0.6 by @jqnatividad in https://github.com/dathere/qsv/pull/2791
+
+
+**Full Changelog**: https://github.com/dathere/qsv/compare/5.0.3...5.1.0
+
 ## [5.0.3] - 2025-05-22
 
 ### Added
