@@ -87,7 +87,10 @@ cached = { version = "0.55", features = [
     "disk_store",
     "redis_ahash",
 ], optional = true }
-calamine = { version = "0.27", features = ["dates"] }
+# the yanked zip dependency in calamine 0.27.0 is preventing us from publishing
+# to crates.io. qsv-calamine is a temporary crate that will be retired once a
+# new calamine release with the required zip dependency (4.x and up) is published.
+qsv-calamine = { version = "0.27", features = ["dates"] }
 censor = { version = "0.3", optional = true }
 chrono = { version = "0.4", default-features = false }
 chrono-tz = "0.10"
@@ -320,9 +323,6 @@ csv-index = { git = "https://github.com/dathere/rust-csv", branch = "qsv-optimiz
 # use our patched fork of cached; though our PR of hashbrown to 0.15 has been merged,
 # our redis PR is still pending
 cached = { git = "https://github.com/jqnatividad/cached", branch = "bump-redis-to-0.32-hashbrown-to-0.15" }
-
-# use fork fixing zip dependency until PR is merged
-calamine = { git = "https://github.com/prophittcorey/calamine", branch = "fix/zip-3.0" }
 
 # use our patched fork of csvs_convert to bump dependencies until our PR is merged
 csvs_convert = { git = "https://github.com/jqnatividad/csvs_convert", branch = "bump-rust_xlsxwriter-to-0.88" }
