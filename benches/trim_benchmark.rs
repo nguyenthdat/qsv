@@ -1,6 +1,6 @@
-use std::fs::File;
+use std::{fs::File, hint::black_box};
 
-use criterion::{Criterion, black_box, criterion_group, criterion_main};
+use criterion::{Criterion, criterion_group, criterion_main};
 use csv::Reader;
 
 // Module-level constant for ASCII whitespace characters
