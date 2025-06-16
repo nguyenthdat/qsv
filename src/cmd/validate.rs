@@ -1449,9 +1449,12 @@ Try running `qsv validate schema {}` to check the JSON Schema file."#, args.arg_
                     Ok(obj) => obj,
                     Err(e) => {
                         // Only convert to string when we have an error
-                        // safety: row number was added as last column. We can do index access, not use get(),
-                        // and unwrap safely since we know its there
-                        let row_number_string = unsafe { simdutf8::basic::from_utf8(&record[header_len]).unwrap_unchecked() };
+                        // safety: row number was added as last column. We can do index access, not
+                        // use get(), and unwrap safely since we know its
+                        // there
+                        let row_number_string = unsafe {
+                            simdutf8::basic::from_utf8(&record[header_len]).unwrap_unchecked()
+                        };
                         return Some(format!("{row_number_string}\t<RECORD>\t{e}"));
                     },
                 };
@@ -1460,7 +1463,9 @@ Try running `qsv validate schema {}` to check the JSON Schema file."#, args.arg_
                 validate_json_instance(&json_instance, &schema_compiled).map(|validation_errors| {
                     // Only convert to string when we have validation errors
                     // safety: see safety comment above
-                    let row_number_string = unsafe { simdutf8::basic::from_utf8(&record[header_len]).unwrap_unchecked() };
+                    let row_number_string = unsafe {
+                        simdutf8::basic::from_utf8(&record[header_len]).unwrap_unchecked()
+                    };
 
                     // there can be multiple validation errors for a single record,
                     // squash multiple errors into one long String with linebreaks
