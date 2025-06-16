@@ -1442,7 +1442,7 @@ Try running `qsv validate schema {}` to check the JSON Schema file."#, args.arg_
         // validation_results vector should have same row count and in same order as input CSV
         batch
             .par_iter()
-            .with_min_len(1024)
+            .with_min_len(2000)
             .map(|record| {
                 // convert CSV record to JSON instance
                 let json_instance = match to_json_instance(&header_types, header_len, record) {
@@ -1476,7 +1476,7 @@ Try running `qsv validate schema {}` to check the JSON Schema file."#, args.arg_
                         for e in errors {
                             error_messages.push(format!(
                                 "{row_number_string}\t{field}\t{error}",
-                                field = e.instance_location().to_string().trim_start_matches('/'),
+                                field = e.instance_location().as_str().trim_start_matches('/'),
                                 error = e.error_description()
                             ));
                         }
