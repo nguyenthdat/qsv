@@ -15,22 +15,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 * `json`: preserve key order https://github.com/dathere/qsv/pull/2777
+* `validate`: major refactoring for added performance/memory efficiency
 * chore: temporarily use qsv-calamine until a new calamine is released https://github.com/dathere/qsv/pull/2790
 * Bump cpc from 1.9 to 2 https://github.com/dathere/qsv/pull/2770
 * deps: bump criterion from 0.5 to 0.6 https://github.com/dathere/qsv/pull/2791
+* deps: use latest csvlens upstream with colorful columns https://github.com/dathere/qsv/commit/f2c9322e33a0ac335dafec10a490c871d3de0a6c
+* deps: temporarily use qsv-calamine until a new calamine is released https://github.com/dathere/qsv/pull/2790
 * deps: bump our patched forks of `cached`, `csvs_convert`, `json-objects-to-csv`, `jsonschema`, `localzone`, `rfd`, `self_update` until PRs are merged or new releases are made
+* deps: bump zip from 3 to 4 in https://github.com/dathere/qsv/commit/75909d2ca8835400bee5a90e18085c370939bb53
 * deps: bump polars to 0.48.1 at 49ce57a revision
 * build(deps): bump atoi_simd from 0.16.0 to 0.16.1 by @dependabot in https://github.com/dathere/qsv/pull/2766
 * build(deps): bump bytemuck from 1.23.0 to 1.23.1 by @dependabot in https://github.com/dathere/qsv/pull/2778
 * build(deps): bump flate2 from 1.1.1 to 1.1.2 by @dependabot in https://github.com/dathere/qsv/pull/2781
 * build(deps): bump flexi_logger from 0.30.1 to 0.30.2 by @dependabot in https://github.com/dathere/qsv/pull/2765
+* build(deps): bump flexi_logger from 0.30.2 to 0.31.0 by @dependabot in https://github.com/dathere/qsv/pull/2793
 * build(deps): bump hashbrown from 0.15.3 to 0.15.4 by @dependabot in https://github.com/dathere/qsv/pull/2779
 * build(deps): bump libc from 0.2.172 to 0.2.173 by @dependabot in https://github.com/dathere/qsv/pull/2787
+* build(deps): bump mimalloc from 0.1.46 to 0.1.47 by @dependabot in https://github.com/dathere/qsv/pull/2792
 * build(deps): bump mlua from 0.10.3 to 0.10.5 by @dependabot in https://github.com/dathere/qsv/pull/2758
 * build(deps): bump num_cpus from 1.16.0 to 1.17.0 by @dependabot in https://github.com/dathere/qsv/pull/2771
 * build(deps): bump parking_lot from 0.12.3 to 0.12.4 by @dependabot in https://github.com/dathere/qsv/pull/2768
 * build(deps): bump pyo3 from 0.25.0 to 0.25.1 by @dependabot in https://github.com/dathere/qsv/pull/2785
-* deps: upgrade qsv-stats from 0.32 to 0.33 https://github.com/dathere/qsv/pull/2786
+* deps: upgrade qsv-stats from 0.32 to [0.33](https://github.com/dathere/qsv-stats/releases/tag/0.33.0), which features major memory and performance optimizations behind the `stats` & `frequency` commands https://github.com/dathere/qsv/pull/2786
 * deps: bump redis from 0.29.5 to 0.32
 * build(deps): bump reqwest from 0.12.15 to 0.12.16 by @dependabot in https://github.com/dathere/qsv/pull/2764
 * build(deps): bump reqwest from 0.12.16 to 0.12.18 by @dependabot in https://github.com/dathere/qsv/pull/2767
@@ -44,8 +50,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * build(deps): bump uuid from 1.16.0 to 1.17.0 by @dependabot in https://github.com/dathere/qsv/pull/2757
 * applied select clippy suggestions
 * updated indirect dependencies
+* set Rust nightly to 2025-05-21, the same nightly Polars uses https://github.com/dathere/qsv/commit/872ade1b52cb0013fdb30aa2c4d83ce2081cf0c6
 
 ## Fixed:
+* fix: flaky `json` tests caused by hardcoding name of intermediate file - https://github.com/dathere/qsv/commit/62ca310f5942a3ffcf7334a5623db0c94c9fa8b3
+* fix: flaky `reverse` property tests by handling BOM characters https://github.com/dathere/qsv/commit/cefd490a899156735baf904b597b322e96b61f5d
 * fix: `util::process_input` helper does not honor `QSV_SKIP_FORMAT_CHECK` when processing dir input https://github.com/dathere/qsv/pull/2784
 
 
