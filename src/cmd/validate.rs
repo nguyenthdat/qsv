@@ -237,6 +237,7 @@ use std::{
     },
 };
 
+use bitvec::prelude::*;
 use csv::ByteRecord;
 use foldhash::{HashSet, HashSetExt};
 use indicatif::HumanCount;
@@ -1292,12 +1293,13 @@ pub fn run(argv: &[&str]) -> CliResult<()> {
     let show_progress =
         (args.flag_progressbar || util::get_envvar_flag("QSV_PROGRESSBAR")) && !rconfig.is_stdin();
 
+    // for full row count, prevent CSV reader from aborting on inconsistent column count
+    rconfig = rconfig.flexible(true);
+    let record_count = util::count_rows(&rconfig)?;
+    rconfig = rconfig.flexible(false);
+
     #[cfg(any(feature = "feature_capable", feature = "lite"))]
     if show_progress {
-        // for full row count, prevent CSV reader from aborting on inconsistent column count
-        rconfig = rconfig.flexible(true);
-        let record_count = util::count_rows(&rconfig)?;
-        rconfig = rconfig.flexible(false);
         util::prep_progress(&progress, record_count);
     } else {
         progress.set_draw_target(ProgressDrawTarget::hidden());
@@ -1401,15 +1403,16 @@ Try running `qsv validate schema {}` to check the JSON Schema file."#, args.arg_
 
     let num_jobs = util::njobs(args.flag_jobs);
 
-    // reuse batch buffer
+    // amortize allocations
+    let mut valid_flags: BitVec = BitVec::with_capacity(record_count as usize);
     let batch_size = util::optimal_batch_size(&rconfig, args.flag_batch, num_jobs);
     let mut batch = Vec::with_capacity(batch_size);
-    let mut validation_results = Vec::with_capacity(batch_size);
-    let mut valid_flags: Vec<bool> = Vec::with_capacity(batch_size);
+    let mut batch_validation_results = Vec::with_capacity(batch_size);
     let mut validation_error_messages: Vec<String> = Vec::with_capacity(50);
     let flag_trim = args.flag_trim;
     let flag_fail_fast = args.flag_fail_fast;
     let mut itoa_buffer = itoa::Buffer::new();
+    let batch_pariter_min_len = batch_size / num_jobs;
 
     // main loop to read CSV and construct batches for parallel processing.
     // each batch is processed via Rayon parallel iterator.
@@ -1442,7 +1445,7 @@ Try running `qsv validate schema {}` to check the JSON Schema file."#, args.arg_
         // validation_results vector should have same row count and in same order as input CSV
         batch
             .par_iter()
-            .with_min_len(2000)
+            .with_min_len(batch_pariter_min_len)
             .map(|record| {
                 // convert CSV record to JSON instance
                 let json_instance = match to_json_instance(&header_types, header_len, record) {
@@ -1484,18 +1487,18 @@ Try running `qsv validate schema {}` to check the JSON Schema file."#, args.arg_
                     },
                 }
             })
-            .collect_into_vec(&mut validation_results);
+            .collect_into_vec(&mut batch_validation_results);
 
         // write to validation error report, but keep Vec<bool> to gen valid/invalid files later
         // because Rayon collect() guarantees original order, we can sequentially append results
         // to vector with each batch
-        for result in &validation_results {
+        let start_idx = valid_flags.len();
+        valid_flags.extend(std::iter::repeat_n(true, batch_size));
+        for (i, result) in batch_validation_results.iter().enumerate() {
             if let Some(validation_error_msg) = result {
                 invalid_count += 1;
-                valid_flags.push(false);
+                unsafe { valid_flags.set_unchecked(start_idx + i, false) };
                 validation_error_messages.push(validation_error_msg.to_owned());
-            } else {
-                valid_flags.push(true);
             }
         }
 
@@ -1593,7 +1596,7 @@ Try running `qsv validate schema {}` to check the JSON Schema file."#, args.arg_
 
 fn split_invalid_records(
     rconfig: &Config,
-    valid_flags: &[bool],
+    valid_flags: &BitSlice,
     headers: &ByteRecord,
     input_path: &str,
     valid_suffix: &str,
@@ -1614,23 +1617,21 @@ fn split_invalid_records(
 
     let mut rdr = rconfig.reader()?;
 
+    let valid_flags_len = valid_flags.len();
+
     let mut record = csv::ByteRecord::new();
     while rdr.read_byte_record(&mut record)? {
-        split_row_num += 1;
-
         // length of valid_flags is max number of rows we can split
-        if split_row_num > valid_flags.len() {
+        if split_row_num > valid_flags_len {
             break;
         }
 
-        // vector is 0-based, row_num is 1-based
-        let is_valid = valid_flags[split_row_num - 1];
-
-        if is_valid {
+        if valid_flags[split_row_num] {
             valid_wtr.write_byte_record(&record)?;
         } else {
             invalid_wtr.write_byte_record(&record)?;
         }
+        split_row_num += 1;
     }
 
     valid_wtr.flush()?;

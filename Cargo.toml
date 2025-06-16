@@ -77,6 +77,7 @@ panic    = "abort"
 arboard = { version = "3.5.0", default-features = false, optional = true }
 atoi_simd = "0.16"
 base62 = { version = "2.2", optional = true }
+bitvec = "1"
 bytemuck = { version = "1.23", features = [
     "latest_stable_rust",
 ], optional = true }
