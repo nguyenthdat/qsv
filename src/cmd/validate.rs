@@ -1450,8 +1450,7 @@ Try running `qsv validate schema {}` to check the JSON Schema file."#, args.arg_
                     Err(e) => {
                         // Only convert to string when we have an error
                         // safety: row number was added as last column. We can do index access, not
-                        // use get(), and unwrap safely since we know its
-                        // there
+                        // use get(), and unwrap_unchecked safely since we know its there
                         let row_number_string = unsafe {
                             simdutf8::basic::from_utf8(&record[header_len]).unwrap_unchecked()
                         };
@@ -1460,27 +1459,30 @@ Try running `qsv validate schema {}` to check the JSON Schema file."#, args.arg_
                 };
 
                 // validate JSON instance against JSON Schema
-                validate_json_instance(&json_instance, &schema_compiled).map(|validation_errors| {
-                    // Only convert to string when we have validation errors
-                    // safety: see safety comment above
-                    let row_number_string = unsafe {
-                        simdutf8::basic::from_utf8(&record[header_len]).unwrap_unchecked()
-                    };
+                match schema_compiled.apply(&json_instance).basic() {
+                    BasicOutput::Valid(_) => None,
+                    BasicOutput::Invalid(errors) => {
+                        // Only convert to string when we have validation errors
+                        // safety: see safety comment above
+                        let row_number_string = unsafe {
+                            simdutf8::basic::from_utf8(&record[header_len]).unwrap_unchecked()
+                        };
 
-                    // there can be multiple validation errors for a single record,
-                    // squash multiple errors into one long String with linebreaks
-                    validation_errors
-                        .iter()
-                        .map(|(field, error)| {
-                            // validation error file format: row_number, field, error
-                            format!(
+                        // Preallocate the vector with the known size
+                        let mut error_messages = Vec::with_capacity(errors.len());
+
+                        // there can be multiple validation errors for a single record,
+                        // squash multiple errors into one long String with linebreaks
+                        for e in errors {
+                            error_messages.push(format!(
                                 "{row_number_string}\t{field}\t{error}",
-                                field = field.trim_start_matches('/')
-                            )
-                        })
-                        .collect::<Vec<_>>()
-                        .join("\n")
-                })
+                                field = e.instance_location().to_string().trim_start_matches('/'),
+                                error = e.error_description()
+                            ));
+                        }
+                        Some(error_messages.join("\n"))
+                    },
+                }
             })
             .collect_into_vec(&mut validation_results);
 
@@ -1491,8 +1493,7 @@ Try running `qsv validate schema {}` to check the JSON Schema file."#, args.arg_
             if let Some(validation_error_msg) = result {
                 invalid_count += 1;
                 valid_flags.push(false);
-
-                validation_error_messages.push(validation_error_msg.to_string());
+                validation_error_messages.push(validation_error_msg.to_owned());
             } else {
                 valid_flags.push(true);
             }
@@ -1788,30 +1789,6 @@ fn get_json_types(headers: &ByteRecord, schema: &Value) -> CliResult<Vec<(String
     Ok(header_types)
 }
 
-/// Validate JSON instance against compiled JSON Schema
-/// If invalid, returns Some(Vec<(String,String)>) holding the error messages
-#[allow(clippy::inline_always)]
-#[inline(always)]
-fn validate_json_instance(
-    instance: &Value,
-    schema_compiled: &Validator,
-) -> Option<Vec<(String, String)>> {
-    match schema_compiled.apply(instance).basic() {
-        BasicOutput::Valid(_) => None,
-        BasicOutput::Invalid(errors) => Some(
-            errors
-                .iter()
-                .map(|e| {
-                    (
-                        e.instance_location().to_string(),
-                        e.error_description().to_string(),
-                    )
-                })
-                .collect(),
-        ),
-    }
-}
-
 fn load_json(uri: &str) -> Result<String, String> {
     let json_string = match uri {
         url if url.to_lowercase().starts_with("http") => {
@@ -1861,6 +1838,31 @@ fn load_json(uri: &str) -> Result<String, String> {
     };
 
     Ok(json_string)
+}
+
+/// Validate JSON instance against compiled JSON Schema
+/// If invalid, returns Some(Vec<(String,String)>) holding the error messages
+/// this is just for the tests below and is equivalent to the validation logic
+/// in the main `validate` function which was inlined for performance reasons
+#[cfg(test)]
+fn validate_json_instance(
+    instance: &Value,
+    schema_compiled: &Validator,
+) -> Option<Vec<(String, String)>> {
+    match schema_compiled.apply(instance).basic() {
+        BasicOutput::Valid(_) => None,
+        BasicOutput::Invalid(errors) => Some(
+            errors
+                .iter()
+                .map(|e| {
+                    (
+                        e.instance_location().to_string(),
+                        e.error_description().to_string(),
+                    )
+                })
+                .collect(),
+        ),
+    }
 }
 
 #[cfg(test)]
