@@ -1443,7 +1443,40 @@ Try running `qsv validate schema {}` to check the JSON Schema file."#, args.arg_
         batch
             .par_iter()
             .with_min_len(1024)
-            .map(|record| do_json_validation(&header_types, header_len, record, &schema_compiled))
+            .map(|record| {
+                // convert CSV record to JSON instance
+                let json_instance = match to_json_instance(&header_types, header_len, record) {
+                    Ok(obj) => obj,
+                    Err(e) => {
+                        // Only convert to string when we have an error
+                        // safety: row number was added as last column. We can do index access, not use get(),
+                        // and unwrap safely since we know its there
+                        let row_number_string = unsafe { simdutf8::basic::from_utf8(&record[header_len]).unwrap_unchecked() };
+                        return Some(format!("{row_number_string}\t<RECORD>\t{e}"));
+                    },
+                };
+
+                // validate JSON instance against JSON Schema
+                validate_json_instance(&json_instance, &schema_compiled).map(|validation_errors| {
+                    // Only convert to string when we have validation errors
+                    // safety: see safety comment above
+                    let row_number_string = unsafe { simdutf8::basic::from_utf8(&record[header_len]).unwrap_unchecked() };
+
+                    // there can be multiple validation errors for a single record,
+                    // squash multiple errors into one long String with linebreaks
+                    validation_errors
+                        .iter()
+                        .map(|(field, error)| {
+                            // validation error file format: row_number, field, error
+                            format!(
+                                "{row_number_string}\t{field}\t{error}",
+                                field = field.trim_start_matches('/')
+                            )
+                        })
+                        .collect::<Vec<_>>()
+                        .join("\n")
+                })
+            })
             .collect_into_vec(&mut validation_results);
 
         // write to validation error report, but keep Vec<bool> to gen valid/invalid files later
@@ -1625,45 +1658,6 @@ fn write_error_report(input_path: &str, validation_error_messages: Vec<String>) 
     Ok(())
 }
 
-/// if given record is valid, return None, otherwise, error file entry string
-#[inline]
-fn do_json_validation(
-    header_types: &[(String, JSONtypes)],
-    header_len: usize,
-    record: &ByteRecord,
-    schema_compiled: &Validator,
-) -> Option<String> {
-    let json_instance = match to_json_instance(header_types, header_len, record) {
-        Ok(obj) => obj,
-        Err(e) => {
-            // Only convert to string when we have an error
-            // safety: row number was added as last column. We can do index access, not use get(),
-            // and unwrap safely since we know its there
-            let row_number_string = simdutf8::basic::from_utf8(&record[header_len]).unwrap();
-            return Some(format!("{row_number_string}\t<RECORD>\t{e}"));
-        },
-    };
-
-    validate_json_instance(&json_instance, schema_compiled).map(|validation_errors| {
-        // Only convert to string when we have validation errors
-        // safety: see safety comment above
-        let row_number_string = simdutf8::basic::from_utf8(&record[header_len]).unwrap();
-
-        // squash multiple errors into one long String with linebreaks
-        validation_errors
-            .iter()
-            .map(|(field, error)| {
-                // validation error file format: row_number, field, error
-                format!(
-                    "{row_number_string}\t{field}\t{error}",
-                    field = field.trim_start_matches('/')
-                )
-            })
-            .collect::<Vec<_>>()
-            .join("\n")
-    })
-}
-
 /// convert CSV Record into JSON instance by referencing JSON types
 #[inline]
 fn to_json_instance(
@@ -1680,29 +1674,32 @@ fn to_json_instance(
         }
 
         let json_value = match json_type {
-            JSONtypes::String => match simdutf8::basic::from_utf8(value) {
-                Ok(v) => Value::String(v.to_owned()),
-                Err(_) => Value::String(String::from_utf8_lossy(value).into_owned()),
+            JSONtypes::String => {
+                if let Ok(v) = simdutf8::basic::from_utf8(value) {
+                    Value::String(v.to_owned())
+                } else {
+                    Value::String(String::from_utf8_lossy(value).into_owned())
+                }
             },
-            JSONtypes::Number => match fast_float2::parse(value) {
-                Ok(float) => {
+            JSONtypes::Number => {
+                if let Ok(float) = fast_float2::parse(value) {
                     Value::Number(Number::from_f64(float).unwrap_or_else(|| Number::from(0)))
-                },
-                Err(_) => {
+                } else {
                     return fail_clierror!(
                         "Can't cast into Number. key: {key}, value: {}",
                         String::from_utf8_lossy(value)
                     );
-                },
+                }
             },
-            JSONtypes::Integer => match atoi_simd::parse::<i64>(value) {
-                Ok(int) => Value::Number(Number::from(int)),
-                Err(_) => {
+            JSONtypes::Integer => {
+                if let Ok(int) = atoi_simd::parse::<i64>(value) {
+                    Value::Number(Number::from(int))
+                } else {
                     return fail_clierror!(
                         "Can't cast into Integer. key: {key}, value: {}",
                         String::from_utf8_lossy(value)
                     );
-                },
+                }
             },
             JSONtypes::Boolean => match value {
                 b"true" | b"1" => Value::Bool(true),
@@ -1788,7 +1785,8 @@ fn get_json_types(headers: &ByteRecord, schema: &Value) -> CliResult<Vec<(String
 
 /// Validate JSON instance against compiled JSON Schema
 /// If invalid, returns Some(Vec<(String,String)>) holding the error messages
-#[inline]
+#[allow(clippy::inline_always)]
+#[inline(always)]
 fn validate_json_instance(
     instance: &Value,
     schema_compiled: &Validator,
