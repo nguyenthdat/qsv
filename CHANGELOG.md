@@ -6,6 +6,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [5.1.0] - 2025-06-16
+
 ### Added
 * `lens`: add `--prompt` option, add examples to regex-enabled options https://github.com/dathere/qsv/pull/2772
 * `lens`: add `--monochrome` option, otherwise, columns displayed in diff colors https://github.com/dathere/qsv/pull/2761
