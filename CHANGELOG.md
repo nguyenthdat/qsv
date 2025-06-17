@@ -16,7 +16,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * feat: added criterion trim algorithm microbenchmarks https://github.com/dathere/qsv/pull/2789
 
 ### Changed
+* `frequency`: performance microoptimizations - using stats cache column cardinality to size frequency hash tables
+* `geocode`: refactor regex handling
 * `json`: preserve key order https://github.com/dathere/qsv/pull/2777
+* `stats`: performance microoptimizations, primarily using `unwrap_unchecked()` instead of just `unwrap()` in hot sampling functions
 * `validate`: major refactoring for added performance/memory efficiency
 * chore: temporarily use qsv-calamine until a new calamine is released https://github.com/dathere/qsv/pull/2790
 * Bump cpc from 1.9 to 2 https://github.com/dathere/qsv/pull/2770
@@ -55,6 +58,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * set Rust nightly to 2025-05-21, the same nightly Polars uses https://github.com/dathere/qsv/commit/872ade1b52cb0013fdb30aa2c4d83ce2081cf0c6
 
 ## Fixed:
+* fix: `frequency` recover from non-fatal absence of stats cache, instead of panicking https://github.com/dathere/qsv/commit/b2821a0
 * fix: flaky `json` tests caused by hardcoding name of intermediate file - https://github.com/dathere/qsv/commit/62ca310f5942a3ffcf7334a5623db0c94c9fa8b3
 * fix: flaky `reverse` property tests by handling BOM characters https://github.com/dathere/qsv/commit/cefd490a899156735baf904b597b322e96b61f5d
 * fix: `util::process_input` helper does not honor `QSV_SKIP_FORMAT_CHECK` when processing dir input https://github.com/dathere/qsv/pull/2784
