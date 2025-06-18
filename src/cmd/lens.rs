@@ -11,6 +11,39 @@ Usage:
     qsv lens [options] [<input>]
     qsv lens --help
 
+Examples:
+View tabular data in various formats interactively.
+
+  # automatically choose delimiter based on the file extension
+  $ qsv lens data.csv // comma-separated
+  $ qsv lens data.tsv // Tab-separated
+  $ qsv lens data.tab // Tab-separated
+  $ qsv lens data.ssv // Semicolon-separated
+  # custom delimiter
+  $ qsv lens --delimiter ';' data.csv
+
+  # Auto-decompresses several compression formats:
+  $ qsv lens data.csv.sz // Snappy-compressed CSV
+  $ qsv lens data.csv.gz // Gzipped CSV
+  $ qsv lens data.tsv.zlib // Zlib-compressed Tab-separated
+  $ qsv lens data.tab.zst // Zstd-compressed Tab-separated
+  $ qsv lens data.ssv.zst // Zstd-compressed Semicolon-separated
+  
+  # tabulr data in various other formats
+  $ qsv lens data.jsonl // JSON Lines
+  $ qsv lens data.json // JSON - will only work with a JSON Array
+  $ qsv lens data.parquet // Parquet
+  $ qsv lens data.avro // Avro
+
+  # prompt the user to select a column to display
+  $ qsv lens --prompt 'Select City:' --echo-column 'City' data.csv
+
+  # only show rows that contain "NYPD"
+  $ qsv lens --filter NYPD data.csv
+
+  # find and highlight matches in the data
+  $ qsv lens --find 'New York' data.csv
+
 lens options:
   -d, --delimiter <char>           Delimiter character (comma by default)
                                    "auto" to auto-detect the delimiter
