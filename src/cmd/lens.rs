@@ -29,13 +29,15 @@ View tabular data in various formats interactively.
   $ qsv lens data.tab.zst // Zstd-compressed Tab-separated
   $ qsv lens data.ssv.zst // Zstd-compressed Semicolon-separated
   
-  # tabulr data in various other formats
+  # tabular data in various other formats
   $ qsv lens data.jsonl // JSON Lines
   $ qsv lens data.json // JSON - will only work with a JSON Array
   $ qsv lens data.parquet // Parquet
   $ qsv lens data.avro // Avro
 
   # prompt the user to select a column to display
+  # once selected, exit with the value of the City column
+  # for the selected row sent to stdout
   $ qsv lens --prompt 'Select City:' --echo-column 'City' data.csv
 
   # only show rows that contain "NYPD"
@@ -68,7 +70,7 @@ lens options:
                                    [default: 1]
   -m, --monochrome                 Disable color output
 
-      --prompt <prompt>            Set a custom prompt in the status bar. Normally paired w/ --echo-column:
+  -P. --prompt <prompt>            Set a custom prompt in the status bar. Normally paired w/ --echo-column:
                                      qsv lens --prompt 'Select City:' --echo-column 'City'
                                    Supports ANSI escape codes for colored or styled text. When using
                                    escape codes, ensure it's properly escaped. For example, in bash/zsh,
