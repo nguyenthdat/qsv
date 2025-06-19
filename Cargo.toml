@@ -88,10 +88,7 @@ cached = { version = "0.55", features = [
     "disk_store",
     "redis_ahash",
 ], optional = true }
-# the yanked zip dependency in calamine 0.27.0 is preventing us from publishing
-# to crates.io. qsv-calamine is a temporary crate that will be retired once a
-# new calamine release with the required zip dependency (4.x and up) is published.
-qsv-calamine = { version = "0.27", features = ["dates"] }
+calamine = { version = "0.28", features = ["dates"] }
 censor = { version = "0.3", optional = true }
 chrono = { version = "0.4", default-features = false }
 chrono-tz = "0.10"
