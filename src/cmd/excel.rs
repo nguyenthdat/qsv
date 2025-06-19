@@ -166,7 +166,6 @@ use calamine::{
 use file_format::FileFormat;
 use indicatif::HumanCount;
 use log::info;
-use qsv_calamine as calamine;
 use rayon::prelude::{IndexedParallelIterator, ParallelIterator, ParallelSlice};
 use serde::{Deserialize, Serialize};
 
