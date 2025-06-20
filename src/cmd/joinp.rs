@@ -710,7 +710,7 @@ impl JoinStruct {
                 | OptFlags::COLLAPSE_JOINS;
         }
 
-        optflags.set(OptFlags::STREAMING, self.streaming);
+        optflags.set(OptFlags::NEW_STREAMING, self.streaming);
 
         // log::debug!("Optimization flags: {optimization_flags:?}");
 
