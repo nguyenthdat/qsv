@@ -303,7 +303,7 @@ fn generate_schema_with_const_and_enum_constraints() {
     let expected_schema = r#"{
   "$schema": "https://json-schema.org/draft-07/schema",
   "title": "JSON Schema for enum_const_test.csv",
-  "description": "Inferred JSON Schema using `qsv schema` command",
+  "description": "Inferred JSON Schema with `qsv schema enum_const_test.csv --enum-threshold 5`",
   "type": "object",
   "properties": {
     "first": {

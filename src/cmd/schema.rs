@@ -221,7 +221,7 @@ pub fn run(argv: &[&str]) -> CliResult<()> {
     let schema = json!({
         "$schema": "https://json-schema.org/draft-07/schema",
         "title": format!("JSON Schema for {input_filename}"),
-        "description": "Inferred JSON Schema using `qsv schema` command",
+        "description": format!("Inferred JSON Schema with `qsv {}`", argv[1..].join(" ")),
         "type": "object",
         "properties": Value::Object(properties_map),
         "required": Value::Array(required_fields)
