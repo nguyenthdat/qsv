@@ -180,7 +180,7 @@ mlua = { version = "0.10", features = [
 num_cpus = "1"
 odht = "0.3"
 phf = { version = "0.12", features = ["macros"]}
-polars = { version = "0.48", features = [
+polars = { version = "0.49", features = [
     "asof_join",
     "avro",
     "avx512",
@@ -212,10 +212,9 @@ polars = { version = "0.48", features = [
     "strings",
     "string_normalize",
     "sql",
-    "streaming",
     "timezones",
 ], optional = true }
-polars-ops = { version = "0.48", optional = true }
+polars-ops = { version = "0.49", optional = true }
 publicsuffix = { version = "2.2", optional = true }
 pyo3 = { version = "0.25", features = ["auto-initialize"], optional = true }
 qsv-dateparser = "0.13"
@@ -364,11 +363,11 @@ sled = { git = "https://github.com/dathere/sled", branch = "v0.34.7-bumped-parki
 #     (e.g. py-1.19.0:52ea381 to indicate that we are Python Polars 1.19.0,
 #      and the commit hash 52ea381)
 # ================================
-# QSV_POLARS_REV=49ce57a
+# QSV_POLARS_REV=
 # polars = { git = "https://github.com/pola-rs/polars", tag = "py-1.30.0-beta.1" }
-polars = { git = "https://github.com/pola-rs/polars", rev = "49ce57a" }
+# polars = { git = "https://github.com/pola-rs/polars", rev = "49ce57a" }
 # polars-ops = { git = "https://github.com/pola-rs/polars", tag = "py-1.30.0-beta.1" }
-polars-ops = { git = "https://github.com/pola-rs/polars", rev = "49ce57a" }
+# polars-ops = { git = "https://github.com/pola-rs/polars", rev = "49ce57a" }
 
 [features]
 default = ["mimalloc"]
