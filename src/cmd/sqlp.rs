@@ -3,8 +3,8 @@ Run blazing-fast Polars SQL queries against several CSVs - replete with joins, a
 grouping, table functions, sorting, and more - working on larger than memory CSV files directly,
 without having to load it first into a database.
 
-Polars SQL is a SQL dialect (modelled after PostgreSQL), converting SQL queries to ultra-fast
-Polars LazyFrame expressions (see https://docs.pola.rs/user-guide/sql/intro/).
+Polars SQL is a PostgreSQL dialect, converting SQL queries to ultra-fast Polars LazyFrame
+expressions (see https://docs.pola.rs/user-guide/sql/intro/).
 
 For a list of SQL functions and keywords supported by Polars SQL, see
 https://docs.pola.rs/py-polars/html/reference/sql/index.html though be aware that it's for
