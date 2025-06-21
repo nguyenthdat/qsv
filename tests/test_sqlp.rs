@@ -402,20 +402,18 @@ fn sqlp_decimal_comma_issue_1050() {
         .args(["--delimiter", ";"])
         .arg("select COD_LOCALE_PROGETTO, FINANZ_UE from _t_1");
 
-    let got: Vec<Vec<String>> = wrk.read_stdout(&mut cmd);
-    let expected = vec![
-        svec!["COD_LOCALE_PROGETTO;FINANZ_UE"],
-        svec!["1AGCOE1627;6328008.44"],
-        svec!["1AGCOE2113;344203.2"],
-        svec!["1AGCOE645;491260.0"],
-        svec!["1AGCOE705;522811.32"],
-        svec!["1AGCOE706;460463.85"],
-        svec!["1ANPALINP-001;141566507.74"],
-        svec!["1ANPALINP-CLP-00002;47325000.0"],
-        svec!["1ANPALINP-CLP-00003;78450000.0"],
-        svec!["1ANPALINP-CLP-00004;67500000.0"],
-        svec!["1ANPALVAO1C001;6416.62"],
-    ];
+    let got: String = wrk.stdout(&mut cmd);
+    let expected = r#"COD_LOCALE_PROGETTO;FINANZ_UE
+1AGCOE1627;6328008,44
+1AGCOE2113;344203,2
+1AGCOE645;491260,0
+1AGCOE705;522811,32
+1AGCOE706;460463,85
+1ANPALINP-001;141566507,74
+1ANPALINP-CLP-00002;47325000,0
+1ANPALINP-CLP-00003;78450000,0
+1ANPALINP-CLP-00004;67500000,0
+1ANPALVAO1C001;6416,62"#;
     similar_asserts::assert_eq!(got, expected);
 }
 
