@@ -234,7 +234,7 @@ sqlp options:
                               null values when READING CSV files (e.g. NULL, NONE, <empty string>).
                               Use "<empty string>" to consider an empty string a null value.
                               [default: <empty string>]
-    --decimal-comma           Use comma as the decimal separator when parsing CSVs.
+    --decimal-comma           Use comma as the decimal separator when parsing & writing CSVs.
                               Otherwise, use period as the decimal separator.
                               Note that you'll need to set --delimiter to an alternate delimiter
                               other than the default comma if you are using this option.
@@ -393,6 +393,7 @@ impl OutputMode {
                     .with_time_format(args.flag_time_format)
                     .with_float_precision(float_precision)
                     .with_null_value(args.flag_wnull_value)
+                    .with_decimal_comma(args.flag_decimal_comma)
                     .include_bom(util::get_envvar_flag("QSV_OUTPUT_BOM"))
                     .finish(&mut df),
                 OutputMode::Json => JsonWriter::new(&mut w)

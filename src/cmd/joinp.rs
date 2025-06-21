@@ -145,7 +145,7 @@ joinp options:
                            parsing and will skip the entire batch where the error occurred.
                            To get more detailed error messages, set the environment variable
                            POLARS_BACKTRACE_IN_ERR=1 before running the join.
-    --decimal-comma        Use comma as the decimal separator when parsing CSVs.
+    --decimal-comma        Use comma as the decimal separator when parsing & writing CSVs.
                            Otherwise, use period as the decimal separator.
                            Note that you'll need to set --delimiter to an alternate delimiter
                            other than the default comma if you are using this option.
@@ -539,7 +539,7 @@ pub fn run(argv: &[&str]) -> CliResult<()> {
                 );
             }
             join.run(
-                JoinType::AsOf(asof_options),
+                JoinType::AsOf(Box::new(asof_options)),
                 validation,
                 MaintainOrderJoin::None,
                 if args.flag_no_sort {
@@ -589,6 +589,7 @@ struct JoinStruct {
     time_format:          Option<String>,
     float_precision:      Option<usize>,
     null_value:           String,
+    decimal_comma:        bool,
     ignore_case:          bool,
     ignore_leading_zeros: bool,
 }
@@ -846,6 +847,7 @@ impl JoinStruct {
             .with_time_format(self.time_format)
             .with_float_precision(self.float_precision)
             .with_null_value(self.null_value)
+            .with_decimal_comma(self.decimal_comma)
             .include_bom(util::get_envvar_flag("QSV_OUTPUT_BOM"))
             .finish(&mut results_df)?;
 
@@ -1197,6 +1199,7 @@ impl Args {
             } else {
                 self.flag_null_value.clone()
             },
+            decimal_comma: self.flag_decimal_comma,
             ignore_case: self.flag_ignore_case,
             ignore_leading_zeros: self.flag_ignore_leading_zeros,
         })
