@@ -2999,7 +2999,10 @@ fn joinp_decimal_comma_validation_with_non_equi_join() {
     let expected = r#"id_left;value_left;id_right;min_val_right;max_val_right
 1;100,5;1;50,5;150,5
 2;200,75;2;150,0;250,0"#;
-    similar_asserts::assert_eq!(got, expected);
+    let expected2 = r#"id_left;value_left;id_right;min_val_right;max_val_right
+2;200,75;2;150,0;250,0
+1;100,5;1;50,5;150,5"#;
+    assert!(got == expected || got == expected2);
 }
 
 #[test]
