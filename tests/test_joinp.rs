@@ -2682,3 +2682,405 @@ fn joinp_asof_sortkey_options() {
     let got: Vec<Vec<String>> = wrk.read_stdout(&mut cmd);
     similar_asserts::assert_eq!(got, expected);
 }
+
+#[test]
+fn joinp_decimal_comma_validation() {
+    let wrk = Workdir::new("joinp_decimal_comma_validation");
+
+    // Create test data with decimal commas
+    let left_data = vec![
+        svec!["id", "value"],
+        svec!["1", "100,50"],
+        svec!["2", "200,75"],
+    ];
+    wrk.create("left.csv", left_data.clone());
+
+    let right_data = vec![svec!["id", "name"], svec!["1", "Alice"], svec!["2", "Bob"]];
+    wrk.create("right.csv", right_data.clone());
+
+    // Test 1: --decimal-comma with comma delimiter should fail
+    let mut cmd = wrk.command("joinp");
+    cmd.args(["id", "left.csv", "id", "right.csv"])
+        .arg("--decimal-comma");
+
+    wrk.assert_err(&mut cmd);
+    let got = wrk.output_stderr(&mut cmd);
+    assert!(got.contains("Using --decimal-comma with a comma separator is invalid"));
+
+    // Test 2: --decimal-comma with semicolon delimiter should succeed
+    // Create semicolon-delimited versions of the data
+    wrk.create_with_delim("left_semi.csv", left_data.clone(), b';');
+    wrk.create_with_delim("right_semi.csv", right_data.clone(), b';');
+
+    let mut cmd = wrk.command("joinp");
+    cmd.args(["id", "left_semi.csv", "id", "right_semi.csv"])
+        .arg("--decimal-comma")
+        .args(["--delimiter", ";"]);
+
+    wrk.assert_success(&mut cmd);
+    let got: String = wrk.stdout(&mut cmd);
+    let expected = r#"id;value;name
+1;100,5;Alice
+2;200,75;Bob"#;
+    similar_asserts::assert_eq!(got, expected);
+
+    // Test 3: --decimal-comma with tab delimiter should succeed
+    // Create tab-delimited versions of the data
+    wrk.create_with_delim("left_tab.csv", left_data.clone(), b'\t');
+    wrk.create_with_delim("right_tab.csv", right_data.clone(), b'\t');
+
+    let mut cmd = wrk.command("joinp");
+    cmd.args(["id", "left_tab.csv", "id", "right_tab.csv"])
+        .arg("--decimal-comma")
+        .args(["--delimiter", "\t"]);
+
+    wrk.assert_success(&mut cmd);
+    let got: String = wrk.stdout(&mut cmd);
+    let expected = "id\tvalue\tname\n1\t100,5\tAlice\n2\t200,75\tBob";
+    similar_asserts::assert_eq!(got, expected);
+
+    // Test 4: --decimal-comma with pipe delimiter should succeed
+    // Create pipe-delimited versions of the data
+    wrk.create_with_delim("left_pipe.csv", left_data.clone(), b'|');
+    wrk.create_with_delim("right_pipe.csv", right_data.clone(), b'|');
+    let mut cmd = wrk.command("joinp");
+    cmd.args(["id", "left_pipe.csv", "id", "right_pipe.csv"])
+        .arg("--decimal-comma")
+        .args(["--delimiter", "|"]);
+
+    wrk.assert_success(&mut cmd);
+    let got: String = wrk.stdout(&mut cmd);
+    let expected = "id|value|name\n1|100,5|Alice\n2|200,75|Bob";
+    similar_asserts::assert_eq!(got, expected);
+}
+
+#[test]
+fn joinp_decimal_comma_validation_with_tsv_files() {
+    let wrk = Workdir::new("joinp_decimal_comma_validation_with_tsv_files");
+
+    // Create test data with decimal commas in TSV format
+    let left_data = vec![
+        svec!["id", "value"],
+        svec!["1", "100,50"],
+        svec!["2", "200,75"],
+    ];
+    wrk.create_with_delim("left.tsv", left_data, b'\t');
+
+    let right_data = vec![svec!["id", "name"], svec!["1", "Alice"], svec!["2", "Bob"]];
+    wrk.create_with_delim("right.tsv", right_data, b'\t');
+
+    // Test: --decimal-comma with TSV files should fail because the validation
+    // checks the delimiter parameter, not the file extension
+    let mut cmd = wrk.command("joinp");
+    cmd.args(["id", "left.tsv", "id", "right.tsv"])
+        .arg("--decimal-comma");
+
+    wrk.assert_err(&mut cmd);
+    let got = wrk.output_stderr(&mut cmd);
+    assert!(got.contains("Using --decimal-comma with a comma separator is invalid"));
+}
+
+#[test]
+fn joinp_decimal_comma_validation_with_ssv_files() {
+    let wrk = Workdir::new("joinp_decimal_comma_validation_with_ssv_files");
+
+    // Create test data with decimal commas in SSV format
+    let left_data = vec![
+        svec!["id", "value"],
+        svec!["1", "100,50"],
+        svec!["2", "200,75"],
+    ];
+    wrk.create_with_delim("left.ssv", left_data, b';');
+
+    let right_data = vec![svec!["id", "name"], svec!["1", "Alice"], svec!["2", "Bob"]];
+    wrk.create_with_delim("right.ssv", right_data, b';');
+
+    // Test 1: --decimal-comma with SSV files (semicolon delimiter) should fail here
+    // because stdin is not a file, so the delimiter is not detected, so it defaults to
+    // comma, as --delimiter is not set.
+    let mut cmd = wrk.command("joinp");
+    cmd.args(["id", "left.ssv", "id", "right.ssv"])
+        .arg("--decimal-comma");
+
+    wrk.assert_err(&mut cmd);
+    let got = wrk.output_stderr(&mut cmd);
+    assert!(got.contains("Using --decimal-comma with a comma separator is invalid"));
+
+    // Test 2: --decimal-comma with SSV files (semicolon delimiter) should succeed
+    let mut cmd = wrk.command("joinp");
+    cmd.args(["id", "left.ssv", "id", "right.ssv"])
+        .arg("--decimal-comma")
+        .args(["--delimiter", ";"]);
+
+    wrk.assert_success(&mut cmd);
+    let got: String = wrk.stdout(&mut cmd);
+    let expected = "id;value;name\n1;100,5;Alice\n2;200,75;Bob";
+    similar_asserts::assert_eq!(got, expected);
+}
+
+#[test]
+fn joinp_decimal_comma_validation_with_output_file() {
+    let wrk = Workdir::new("joinp_decimal_comma_validation_with_output_file");
+
+    // Create test data with decimal commas
+    let left_data = vec![
+        svec!["id", "value"],
+        svec!["1", "100,50"],
+        svec!["2", "200,75"],
+    ];
+    wrk.create_with_delim("left.csv", left_data, b';');
+
+    let right_data = vec![svec!["id", "name"], svec!["1", "Alice"], svec!["2", "Bob"]];
+    wrk.create_with_delim("right.csv", right_data, b';');
+
+    // Test: --decimal-comma with output file should validate the output delimiter
+    let mut cmd = wrk.command("joinp");
+    cmd.args(["id", "left.csv", "id", "right.csv"])
+        .arg("--decimal-comma")
+        .args(["--delimiter", ";"])
+        .args(["--output", "output.csv"]);
+
+    wrk.assert_success(&mut cmd);
+    // For semicolon-delimited output, we need to read the raw content and parse manually
+    let raw_output = wrk.read_to_string("output.csv").unwrap();
+    let lines: Vec<&str> = raw_output.lines().collect();
+    let got: String = lines.join("\n");
+    let expected = "id;value;name\n1;100,5;Alice\n2;200,75;Bob";
+    similar_asserts::assert_eq!(got, expected);
+
+    // Test: --decimal-comma with output file that would have comma delimiter should fail
+    let mut cmd = wrk.command("joinp");
+    cmd.args(["id", "left.csv", "id", "right.csv"])
+        .arg("--decimal-comma")
+        .args(["--output", "output.csv"]);
+
+    wrk.assert_err(&mut cmd);
+    let got = wrk.output_stderr(&mut cmd);
+    assert!(got.contains("Using --decimal-comma with a comma separator is invalid"));
+}
+
+#[test]
+fn joinp_decimal_comma_validation_with_tsv_output() {
+    let wrk = Workdir::new("joinp_decimal_comma_validation_with_tsv_output");
+
+    // Create test data with decimal commas
+    let left_data = vec![
+        svec!["id", "value"],
+        svec!["1", "100,50"],
+        svec!["2", "200,75"],
+    ];
+    wrk.create_with_delim("left.tsv", left_data, b'\t');
+
+    let right_data = vec![svec!["id", "name"], svec!["1", "Alice"], svec!["2", "Bob"]];
+    wrk.create_with_delim("right.tsv", right_data, b'\t');
+
+    // Test: --decimal-comma with TSV output file should succeed
+    let mut cmd = wrk.command("joinp");
+    cmd.args(["id", "left.tsv", "id", "right.tsv"])
+        .arg("--decimal-comma")
+        .args(["--delimiter", "\t"])
+        .args(["--output", "output.tsv"]);
+
+    wrk.assert_success(&mut cmd);
+    let got: String = wrk.read_to_string("output.tsv").unwrap();
+    let expected = "id\tvalue\tname\n1\t100,5\tAlice\n2\t200,75\tBob\n";
+    similar_asserts::assert_eq!(got, expected);
+}
+
+#[test]
+fn joinp_decimal_comma_validation_with_ssv_output() {
+    let wrk = Workdir::new("joinp_decimal_comma_validation_with_ssv_output");
+
+    // Create test data with decimal commas
+    let left_data = vec![
+        svec!["id", "value"],
+        svec!["1", "100,50"],
+        svec!["2", "200,75"],
+    ];
+    wrk.create_with_delim("left.ssv", left_data, b';');
+
+    let right_data = vec![svec!["id", "name"], svec!["1", "Alice"], svec!["2", "Bob"]];
+    wrk.create_with_delim("right.ssv", right_data, b';');
+
+    // Test: --decimal-comma with SSV output file should succeed
+    let mut cmd = wrk.command("joinp");
+    cmd.args(["id", "left.ssv", "id", "right.ssv"])
+        .arg("--decimal-comma")
+        .args(["--delimiter", ";"])
+        .args(["--output", "output.ssv"]);
+
+    wrk.assert_success(&mut cmd);
+    // For SSV files, we need to read the raw content and parse manually
+    let raw_output = wrk.read_to_string("output.ssv").unwrap();
+    let lines: Vec<&str> = raw_output.lines().collect();
+    let got: String = lines.join("\n");
+    let expected = "id;value;name\n1;100,5;Alice\n2;200,75;Bob";
+    similar_asserts::assert_eq!(got, expected);
+}
+
+#[test]
+fn joinp_decimal_comma_validation_with_cross_join() {
+    let wrk = Workdir::new("joinp_decimal_comma_validation_with_cross_join");
+
+    // Create test data with decimal commas
+    let left_data = vec![
+        svec!["id", "value"],
+        svec!["1", "100,50"],
+        svec!["2", "200,75"],
+    ];
+    wrk.create_with_delim("left.ssv", left_data, b';');
+
+    let right_data = vec![svec!["name"], svec!["Alice"], svec!["Bob"]];
+    wrk.create_with_delim("right.ssv", right_data, b';');
+
+    // Test: --decimal-comma with cross join and comma delimiter should fail
+    let mut cmd = wrk.command("joinp");
+    cmd.arg("--cross")
+        .args(["left.ssv", "right.ssv"])
+        .arg("--decimal-comma");
+
+    wrk.assert_err(&mut cmd);
+    let got = wrk.output_stderr(&mut cmd);
+    assert!(got.contains("Using --decimal-comma with a comma separator is invalid"));
+
+    // Test: --decimal-comma with cross join and semicolon delimiter should succeed
+    let mut cmd = wrk.command("joinp");
+    cmd.arg("--cross")
+        .args(["left.ssv", "right.ssv"])
+        .arg("--decimal-comma")
+        .args(["--delimiter", ";"]);
+
+    wrk.assert_success(&mut cmd);
+    let got: String = wrk.stdout(&mut cmd);
+    let expected = "id;value;name\n1;100,5;Alice\n1;100,5;Bob\n2;200,75;Alice\n2;200,75;Bob";
+    similar_asserts::assert_eq!(got, expected);
+}
+
+#[test]
+fn joinp_decimal_comma_validation_with_non_equi_join() {
+    let wrk = Workdir::new("joinp_decimal_comma_validation_with_non_equi_join");
+
+    // Create test data with decimal commas
+    let left_data = vec![
+        svec!["id", "value"],
+        svec!["1", "100,50"],
+        svec!["2", "200,75"],
+    ];
+    wrk.create_with_delim("left.csv", left_data, b';');
+
+    let right_data = vec![
+        svec!["id", "min_val", "max_val"],
+        svec!["1", "50,5", "150,5"],
+        svec!["2", "150,0", "250,0"],
+    ];
+    wrk.create_with_delim("right.csv", right_data, b';');
+
+    // Test: --decimal-comma with non-equi join and comma delimiter should fail
+    let mut cmd = wrk.command("joinp");
+    cmd.arg("--non-equi")
+        .arg("value_left >= min_val_right AND value_left <= max_val_right")
+        .args(["left.csv", "right.csv"])
+        .arg("--decimal-comma");
+
+    wrk.assert_err(&mut cmd);
+    let got = wrk.output_stderr(&mut cmd);
+    assert!(got.contains("Using --decimal-comma with a comma separator is invalid"));
+
+    // Test: --decimal-comma with non-equi join and semicolon delimiter should succeed
+    let mut cmd = wrk.command("joinp");
+    cmd.arg("--non-equi")
+        .arg("value_left >= min_val_right AND value_left <= max_val_right")
+        .args(["left.csv", "right.csv"])
+        .arg("--decimal-comma")
+        .args(["--delimiter", ";"]);
+
+    wrk.assert_success(&mut cmd);
+    let got: String = wrk.stdout(&mut cmd);
+    let expected = r#"id_left;value_left;id_right;min_val_right;max_val_right
+1;100,5;1;50,5;150,5
+2;200,75;2;150,0;250,0"#;
+    similar_asserts::assert_eq!(got, expected);
+}
+
+#[test]
+fn joinp_decimal_comma_validation_with_asof_join() {
+    let wrk = Workdir::new("joinp_decimal_comma_validation_with_asof_join");
+
+    // Create test data with decimal commas
+    let left_data = vec![
+        svec!["id", "value", "date"],
+        svec!["1", "100,50", "2023-01-01"],
+        svec!["2", "200,75", "2023-01-02"],
+    ];
+    wrk.create_with_delim("left.csv", left_data, b'|');
+
+    let right_data = vec![
+        svec!["id", "price", "date"],
+        svec!["1", "50,25", "2023-01-01"],
+        svec!["2", "150,50", "2023-01-02"],
+    ];
+    wrk.create_with_delim("right.csv", right_data, b'|');
+
+    // Test: --decimal-comma with asof join and pipe delimiter should fail
+    let mut cmd = wrk.command("joinp");
+    cmd.arg("--asof")
+        .args(["date", "left.csv", "date", "right.csv"])
+        .arg("--decimal-comma");
+
+    wrk.assert_err(&mut cmd);
+    let got = wrk.output_stderr(&mut cmd);
+    assert!(got.contains("Using --decimal-comma with a comma separator is invalid"));
+
+    // Test: --decimal-comma with asof join and pipe delimiter should succeed
+    let mut cmd = wrk.command("joinp");
+    cmd.arg("--asof")
+        .args(["date", "left.csv", "date", "right.csv"])
+        .arg("--decimal-comma")
+        .args(["--delimiter", "|"]);
+
+    wrk.assert_success(&mut cmd);
+    let got: String = wrk.stdout(&mut cmd);
+    let expected =
+        "id|value|date|id_right|price\n1|100,5|2023-01-01||\n2|200,75|2023-01-02|1|50,25";
+    similar_asserts::assert_eq!(got, expected);
+}
+
+#[test]
+fn joinp_decimal_comma_validation_with_sql_filter() {
+    let wrk = Workdir::new("joinp_decimal_comma_validation_with_sql_filter");
+
+    // Create test data with decimal commas
+    let left_data = vec![
+        svec!["id", "value"],
+        svec!["1", "100,50"],
+        svec!["2", "200,75"],
+    ];
+    wrk.create_with_delim("left.csv", left_data, b';');
+
+    let right_data = vec![svec!["id", "name"], svec!["1", "Alice"], svec!["2", "Bob"]];
+    wrk.create_with_delim("right.csv", right_data, b';');
+
+    // Test: --decimal-comma with SQL filter and comma delimiter should fail
+    let mut cmd = wrk.command("joinp");
+    cmd.args(["id", "left.csv", "id", "right.csv"])
+        .arg("--decimal-comma")
+        .arg("--sql-filter")
+        .arg("select id, value from join_result where value > 150");
+
+    wrk.assert_err(&mut cmd);
+    let got = wrk.output_stderr(&mut cmd);
+    assert!(got.contains("Using --decimal-comma with a comma separator is invalid"));
+
+    // Test: --decimal-comma with SQL filter and semicolon delimiter should succeed
+    let mut cmd = wrk.command("joinp");
+    cmd.args(["id", "left.csv", "id", "right.csv"])
+        .arg("--decimal-comma")
+        .args(["--delimiter", ";"])
+        .arg("--sql-filter")
+        .arg("select id, value from join_result where value > 150");
+
+    wrk.assert_success(&mut cmd);
+    let got: String = wrk.stdout(&mut cmd);
+    let expected = "id;value\n2;200,75";
+    similar_asserts::assert_eq!(got, expected);
+}
