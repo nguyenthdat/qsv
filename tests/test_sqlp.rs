@@ -3444,3 +3444,228 @@ fn sqlp_corr_covar_covar_pop() {
 
 //     similar_asserts::assert_eq!(got_dot, expected_dot);
 // }
+
+#[test]
+fn sqlp_decimal_comma_validation() {
+    let wrk = Workdir::new("sqlp_decimal_comma_validation");
+
+    // Create test data with decimal commas
+    let test_data = vec![
+        svec!["id", "value"],
+        svec!["1", "100,50"],
+        svec!["2", "200,75"],
+    ];
+    wrk.create("data.csv", test_data);
+
+    // Test 1: --decimal-comma with comma delimiter should fail
+    let mut cmd = wrk.command("sqlp");
+    cmd.arg("data.csv")
+        .arg("--decimal-comma")
+        .arg("select * from _t_1");
+
+    wrk.assert_err(&mut cmd);
+    let got = wrk.output_stderr(&mut cmd);
+    assert!(got.contains("Using --decimal-comma with a comma separator is invalid"));
+
+    // Test 2: --decimal-comma with semicolon delimiter should succeed
+    let mut cmd = wrk.command("sqlp");
+    cmd.arg("data.csv")
+        .arg("--decimal-comma")
+        .args(["--delimiter", ";"])
+        .arg("select * from _t_1");
+
+    wrk.assert_success(&mut cmd);
+    let got: String = wrk.stdout(&mut cmd);
+    let expected = "id,value\n\"1,\"\"100,50\"\"\"\n\"2,\"\"200,75\"\"\"";
+    similar_asserts::assert_eq!(got, expected);
+
+    // Test 3: --decimal-comma with tab delimiter should succeed
+    let mut cmd = wrk.command("sqlp");
+    cmd.arg("data.csv")
+        .arg("--decimal-comma")
+        .args(["--delimiter", "\t"])
+        .arg("select * from _t_1");
+
+    wrk.assert_success(&mut cmd);
+    let got: String = wrk.stdout(&mut cmd);
+    let expected = "id,value\n\"1,\"\"100,50\"\"\"\n\"2,\"\"200,75\"\"\"";
+    similar_asserts::assert_eq!(got, expected);
+
+    // Test 4: --decimal-comma with pipe delimiter should succeed
+    let mut cmd = wrk.command("sqlp");
+    cmd.arg("data.csv")
+        .arg("--decimal-comma")
+        .args(["--delimiter", "|"])
+        .arg("select * from _t_1");
+
+    wrk.assert_success(&mut cmd);
+    let got: String = wrk.stdout(&mut cmd);
+    let expected = "id,value\n\"1,\"\"100,50\"\"\"\n\"2,\"\"200,75\"\"\"";
+    similar_asserts::assert_eq!(got, expected);
+}
+
+#[test]
+fn sqlp_decimal_comma_validation_with_tsv_file() {
+    let wrk = Workdir::new("sqlp_decimal_comma_validation_with_tsv_file");
+
+    // Create test data with decimal commas in TSV format
+    let test_data = vec![
+        svec!["id", "value"],
+        svec!["1", "100,50"],
+        svec!["2", "200,75"],
+    ];
+    wrk.create_with_delim("data.tsv", test_data, b'\t');
+
+    // Test: --decimal-comma with TSV file (tab delimiter) should succeed
+    let mut cmd = wrk.command("sqlp");
+    cmd.arg("data.tsv")
+        .arg("--decimal-comma")
+        .arg("select * from _t_1");
+
+    wrk.assert_success(&mut cmd);
+    let got: Vec<Vec<String>> = wrk.read_stdout(&mut cmd);
+    let expected = vec![
+        svec!["id", "value"],
+        svec!["1", "100,5"],
+        svec!["2", "200,75"],
+    ];
+    similar_asserts::assert_eq!(got, expected);
+}
+
+#[test]
+fn sqlp_decimal_comma_validation_with_ssv_file() {
+    let wrk = Workdir::new("sqlp_decimal_comma_validation_with_ssv_file");
+
+    // Create test data with decimal commas in SSV format
+    let test_data = vec![
+        svec!["id", "value"],
+        svec!["1", "100,50"],
+        svec!["2", "200,75"],
+    ];
+    wrk.create_with_delim("data.ssv", test_data, b';');
+
+    // Test: --decimal-comma with SSV file (semicolon delimiter) should succeed
+    let mut cmd = wrk.command("sqlp");
+    cmd.arg("data.ssv")
+        .arg("--decimal-comma")
+        .arg("select * from _t_1");
+
+    wrk.assert_success(&mut cmd);
+    let got: String = wrk.stdout(&mut cmd);
+    let expected = "id,value\n1,\"100,5\"\n2,\"200,75\"";
+    similar_asserts::assert_eq!(got, expected);
+}
+
+#[test]
+fn sqlp_decimal_comma_validation_with_output_file() {
+    let wrk = Workdir::new("sqlp_decimal_comma_validation_with_output_file");
+
+    // Create test data with decimal commas
+    let test_data = vec![
+        svec!["id", "value"],
+        svec!["1", "100,50"],
+        svec!["2", "200,75"],
+    ];
+    wrk.create_with_delim("data.csv", test_data, b';');
+
+    // Test: --decimal-comma with output file should validate the output delimiter
+    let mut cmd = wrk.command("sqlp");
+    cmd.arg("data.csv")
+        .arg("--decimal-comma")
+        .args(["--delimiter", ";"])
+        .args(["--output", "output.csv"])
+        .arg("select * from _t_1");
+
+    wrk.assert_success(&mut cmd);
+    let got: String = wrk.read_to_string("output.csv").unwrap();
+    let expected = "id;value\n1;100,5\n2;200,75\n";
+    similar_asserts::assert_eq!(got, expected);
+
+    // Test: --decimal-comma with output file that would have comma delimiter should fail
+    let mut cmd = wrk.command("sqlp");
+    cmd.arg("data.csv")
+        .arg("--decimal-comma")
+        .args(["--output", "output.csv"])
+        .arg("select * from _t_1");
+
+    wrk.assert_err(&mut cmd);
+    let got = wrk.output_stderr(&mut cmd);
+    assert!(got.contains("Using --decimal-comma with a comma separator is invalid"));
+}
+
+#[test]
+fn sqlp_decimal_comma_validation_with_tsv_output() {
+    let wrk = Workdir::new("sqlp_decimal_comma_validation_with_tsv_output");
+
+    // Create test data with decimal commas
+    let test_data = vec![
+        svec!["id", "value"],
+        svec!["1", "100,50"],
+        svec!["2", "200,75"],
+    ];
+    wrk.create_with_delim("data.csv", test_data, b'\t');
+
+    // Test: --decimal-comma with TSV output file should succeed
+    let mut cmd = wrk.command("sqlp");
+    cmd.arg("data.csv")
+        .arg("--decimal-comma")
+        .args(["--delimiter", ";"])
+        .args(["--output", "output.tsv"])
+        .arg("select * from _t_1");
+
+    wrk.assert_success(&mut cmd);
+    let got: String = wrk.read_to_string("output.tsv").unwrap();
+    let expected = "\"id\tvalue\"\n\"1\t100,50\"\n\"2\t200,75\"\n";
+    similar_asserts::assert_eq!(got, expected);
+}
+
+#[test]
+fn sqlp_decimal_comma_validation_with_ssv_output() {
+    let wrk = Workdir::new("sqlp_decimal_comma_validation_with_ssv_output");
+
+    // Create test data with decimal commas
+    let test_data = vec![
+        svec!["id", "value"],
+        svec!["1", "100,50"],
+        svec!["2", "200,75"],
+    ];
+    wrk.create_with_delim("data.csv", test_data, b';');
+
+    // Test: --decimal-comma with SSV output file should succeed
+    let mut cmd = wrk.command("sqlp");
+    cmd.arg("data.csv")
+        .arg("--decimal-comma")
+        .args(["--delimiter", ";"])
+        .args(["--output", "output.ssv"])
+        .arg("select * from _t_1");
+
+    wrk.assert_success(&mut cmd);
+    let got: String = wrk.read_to_string("output.ssv").unwrap();
+    let expected = "id;value\n1;100,5\n2;200,75\n";
+    similar_asserts::assert_eq!(got, expected);
+}
+
+#[test]
+fn sqlp_decimal_comma_validation_with_skip_input() {
+    let wrk = Workdir::new("sqlp_decimal_comma_validation_with_skip_input");
+
+    // Create test data with decimal commas
+    let test_data = vec![
+        svec!["id", "value"],
+        svec!["1", "100,50"],
+        svec!["2", "200,75"],
+    ];
+    wrk.create("data.csv", test_data);
+
+    // Test: --decimal-comma with SKIP_INPUT should succeed since no validation is performed
+    let mut cmd = wrk.command("sqlp");
+    cmd.arg("SKIP_INPUT")
+        .arg("--decimal-comma")
+        .args(["--output", "output.csv"])
+        .arg("select * from read_csv('data.csv')");
+
+    wrk.assert_success(&mut cmd);
+    let got: String = wrk.read_to_string("output.csv").unwrap();
+    let expected = "id,value\n1,\"100,50\"\n2,\"200,75\"\n";
+    similar_asserts::assert_eq!(got, expected);
+}
