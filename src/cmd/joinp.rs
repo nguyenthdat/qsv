@@ -14,7 +14,7 @@ For examples, see https://github.com/dathere/qsv/blob/master/tests/test_joinp.rs
 
 Usage:
     qsv joinp [options] <columns1> <input1> <columns2> <input2>
-    qsv joinp --cross [--validate <arg>] <input1> <input2> [--output <file>]
+    qsv joinp --cross [--validate <arg>] <input1> <input2> [--decimal-comma] [--delimiter <arg>] [--output <file>]
     qsv joinp --non-equi <expr> <input1> <input2> [options] [--output <file>]
     qsv joinp --help
 
@@ -694,6 +694,26 @@ impl JoinStruct {
             JoinCoalesce::JoinSpecific
         };
 
+        let mut out_delim = self.delim;
+        let mut out_writer = match self.output {
+            Some(ref output_file) => {
+                out_delim = tsvssv_delim(output_file, self.delim);
+
+                // no need to use buffered writer here, as CsvWriter already does that
+                let path = Path::new(&output_file);
+                Box::new(File::create(path).unwrap()) as Box<dyn Write>
+            },
+            None => Box::new(io::stdout()) as Box<dyn Write>,
+        };
+
+        if out_delim == b',' && self.decimal_comma {
+            out_writer.flush()?;
+            return fail_clierror!(
+                "Using --decimal-comma with a comma separator is invalid, use --delimiter to set \
+                 a different separator."
+            );
+        }
+
         let mut optflags = OptFlags::from_bits_truncate(0);
         if self.no_optimizations {
             optflags |= OptFlags::TYPE_COERCION;
@@ -823,18 +843,6 @@ impl JoinStruct {
 
             results_df = results_df.select(keep_cols)?;
         }
-
-        let mut out_delim = self.delim;
-        let mut out_writer = match self.output {
-            Some(ref output_file) => {
-                out_delim = tsvssv_delim(output_file, self.delim);
-
-                // no need to use buffered writer here, as CsvWriter already does that
-                let path = Path::new(&output_file);
-                Box::new(File::create(path).unwrap()) as Box<dyn Write>
-            },
-            None => Box::new(io::stdout()) as Box<dyn Write>,
-        };
 
         // shape is the number of rows and columns
         let join_shape = results_df.shape();
