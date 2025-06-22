@@ -749,6 +749,14 @@ pub fn run(argv: &[&str]) -> CliResult<()> {
             let mut valid_schema_exists = schema_file.exists()
                 && schema_file.metadata()?.modified()? >= table.metadata()?.modified()?;
 
+            let separator = tsvssv_delim(table, delim);
+            if separator == b',' && args.flag_decimal_comma {
+                return fail_clierror!(
+                    "Using --decimal-comma with a comma separator is invalid, use --delimiter to \
+                     set a different separator."
+                );
+            }
+
             let mut lf = if cache_schemas || valid_schema_exists {
                 let mut work_lf = LazyCsvReader::new(table)
                     .with_has_header(true)
