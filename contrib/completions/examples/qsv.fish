@@ -834,6 +834,8 @@ complete -c qsv -n "__fish_qsv_using_subcommand lens" -l filter
 complete -c qsv -n "__fish_qsv_using_subcommand lens" -l find
 complete -c qsv -n "__fish_qsv_using_subcommand lens" -l ignore-case
 complete -c qsv -n "__fish_qsv_using_subcommand lens" -l freeze-columns
+complete -c qsv -n "__fish_qsv_using_subcommand lens" -l monochrome
+complete -c qsv -n "__fish_qsv_using_subcommand lens" -l prompt
 complete -c qsv -n "__fish_qsv_using_subcommand lens" -l echo-column
 complete -c qsv -n "__fish_qsv_using_subcommand lens" -l debug
 complete -c qsv -n "__fish_qsv_using_subcommand lens" -s h -l help -d 'Print help'
@@ -1370,6 +1372,7 @@ complete -c qsv -n "__fish_qsv_using_subcommand transpose" -l delimiter
 complete -c qsv -n "__fish_qsv_using_subcommand transpose" -l memcheck
 complete -c qsv -n "__fish_qsv_using_subcommand transpose" -s h -l help -d 'Print help'
 complete -c qsv -n "__fish_qsv_using_subcommand validate" -l trim
+complete -c qsv -n "__fish_qsv_using_subcommand validate" -l no-format-validation
 complete -c qsv -n "__fish_qsv_using_subcommand validate" -l fail-fast
 complete -c qsv -n "__fish_qsv_using_subcommand validate" -l valid
 complete -c qsv -n "__fish_qsv_using_subcommand validate" -l invalid

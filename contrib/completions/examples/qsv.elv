@@ -1037,6 +1037,8 @@ set edit:completion:arg-completer[qsv] = {|@words|
             cand --find 'find'
             cand --ignore-case 'ignore-case'
             cand --freeze-columns 'freeze-columns'
+            cand --monochrome 'monochrome'
+            cand --prompt 'prompt'
             cand --echo-column 'echo-column'
             cand --debug 'debug'
             cand -h 'Print help'
@@ -1763,6 +1765,7 @@ set edit:completion:arg-completer[qsv] = {|@words|
         }
         &'qsv;validate'= {
             cand --trim 'trim'
+            cand --no-format-validation 'no-format-validation'
             cand --fail-fast 'fail-fast'
             cand --valid 'valid'
             cand --invalid 'invalid'

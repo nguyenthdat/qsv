@@ -2496,6 +2496,12 @@ const completion: Fig.Spec = {
           name: "--freeze-columns",
         },
         {
+          name: "--monochrome",
+        },
+        {
+          name: "--prompt",
+        },
+        {
           name: "--echo-column",
         },
         {
@@ -4360,6 +4366,9 @@ const completion: Fig.Spec = {
       options: [
         {
           name: "--trim",
+        },
+        {
+          name: "--no-format-validation",
         },
         {
           name: "--fail-fast",

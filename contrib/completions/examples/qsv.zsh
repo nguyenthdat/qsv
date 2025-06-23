@@ -1160,6 +1160,8 @@ _arguments "${_arguments_options[@]}" : \
 '--find[]' \
 '--ignore-case[]' \
 '--freeze-columns[]' \
+'--monochrome[]' \
+'--prompt[]' \
 '--echo-column[]' \
 '--debug[]' \
 '-h[Print help]' \
@@ -2108,6 +2110,7 @@ _arguments "${_arguments_options[@]}" : \
 (validate)
 _arguments "${_arguments_options[@]}" : \
 '--trim[]' \
+'--no-format-validation[]' \
 '--fail-fast[]' \
 '--valid[]' \
 '--invalid[]' \

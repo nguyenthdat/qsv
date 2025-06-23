@@ -10,6 +10,8 @@ pub fn lens_cmd() -> Command {
         arg!(--find),
         arg!(--"ignore-case"),
         arg!(--"freeze-columns"),
+        arg!(--monochrome),
+        arg!(--prompt),
         arg!(--"echo-column"),
         arg!(--debug),
     ])
