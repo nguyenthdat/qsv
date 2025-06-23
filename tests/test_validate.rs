@@ -1515,29 +1515,7 @@ fn validate_json_schema_file() {
 fn validate_invalid_json_schema_file() {
     let wrk = Workdir::new("validate_invalid_json_schema_file").flexible(true);
 
-    // Create test data with invalid format values
-    wrk.create(
-        "schema.json",
-        vec![
-            svec!["id", "name", "email", "website", "fee"],
-            svec![
-                "1",
-                "John Doe",
-                "john@example.com",
-                "https://example.com",
-                "$100.00"
-            ],
-            svec![
-                "2",
-                "Jane Smith",
-                "not-an-email",
-                "not-a-url",
-                "not-currency"
-            ],
-            svec!["3", "Bob Wilson", "bob.wilson", "ftp://invalid", "€ 50.00"],
-        ],
-    );
-
+    // Create schema with format validation
     // Create schema with format validation
     // This schema is invalid because it has a draft version that doesn't exist
     wrk.create_from_string(
