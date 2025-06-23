@@ -1046,7 +1046,7 @@ pub fn run(argv: &[&str]) -> CliResult<()> {
                         // Now, try_validate the JSON Schema
                         let validated = jsonschema::meta::try_validate(&schema_json);
                         match validated {
-                            Ok(Ok(_)) => {
+                            Ok(Ok(())) => {
                                 if !args.flag_quiet {
                                     winfo!("Valid JSON Schema.");
                                 }
@@ -1059,17 +1059,15 @@ pub fn run(argv: &[&str]) -> CliResult<()> {
                                 return fail_clierror!("JSON Schema Meta-Reference Error: {e}");
                             },
                         }
-                    } else {
-                        return fail_clierror!("Invalid JSON Schema.");
                     }
+                    return fail_clierror!("Invalid JSON Schema.");
                 },
                 Err(e) => {
                     return fail_clierror!("JSON Schema Meta-Reference Error: {e}");
                 },
             }
-        } else {
-            return fail_clierror!("No JSON Schema file supplied.");
         }
+        return fail_clierror!("No JSON Schema file supplied.");
     }
 
     TIMEOUT_SECS.store(
