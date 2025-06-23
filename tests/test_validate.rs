@@ -1481,3 +1481,139 @@ fn validate_no_format_validation() {
     let expected = "All 3 records valid.\n";
     assert_eq!(got, expected);
 }
+
+#[test]
+fn validate_json_schema_file() {
+    let wrk = Workdir::new("validate_json_schema_file").flexible(true);
+
+    // Create test data with invalid format values
+    wrk.create(
+        "schema.json",
+        vec![
+            svec!["id", "name", "email", "website", "fee"],
+            svec![
+                "1",
+                "John Doe",
+                "john@example.com",
+                "https://example.com",
+                "$100.00"
+            ],
+            svec![
+                "2",
+                "Jane Smith",
+                "not-an-email",
+                "not-a-url",
+                "not-currency"
+            ],
+            svec!["3", "Bob Wilson", "bob.wilson", "ftp://invalid", "€ 50.00"],
+        ],
+    );
+
+    // Create schema with format validation
+    wrk.create_from_string(
+        "schema.json",
+        r#"{
+            "$schema": "https://json-schema.org/draft/2020-12/schema",
+            "type": "object",
+            "properties": {
+                "id": { "type": "string" },
+                "name": { "type": "string" },
+                "email": { 
+                    "type": "string",
+                    "format": "email"
+                }
+            }
+        }"#,
+    );
+
+    // Run validate command
+    let mut cmd = wrk.command("validate");
+    cmd.arg("schema").arg("schema.json");
+    wrk.output(&mut cmd);
+
+    wrk.assert_success(&mut cmd);
+}
+
+#[test]
+fn validate_invalid_json_schema_file() {
+    let wrk = Workdir::new("validate_invalid_json_schema_file").flexible(true);
+
+    // Create test data with invalid format values
+    wrk.create(
+        "schema.json",
+        vec![
+            svec!["id", "name", "email", "website", "fee"],
+            svec![
+                "1",
+                "John Doe",
+                "john@example.com",
+                "https://example.com",
+                "$100.00"
+            ],
+            svec![
+                "2",
+                "Jane Smith",
+                "not-an-email",
+                "not-a-url",
+                "not-currency"
+            ],
+            svec!["3", "Bob Wilson", "bob.wilson", "ftp://invalid", "€ 50.00"],
+        ],
+    );
+
+    // Create schema with format validation
+    // This schema is invalid because it has a draft version that doesn't exist
+    wrk.create_from_string(
+        "schema.json",
+        r#"{
+            "$schema": "https://json-schema.org/draft/2020-25/schema",
+            "type": "object",
+            "properties": {
+                "id": { "type": "string" },
+                "name": { "type": "string" },
+                "email": { 
+                    "type": "string",
+                    "format": "email"
+                }
+            }
+        }"#,
+    );
+
+    // Run validate command
+    let mut cmd = wrk.command("validate");
+    cmd.arg("schema").arg("schema.json");
+
+    wrk.assert_err(&mut cmd);
+
+    let got = wrk.output_stderr(&mut cmd);
+    assert!(got.contains(
+        "Invalid JSON Schema: Unknown specification: https://json-schema.org/draft/2020-25/schema"
+    ));
+
+    // Create schema with format validation
+    // This schema is invalid because of invalid types "stringy"
+    wrk.create_from_string(
+        "schema2.json",
+        r#"{
+            "$schema": "https://json-schema.org/draft/2020-12/schema",
+            "type": "object",
+            "properties": {
+                "id": { "type": "stringy" },
+                "name": { "type": "string" },
+                "email": { 
+                    "type": "string",
+                    "format": "email"
+                }
+            }
+        }"#,
+    );
+
+    // Run validate command
+    let mut cmd2 = wrk.command("validate");
+    cmd2.arg("schema").arg("schema2.json");
+
+    wrk.assert_err(&mut cmd2);
+
+    let got = wrk.output_stderr(&mut cmd2);
+    assert_eq!(got, "Invalid JSON Schema.\n");
+}
