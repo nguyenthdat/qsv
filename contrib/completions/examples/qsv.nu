@@ -942,6 +942,8 @@ module completions {
     --find
     --ignore-case
     --freeze-columns
+    --monochrome
+    --prompt
     --echo-column
     --debug
     --help(-h)                # Print help
@@ -1662,6 +1664,7 @@ module completions {
 
   export extern "qsv validate" [
     --trim
+    --no-format-validation
     --fail-fast
     --valid
     --invalid

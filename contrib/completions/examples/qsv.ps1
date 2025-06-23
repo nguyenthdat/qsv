@@ -1118,6 +1118,8 @@ Register-ArgumentCompleter -Native -CommandName 'qsv' -ScriptBlock {
             [CompletionResult]::new('--find', '--find', [CompletionResultType]::ParameterName, 'find')
             [CompletionResult]::new('--ignore-case', '--ignore-case', [CompletionResultType]::ParameterName, 'ignore-case')
             [CompletionResult]::new('--freeze-columns', '--freeze-columns', [CompletionResultType]::ParameterName, 'freeze-columns')
+            [CompletionResult]::new('--monochrome', '--monochrome', [CompletionResultType]::ParameterName, 'monochrome')
+            [CompletionResult]::new('--prompt', '--prompt', [CompletionResultType]::ParameterName, 'prompt')
             [CompletionResult]::new('--echo-column', '--echo-column', [CompletionResultType]::ParameterName, 'echo-column')
             [CompletionResult]::new('--debug', '--debug', [CompletionResultType]::ParameterName, 'debug')
             [CompletionResult]::new('-h', '-h', [CompletionResultType]::ParameterName, 'Print help')
@@ -1916,6 +1918,7 @@ Register-ArgumentCompleter -Native -CommandName 'qsv' -ScriptBlock {
         }
         'qsv;validate' {
             [CompletionResult]::new('--trim', '--trim', [CompletionResultType]::ParameterName, 'trim')
+            [CompletionResult]::new('--no-format-validation', '--no-format-validation', [CompletionResultType]::ParameterName, 'no-format-validation')
             [CompletionResult]::new('--fail-fast', '--fail-fast', [CompletionResultType]::ParameterName, 'fail-fast')
             [CompletionResult]::new('--valid', '--valid', [CompletionResultType]::ParameterName, 'valid')
             [CompletionResult]::new('--invalid', '--invalid', [CompletionResultType]::ParameterName, 'invalid')
