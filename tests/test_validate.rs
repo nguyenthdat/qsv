@@ -1481,3 +1481,92 @@ fn validate_no_format_validation() {
     let expected = "All 3 records valid.\n";
     assert_eq!(got, expected);
 }
+
+#[test]
+fn validate_json_schema_file() {
+    let wrk = Workdir::new("validate_json_schema_file").flexible(true);
+
+    // Create schema with format validation
+    wrk.create_from_string(
+        "schema.json",
+        r#"{
+            "$schema": "https://json-schema.org/draft/2020-12/schema",
+            "type": "object",
+            "properties": {
+                "id": { "type": "string" },
+                "name": { "type": "string" },
+                "email": { 
+                    "type": "string",
+                    "format": "email"
+                }
+            }
+        }"#,
+    );
+
+    // Run validate command
+    let mut cmd = wrk.command("validate");
+    cmd.arg("schema").arg("schema.json");
+    wrk.output(&mut cmd);
+
+    wrk.assert_success(&mut cmd);
+}
+
+#[test]
+fn validate_invalid_json_schema_file() {
+    let wrk = Workdir::new("validate_invalid_json_schema_file").flexible(true);
+
+    // Create schema with format validation
+    // Create schema with format validation
+    // This schema is invalid because it has a draft version that doesn't exist
+    wrk.create_from_string(
+        "schema.json",
+        r#"{
+            "$schema": "https://json-schema.org/draft/2020-25/schema",
+            "type": "object",
+            "properties": {
+                "id": { "type": "string" },
+                "name": { "type": "string" },
+                "email": { 
+                    "type": "string",
+                    "format": "email"
+                }
+            }
+        }"#,
+    );
+
+    // Run validate command
+    let mut cmd = wrk.command("validate");
+    cmd.arg("schema").arg("schema.json");
+
+    wrk.assert_err(&mut cmd);
+
+    let got = wrk.output_stderr(&mut cmd);
+    assert_eq!(got, "JSON Schema Reference Error: Unknown specification: https://json-schema.org/draft/2020-25/schema\n");
+
+    // Create schema with format validation
+    // This schema is invalid because of invalid types "stringy"
+    wrk.create_from_string(
+        "schema2.json",
+        r#"{
+            "$schema": "https://json-schema.org/draft/2020-12/schema",
+            "type": "object",
+            "properties": {
+                "id": { "type": "stringy" },
+                "name": { "type": "string" },
+                "email": { 
+                    "type": "string",
+                    "format": "email"
+                }
+            }
+        }"#,
+    );
+
+    // Run validate command
+    let mut cmd = wrk.command("validate");
+    cmd.arg("schema").arg("schema2.json");
+
+    wrk.assert_err(&mut cmd);
+
+    let got = wrk.output_stderr(&mut cmd);
+    assert_eq!(got, "Invalid JSON Schema.\n");
+}
