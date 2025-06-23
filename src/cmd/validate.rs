@@ -1034,16 +1034,28 @@ fn dyn_enum_validator_factory<'a>(
 pub fn run(argv: &[&str]) -> CliResult<()> {
     let args: Args = util::get_args(USAGE, argv)?;
 
-    // validate the JSON Schema file
+    // Is the JSON Schema file valid?
     if args.cmd_schema {
         if let Some(ref schema) = args.arg_json_schema {
-            let schema_json = load_json(schema)?;
-            match jsonschema::meta::try_is_valid(&serde_json::from_str(&schema_json)?) {
+            let schema_json_string = load_json(schema)?;
+            let schema_json = serde_json::from_str(&schema_json_string)?;
+            // First, try_is_valid the JSON Schema
+            match jsonschema::meta::try_is_valid(&schema_json) {
                 Ok(is_valid) => {
                     if is_valid {
-                        if !args.flag_quiet {
-                            winfo!("Valid JSON Schema.");
-                            return Ok(());
+                        // Now, try_validate the JSON Schema
+                        let validated = jsonschema::meta::try_validate(&schema_json);
+                        match validated {
+                            Ok(_) => {
+                                if !args.flag_quiet {
+                                    winfo!("Valid JSON Schema.");
+                                    return Ok(());
+                                }
+                                return Ok(());
+                            },
+                            Err(e) => {
+                                return fail_clierror!("Invalid JSON Schema: {e}");
+                            },
                         }
                     } else {
                         return fail_clierror!("Invalid JSON Schema.");
