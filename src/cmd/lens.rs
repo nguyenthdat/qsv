@@ -79,6 +79,10 @@ lens options:
                                    see https://en.wikipedia.org/wiki/ANSI_escape_code#Colors or
                                    https://gist.github.com/fnky/458719343aabd01cfb17a3a4f7296797
                                    for more info on ANSI escape codes.
+                                   Typing a complicated prompt on the command line can be tricky.
+                                   If the prompt starts with "file:", it's interpreted as a filepath
+                                   from which to load the prompt, e.g.
+                                     qsv lens --prompt "file:prompt.txt"
       --echo-column <column_name>  Print the value of this column to stdout for the selected row
 
       --debug                      Show stats for debugging
@@ -130,6 +134,21 @@ pub fn run(argv: &[&str]) -> CliResult<()> {
     )?;
     let input = work_input[0].to_string_lossy().to_string();
 
+    // If the prompt starts with "file:", it's interpreted as a filepath
+    // from which to load the prompt, e.g.
+    // qsv lens --prompt "file:prompt.txt"
+    let prompt = if let Some(prompt) = args.flag_prompt {
+        if prompt.starts_with("file:") {
+            let prompt_file = PathBuf::from(prompt.trim_start_matches("file:"));
+            let prompt = std::fs::read_to_string(prompt_file)?;
+            Some(prompt)
+        } else {
+            Some(prompt)
+        }
+    } else {
+        None
+    };
+
     // Create a Config to:
     // 1. Get the delimiter (from QSV_DEFAULT_DELIMITER env var if set)
     // 2. Check if delimiter sniffing is enabled (via QSV_SNIFF_DELIMITER)
@@ -139,23 +158,23 @@ pub fn run(argv: &[&str]) -> CliResult<()> {
     let input = config.path.clone().map(|p| p.to_string_lossy().to_string());
 
     let options = CsvlensOptions {
-        filename:           input,
-        delimiter:          if let Some(delimiter) = args.flag_delimiter {
+        filename: input,
+        delimiter: if let Some(delimiter) = args.flag_delimiter {
             Some(delimiter)
         } else {
             Some((config.get_delimiter() as char).to_string())
         },
-        tab_separated:      args.flag_tab_separated,
-        no_headers:         args.flag_no_headers,
-        columns:            args.flag_columns,
-        filter:             args.flag_filter,
-        find:               args.flag_find,
-        ignore_case:        args.flag_ignore_case,
-        echo_column:        args.flag_echo_column,
-        debug:              args.flag_debug,
+        tab_separated: args.flag_tab_separated,
+        no_headers: args.flag_no_headers,
+        columns: args.flag_columns,
+        filter: args.flag_filter,
+        find: args.flag_find,
+        ignore_case: args.flag_ignore_case,
+        echo_column: args.flag_echo_column,
+        debug: args.flag_debug,
         freeze_cols_offset: args.flag_freeze_columns,
-        color_columns:      !args.flag_monochrome,
-        prompt:             args.flag_prompt,
+        color_columns: !args.flag_monochrome,
+        prompt,
     };
 
     let out = run_csvlens_with_options(options)
