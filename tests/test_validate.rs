@@ -1486,29 +1486,6 @@ fn validate_no_format_validation() {
 fn validate_json_schema_file() {
     let wrk = Workdir::new("validate_json_schema_file").flexible(true);
 
-    // Create test data with invalid format values
-    wrk.create(
-        "schema.json",
-        vec![
-            svec!["id", "name", "email", "website", "fee"],
-            svec![
-                "1",
-                "John Doe",
-                "john@example.com",
-                "https://example.com",
-                "$100.00"
-            ],
-            svec![
-                "2",
-                "Jane Smith",
-                "not-an-email",
-                "not-a-url",
-                "not-currency"
-            ],
-            svec!["3", "Bob Wilson", "bob.wilson", "ftp://invalid", "€ 50.00"],
-        ],
-    );
-
     // Create schema with format validation
     wrk.create_from_string(
         "schema.json",
@@ -1586,9 +1563,7 @@ fn validate_invalid_json_schema_file() {
     wrk.assert_err(&mut cmd);
 
     let got = wrk.output_stderr(&mut cmd);
-    assert!(got.contains(
-        "Invalid JSON Schema: Unknown specification: https://json-schema.org/draft/2020-25/schema"
-    ));
+    assert_eq!(got, "JSON Schema Reference Error: Unknown specification: https://json-schema.org/draft/2020-25/schema\n");
 
     // Create schema with format validation
     // This schema is invalid because of invalid types "stringy"
