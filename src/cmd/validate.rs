@@ -1049,15 +1049,14 @@ pub fn run(argv: &[&str]) -> CliResult<()> {
                             Ok(Ok(_)) => {
                                 if !args.flag_quiet {
                                     winfo!("Valid JSON Schema.");
-                                    return Ok(());
                                 }
                                 return Ok(());
                             },
                             Ok(Err(e)) => {
-                                return fail_clierror!("Invalid JSON Schema: {e}");
+                                return fail_clierror!("JSON Schema Meta-Validation Error: {e}");
                             },
                             Err(e) => {
-                                return fail_clierror!("JSON Schema Reference Error: {e}");
+                                return fail_clierror!("JSON Schema Meta-Reference Error: {e}");
                             },
                         }
                     } else {
@@ -1065,7 +1064,7 @@ pub fn run(argv: &[&str]) -> CliResult<()> {
                     }
                 },
                 Err(e) => {
-                    return fail_clierror!("JSON Schema Reference Error: {e}");
+                    return fail_clierror!("JSON Schema Meta-Reference Error: {e}");
                 },
             }
         } else {

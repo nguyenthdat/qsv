@@ -1541,7 +1541,7 @@ fn validate_invalid_json_schema_file() {
     wrk.assert_err(&mut cmd);
 
     let got = wrk.output_stderr(&mut cmd);
-    assert_eq!(got, "JSON Schema Reference Error: Unknown specification: https://json-schema.org/draft/2020-25/schema\n");
+    assert_eq!(got, "JSON Schema Meta-Reference Error: Unknown specification: https://json-schema.org/draft/2020-25/schema\n");
 
     // Create schema with format validation
     // This schema is invalid because of invalid types "stringy"
