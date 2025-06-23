@@ -1609,11 +1609,11 @@ fn validate_invalid_json_schema_file() {
     );
 
     // Run validate command
-    let mut cmd2 = wrk.command("validate");
-    cmd2.arg("schema").arg("schema2.json");
+    let mut cmd = wrk.command("validate");
+    cmd.arg("schema").arg("schema2.json");
 
-    wrk.assert_err(&mut cmd2);
+    wrk.assert_err(&mut cmd);
 
-    let got = wrk.output_stderr(&mut cmd2);
+    let got = wrk.output_stderr(&mut cmd);
     assert_eq!(got, "Invalid JSON Schema.\n");
 }
