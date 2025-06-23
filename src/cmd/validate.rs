@@ -1046,15 +1046,18 @@ pub fn run(argv: &[&str]) -> CliResult<()> {
                         // Now, try_validate the JSON Schema
                         let validated = jsonschema::meta::try_validate(&schema_json);
                         match validated {
-                            Ok(_) => {
+                            Ok(Ok(_)) => {
                                 if !args.flag_quiet {
                                     winfo!("Valid JSON Schema.");
                                     return Ok(());
                                 }
                                 return Ok(());
                             },
-                            Err(e) => {
+                            Ok(Err(e)) => {
                                 return fail_clierror!("Invalid JSON Schema: {e}");
+                            },
+                            Err(e) => {
+                                return fail_clierror!("JSON Schema Reference Error: {e}");
                             },
                         }
                     } else {
@@ -1062,7 +1065,7 @@ pub fn run(argv: &[&str]) -> CliResult<()> {
                     }
                 },
                 Err(e) => {
-                    return fail_clierror!("Invalid JSON Schema: {e}");
+                    return fail_clierror!("JSON Schema Reference Error: {e}");
                 },
             }
         } else {
