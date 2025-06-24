@@ -69,6 +69,14 @@ lens options:
   -f, --freeze-columns <num>       Freeze the first N columns
                                    [default: 1]
   -m, --monochrome                 Disable color output
+  -W, --wrap-mode <mode>           Set the wrap mode for the output.
+                                   Valid modes are:
+                                     "words": Wrap at word boundaries
+                                     "chars": Wrap at character boundaries
+                                     "disabled": No wrapping
+                                   For convenience, the first character can be used as a shortcut:
+                                     qsv lens -W w data.csv // wrap at word boundaries
+                                   [default: disabled]
 
   -P. --prompt <prompt>            Set a custom prompt in the status bar. Normally paired w/ --echo-column:
                                      qsv lens --prompt 'Select City:' --echo-column 'City'
@@ -93,7 +101,7 @@ Common options:
 
 use std::path::PathBuf;
 
-use csvlens::{CsvlensOptions, run_csvlens_with_options};
+use csvlens::{CsvlensOptions, WrapMode, run_csvlens_with_options};
 use serde::Deserialize;
 use tempfile;
 
@@ -113,6 +121,7 @@ struct Args {
     flag_monochrome:     bool,
     flag_prompt:         Option<String>,
     flag_echo_column:    Option<String>,
+    flag_wrap_mode:      String,
     flag_debug:          bool,
 }
 
@@ -149,6 +158,15 @@ pub fn run(argv: &[&str]) -> CliResult<()> {
         None
     };
 
+    // Convert the wrap mode to a WrapMode enum value
+    // we only check the first character of the wrap mode string for convenience
+    let wrap_mode = match args.flag_wrap_mode.to_ascii_lowercase().chars().next() {
+        Some('d') => Some(WrapMode::Disabled),
+        Some('w') => Some(WrapMode::Words),
+        Some('c') => Some(WrapMode::Chars),
+        _ => None,
+    };
+
     // Create a Config to:
     // 1. Get the delimiter (from QSV_DEFAULT_DELIMITER env var if set)
     // 2. Check if delimiter sniffing is enabled (via QSV_SNIFF_DELIMITER)
@@ -175,6 +193,7 @@ pub fn run(argv: &[&str]) -> CliResult<()> {
         freeze_cols_offset: args.flag_freeze_columns,
         color_columns: !args.flag_monochrome,
         prompt,
+        wrap_mode,
     };
 
     let out = run_csvlens_with_options(options)
