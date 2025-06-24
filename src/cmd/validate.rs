@@ -1229,6 +1229,7 @@ pub fn run(argv: &[&str]) -> CliResult<()> {
                             "detail" : "Cannot parse CSV record as UTF-8",
                             "meta": {
                                 "last_valid_record": format!("{record_idx}"),
+                                "invalid_record": format!("{record:?}"),
                             }
                         }]
                     });
@@ -1243,9 +1244,10 @@ pub fn run(argv: &[&str]) -> CliResult<()> {
                 // we're not returning a JSON error, so we can use a
                 // user-friendly error message with utf8 transcoding suggestions
                 return fail_encoding_clierror!(
-                    "non-utf8 sequence at record {record_idx}.\nUse `qsv input` to fix formatting \
-                     and to handle non-utf8 sequences.\nYou may also want to transcode your data \
-                     to UTF-8 first using `iconv` or `recode`."
+                    r#"non-utf8 sequence at record {record_idx}.
+Invalid record: {record:?}
+Use `qsv input` to fix formatting and to handle non-utf8 sequences.
+You may also want to transcode your data to UTF-8 first using `iconv` or `recode`."#
                 );
             }
 
