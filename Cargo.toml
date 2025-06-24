@@ -327,7 +327,7 @@ csvlens = { git = "https://github.com/jqnatividad/csvlens", branch = "lib-wrapmo
 # use our patched fork of csvs_convert to bump dependencies until our PR is merged
 csvs_convert = { git = "https://github.com/jqnatividad/csvs_convert", branch = "bump-rust_xlsxwriter-to-0.88" }
 
-# needed to get latest dependencies and unreleased fixes
+# use our patched fork of grex to bump dependencies and Unicode tables from 15 to 16 until our PR is merged
 grex = { git = "https://github.com/jqnatividad/grex", branch = "bumped-dependencies-202502" }
 
 # use our patched fork of json-objects-to-csv to bump deps and to preserve order until our PR is merged
