@@ -516,6 +516,222 @@ fn sort_random_secure() {
     similar_asserts::assert_eq!(got, expected);
 }
 
+#[test]
+fn sort_natural() {
+    let wrk = Workdir::new("sort_natural");
+    wrk.create(
+        "in.csv",
+        vec![
+            svec!["Name", "Value"],
+            svec!["file2.txt", "a"],
+            svec!["file10.txt", "b"],
+            svec!["file1.txt", "c"],
+            svec!["file20.txt", "d"],
+            svec!["file3.txt", "e"],
+        ],
+    );
+
+    let mut cmd = wrk.command("sort");
+    cmd.arg("--natural").arg("in.csv");
+
+    let got: Vec<Vec<String>> = wrk.read_stdout(&mut cmd);
+    let expected = vec![
+        svec!["Name", "Value"],
+        svec!["file1.txt", "c"],
+        svec!["file2.txt", "a"],
+        svec!["file3.txt", "e"],
+        svec!["file10.txt", "b"],
+        svec!["file20.txt", "d"],
+    ];
+    similar_asserts::assert_eq!(got, expected);
+}
+
+#[test]
+fn sort_natural_faster() {
+    let wrk = Workdir::new("sort_natural_faster");
+    wrk.create(
+        "in.csv",
+        vec![
+            svec!["Name", "Value"],
+            svec!["file2.txt", "a"],
+            svec!["file10.txt", "b"],
+            svec!["file1.txt", "c"],
+            svec!["file20.txt", "d"],
+            svec!["file3.txt", "e"],
+        ],
+    );
+
+    let mut cmd = wrk.command("sort");
+    cmd.arg("--natural").arg("--faster").arg("in.csv");
+
+    let got: Vec<Vec<String>> = wrk.read_stdout(&mut cmd);
+    let expected = vec![
+        svec!["Name", "Value"],
+        svec!["file1.txt", "c"],
+        svec!["file2.txt", "a"],
+        svec!["file3.txt", "e"],
+        svec!["file10.txt", "b"],
+        svec!["file20.txt", "d"],
+    ];
+    similar_asserts::assert_eq!(got, expected);
+}
+
+#[test]
+fn sort_natural_case_insensitive() {
+    let wrk = Workdir::new("sort_natural_case_insensitive");
+    wrk.create(
+        "in.csv",
+        vec![
+            svec!["Name", "Value"],
+            svec!["File2.txt", "a"],
+            svec!["file10.txt", "b"],
+            svec!["FILE1.txt", "c"],
+            svec!["file20.txt", "d"],
+            svec!["File3.txt", "e"],
+        ],
+    );
+
+    let mut cmd = wrk.command("sort");
+    cmd.arg("--natural").arg("--ignore-case").arg("in.csv");
+
+    let got: Vec<Vec<String>> = wrk.read_stdout(&mut cmd);
+    let expected = vec![
+        svec!["Name", "Value"],
+        svec!["FILE1.txt", "c"],
+        svec!["File2.txt", "a"],
+        svec!["File3.txt", "e"],
+        svec!["file10.txt", "b"],
+        svec!["file20.txt", "d"],
+    ];
+    similar_asserts::assert_eq!(got, expected);
+}
+
+#[test]
+fn sort_natural_reverse() {
+    let wrk = Workdir::new("sort_natural_reverse");
+    wrk.create(
+        "in.csv",
+        vec![
+            svec!["Name", "Value"],
+            svec!["file2.txt", "a"],
+            svec!["file10.txt", "b"],
+            svec!["file1.txt", "c"],
+            svec!["file20.txt", "d"],
+            svec!["file3.txt", "e"],
+        ],
+    );
+
+    let mut cmd = wrk.command("sort");
+    cmd.arg("--natural").arg("--reverse").arg("in.csv");
+
+    let got: Vec<Vec<String>> = wrk.read_stdout(&mut cmd);
+    let expected = vec![
+        svec!["Name", "Value"],
+        svec!["file20.txt", "d"],
+        svec!["file10.txt", "b"],
+        svec!["file3.txt", "e"],
+        svec!["file2.txt", "a"],
+        svec!["file1.txt", "c"],
+    ];
+    similar_asserts::assert_eq!(got, expected);
+}
+
+#[test]
+fn sort_natural_mixed_content() {
+    let wrk = Workdir::new("sort_natural_mixed_content");
+    wrk.create(
+        "in.csv",
+        vec![
+            svec!["Name", "Value"],
+            svec!["chapter2", "a"],
+            svec!["chapter10", "b"],
+            svec!["chapter1", "c"],
+            svec!["appendix", "d"],
+            svec!["chapter3", "e"],
+            svec!["introduction", "f"],
+        ],
+    );
+
+    let mut cmd = wrk.command("sort");
+    cmd.arg("--natural").arg("in.csv");
+
+    let got: Vec<Vec<String>> = wrk.read_stdout(&mut cmd);
+    let expected = vec![
+        svec!["Name", "Value"],
+        svec!["appendix", "d"],
+        svec!["chapter1", "c"],
+        svec!["chapter2", "a"],
+        svec!["chapter3", "e"],
+        svec!["chapter10", "b"],
+        svec!["introduction", "f"],
+    ];
+    similar_asserts::assert_eq!(got, expected);
+}
+
+#[test]
+fn sort_natural_vs_lexicographic() {
+    let wrk = Workdir::new("sort_natural_vs_lexicographic");
+    wrk.create(
+        "in.csv",
+        vec![
+            svec!["Name", "Value"],
+            svec!["file2.txt", "a"],
+            svec!["file10.txt", "b"],
+            svec!["file1.txt", "c"],
+        ],
+    );
+
+    // Test lexicographic sort (default)
+    let mut cmd = wrk.command("sort");
+    cmd.arg("in.csv");
+    let got_lex: Vec<Vec<String>> = wrk.read_stdout(&mut cmd);
+    let expected_lex = vec![
+        svec!["Name", "Value"],
+        svec!["file1.txt", "c"],
+        svec!["file10.txt", "b"],
+        svec!["file2.txt", "a"],
+    ];
+    similar_asserts::assert_eq!(got_lex, expected_lex);
+
+    // Test natural sort
+    let mut cmd = wrk.command("sort");
+    cmd.arg("--natural").arg("in.csv");
+    let got_nat: Vec<Vec<String>> = wrk.read_stdout(&mut cmd);
+    let expected_nat = vec![
+        svec!["Name", "Value"],
+        svec!["file1.txt", "c"],
+        svec!["file2.txt", "a"],
+        svec!["file10.txt", "b"],
+    ];
+    similar_asserts::assert_eq!(got_nat, expected_nat);
+}
+
+#[test]
+fn sort_natural_numeric_precedence() {
+    let wrk = Workdir::new("sort_natural_numeric_precedence");
+    wrk.create(
+        "in.csv",
+        vec![
+            svec!["Name", "Value"],
+            svec!["10", "a"],
+            svec!["2", "b"],
+            svec!["1", "c"],
+        ],
+    );
+
+    // Test that --natural takes precedence over --numeric
+    let mut cmd = wrk.command("sort");
+    cmd.arg("--natural").arg("--numeric").arg("in.csv");
+    let got: Vec<Vec<String>> = wrk.read_stdout(&mut cmd);
+    let expected = vec![
+        svec!["Name", "Value"],
+        svec!["1", "c"],
+        svec!["2", "b"],
+        svec!["10", "a"],
+    ];
+    similar_asserts::assert_eq!(got, expected);
+}
+
 /// Order `a` and `b` lexicographically using `Ord`
 pub fn iter_cmp<A, L, R>(mut a: L, mut b: R) -> cmp::Ordering
 where
