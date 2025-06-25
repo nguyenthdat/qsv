@@ -1650,9 +1650,13 @@ Consider renaming the file or using a different input."#,
     let mut decompressed_file = std::fs::File::create(decompressed_filepath.clone())?;
 
     match std::io::copy(&mut snappy_reader, &mut decompressed_file) {
-        Ok(_) => {
+        Ok(num_bytes) => {
             decompressed_file.flush()?;
-            log::debug!("Successfully decompressed Snappy file: {}", path.display());
+            log::debug!(
+                "Successfully decompressed Snappy file: {} ({} bytes)",
+                path.display(),
+                num_bytes
+            );
             Ok(format!("{}", decompressed_filepath.display()))
         },
         Err(e) => {
