@@ -1602,10 +1602,45 @@ pub fn get_envvar_flag(key: &str) -> bool {
     }
 }
 
+/// Validates if a file is actually a Snappy-compressed file before attempting decompression
+fn is_valid_snappy_file(path: &PathBuf) -> Result<bool, CliError> {
+    let mut file = std::fs::File::open(path)?;
+    let mut reader = BufReader::new(&mut file);
+
+    // Try to create a FrameDecoder and read the first few bytes
+    // This will fail immediately if the file doesn't have a valid Snappy header
+    let decoder = snap::read::FrameDecoder::new(&mut reader);
+    let mut buffer = Vec::with_capacity(50);
+
+    match decoder.take(50).read_to_end(&mut buffer) {
+        Ok(_) => {
+            // Successfully read some bytes, this is likely a valid Snappy file
+            log::debug!("File {} appears to be a valid Snappy file", path.display());
+            Ok(true)
+        },
+        Err(e) => {
+            // Failed to read, this is not a valid Snappy file
+            log::debug!("File {} is not a valid Snappy file: {}", path.display(), e);
+            Ok(false)
+        },
+    }
+}
+
 pub fn decompress_snappy_file(
     path: &PathBuf,
     tmpdir: &tempfile::TempDir,
 ) -> Result<String, CliError> {
+    // First, validate that this is actually a Snappy file
+    if !is_valid_snappy_file(path)? {
+        return fail_clierror!(
+            r#"File '{}' has an .sz extension but is not a valid Snappy-compressed file.
+This might be a temporary file or incorrectly named file.
+Consider renaming the file or using a different input."#,
+            path.display()
+        );
+    }
+
+    // Proceed with decompression since we've validated the file
     let mut snappy_file = std::fs::File::open(path.clone())?;
     let mut snappy_reader = snap::read::FrameDecoder::new(&mut snappy_file);
     let file_stem = Path::new(&path).file_stem().unwrap().to_str().unwrap();
@@ -1613,9 +1648,24 @@ pub fn decompress_snappy_file(
         .path()
         .join(format!("qsv_temp_decompressed__{file_stem}"));
     let mut decompressed_file = std::fs::File::create(decompressed_filepath.clone())?;
-    std::io::copy(&mut snappy_reader, &mut decompressed_file)?;
-    decompressed_file.flush()?;
-    Ok(format!("{}", decompressed_filepath.display()))
+
+    match std::io::copy(&mut snappy_reader, &mut decompressed_file) {
+        Ok(_) => {
+            decompressed_file.flush()?;
+            log::debug!("Successfully decompressed Snappy file: {}", path.display());
+            Ok(format!("{}", decompressed_filepath.display()))
+        },
+        Err(e) => {
+            // Clean up the partially created file
+            let _ = std::fs::remove_file(&decompressed_filepath);
+            return fail_clierror!(
+                "Failed to decompress Snappy file '{}': {}. The file may be corrupted or \
+                 incomplete.",
+                path.display(),
+                e
+            );
+        },
+    }
 }
 
 /// downloads a file from a url and saves it to a path
