@@ -354,12 +354,16 @@ pub fn run(argv: &[&str]) -> CliResult<()> {
         for r in all {
             match prev {
                 Some(other_r) => {
-                    let comparison = if natural {
+                    let comparison = if numeric {
+                        iter_cmp_numeric(sel.select(&r), sel.select(&other_r))
+                    } else if natural {
                         if ignore_case {
                             iter_cmp_natural_ignore_case(sel.select(&r), sel.select(&other_r))
                         } else {
                             iter_cmp_natural(sel.select(&r), sel.select(&other_r))
                         }
+                    } else if ignore_case {
+                        iter_cmp_ignore_case(sel.select(&r), sel.select(&other_r))
                     } else {
                         iter_cmp(sel.select(&r), sel.select(&other_r))
                     };
@@ -552,28 +556,19 @@ where
     A: Iterator<Item = char>,
     B: Iterator<Item = char>,
 {
-    let a_chars: Vec<char> = a.collect();
-    let b_chars: Vec<char> = b.collect();
+    let mut a_iter = a.peekable();
+    let mut b_iter = b.peekable();
 
-    let mut a_pos = 0;
-    let mut b_pos = 0;
-
-    while a_pos < a_chars.len() && b_pos < b_chars.len() {
-        let a_char = a_chars[a_pos];
-        let b_char = b_chars[b_pos];
-
+    while let (Some(&a_char), Some(&b_char)) = (a_iter.peek(), b_iter.peek()) {
         // If both are digits, collect the full numbers and compare them
         if a_char.is_ascii_digit() && b_char.is_ascii_digit() {
-            let (a_num, a_end) = collect_number_from_chars(&a_chars, a_pos);
-            let (b_num, b_end) = collect_number_from_chars(&b_chars, b_pos);
+            let a_num = collect_number_from_iter(&mut a_iter);
+            let b_num = collect_number_from_iter(&mut b_iter);
 
             let num_comparison = a_num.cmp(&b_num);
             if num_comparison != cmp::Ordering::Equal {
                 return num_comparison;
             }
-
-            a_pos = a_end;
-            b_pos = b_end;
         } else if a_char.is_ascii_digit() {
             // Digits come before non-digits
             return cmp::Ordering::Less;
