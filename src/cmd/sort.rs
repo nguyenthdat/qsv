@@ -354,12 +354,16 @@ pub fn run(argv: &[&str]) -> CliResult<()> {
         for r in all {
             match prev {
                 Some(other_r) => {
-                    let comparison = if natural {
+                    let comparison = if numeric {
+                        iter_cmp_num(sel.select(&r), sel.select(&other_r))
+                    } else if natural {
                         if ignore_case {
                             iter_cmp_natural_ignore_case(sel.select(&r), sel.select(&other_r))
                         } else {
                             iter_cmp_natural(sel.select(&r), sel.select(&other_r))
                         }
+                    } else if ignore_case {
+                        iter_cmp_ignore_case(sel.select(&r), sel.select(&other_r))
                     } else {
                         iter_cmp(sel.select(&r), sel.select(&other_r))
                     };
@@ -521,68 +525,69 @@ where
 
 #[inline]
 fn compare_natural_strings(a: &[u8], b: &[u8]) -> cmp::Ordering {
-    let a_str = match from_utf8(a) {
-        Ok(s) => s,
-        Err(_) => return String::from_utf8_lossy(a).cmp(&String::from_utf8_lossy(b)),
-    };
-    let b_str = match from_utf8(b) {
-        Ok(s) => s,
-        Err(_) => return String::from_utf8_lossy(a).cmp(&String::from_utf8_lossy(b)),
-    };
-
-    compare_natural_chars(a_str.chars(), b_str.chars())
+    compare_natural_bytes(a, b, false)
 }
 
 #[inline]
 fn compare_natural_strings_ignore_case(a: &[u8], b: &[u8]) -> cmp::Ordering {
-    let a_str = match from_utf8(a) {
-        Ok(s) => s.to_lowercase(),
-        Err(_) => String::from_utf8_lossy(a).to_lowercase().to_string(),
-    };
-    let b_str = match from_utf8(b) {
-        Ok(s) => s.to_lowercase(),
-        Err(_) => String::from_utf8_lossy(b).to_lowercase().to_string(),
-    };
-
-    compare_natural_chars(a_str.chars(), b_str.chars())
+    compare_natural_bytes(a, b, true)
 }
 
-fn compare_natural_chars<A, B>(a: A, b: B) -> cmp::Ordering
-where
-    A: Iterator<Item = char>,
-    B: Iterator<Item = char>,
-{
-    let a_chars: Vec<char> = a.collect();
-    let b_chars: Vec<char> = b.collect();
-
+#[inline]
+fn compare_natural_bytes(a: &[u8], b: &[u8], ignore_case: bool) -> cmp::Ordering {
     let mut a_pos = 0;
     let mut b_pos = 0;
 
-    while a_pos < a_chars.len() && b_pos < b_chars.len() {
-        let a_char = a_chars[a_pos];
-        let b_char = b_chars[b_pos];
+    let mut a_byte;
+    let mut b_byte;
 
-        // If both are digits, collect the full numbers and compare them
-        if a_char.is_ascii_digit() && b_char.is_ascii_digit() {
-            let (a_num, a_end) = collect_number_from_chars(&a_chars, a_pos);
-            let (b_num, b_end) = collect_number_from_chars(&b_chars, b_pos);
+    let mut num_comparison;
+    let mut char_comparison;
 
-            let num_comparison = a_num.cmp(&b_num);
+    let mut a_num;
+    let mut b_num;
+    let mut a_end;
+    let mut b_end;
+
+    let mut a_char;
+    let mut b_char;
+
+    while a_pos < a.len() && b_pos < b.len() {
+        a_byte = a[a_pos];
+        b_byte = b[b_pos];
+
+        // If both are ASCII digits, collect the full numbers and compare them
+        if a_byte.is_ascii_digit() && b_byte.is_ascii_digit() {
+            (a_num, a_end) = collect_number_from_bytes(a, a_pos);
+            (b_num, b_end) = collect_number_from_bytes(b, b_pos);
+
+            num_comparison = a_num.cmp(&b_num);
             if num_comparison != cmp::Ordering::Equal {
                 return num_comparison;
             }
 
             a_pos = a_end;
             b_pos = b_end;
-        } else if a_char.is_ascii_digit() {
+        } else if a_byte.is_ascii_digit() {
             // Digits come before non-digits
             return cmp::Ordering::Less;
-        } else if b_char.is_ascii_digit() {
+        } else if b_byte.is_ascii_digit() {
             // Digits come before non-digits
             return cmp::Ordering::Greater;
         } else {
             // Both are non-digits, compare normally
-            let char_comparison = a_char.cmp(&b_char);
+            a_char = if ignore_case {
+                a_byte.to_ascii_lowercase()
+            } else {
+                a_byte
+            };
+            b_char = if ignore_case {
+                b_byte.to_ascii_lowercase()
+            } else {
+                b_byte
+            };
+
+            char_comparison = a_char.cmp(&b_char);
             if char_comparison != cmp::Ordering::Equal {
                 return char_comparison;
             }
@@ -595,15 +600,16 @@ where
     a_pos.cmp(&b_pos)
 }
 
-fn collect_number_from_chars(chars: &[char], start: usize) -> (i64, usize) {
-    let mut num_str = String::new();
+#[inline]
+fn collect_number_from_bytes(bytes: &[u8], start: usize) -> (i64, usize) {
     let mut pos = start;
 
-    while pos < chars.len() && chars[pos].is_ascii_digit() {
-        num_str.push(chars[pos]);
+    // Find the end of the digit sequence
+    while pos < bytes.len() && bytes[pos].is_ascii_digit() {
         pos += 1;
     }
 
-    let num = atoi_simd::parse::<i64>(num_str.as_bytes()).unwrap_or(0);
+    // Parse the number using SIMD-optimized parsing
+    let num = atoi_simd::parse::<i64>(&bytes[start..pos]).unwrap_or(0);
     (num, pos)
 }
