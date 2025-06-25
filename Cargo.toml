@@ -321,8 +321,8 @@ csv-index = { git = "https://github.com/dathere/rust-csv", branch = "qsv-optimiz
 # our redis PR is still pending
 cached = { git = "https://github.com/jqnatividad/cached", branch = "bump-redis-to-0.32-hashbrown-to-0.15" }
 
-# use our our patched fork of csvlens with line-wrapping support until our PR is merged
-csvlens = { git = "https://github.com/jqnatividad/csvlens", branch = "lib-wrapmode" }
+# use latest upstream now that our PR has been merged, pending a new release
+csvlens = { git = "https://github.com/YS-L/csvlens", rev = "1a23ce1" }
 
 # use our patched fork of csvs_convert to bump dependencies until our PR is merged
 csvs_convert = { git = "https://github.com/jqnatividad/csvs_convert", branch = "bump-rust_xlsxwriter-to-0.88" }
