@@ -155,12 +155,15 @@ pub fn run(argv: &[&str]) -> CliResult<()> {
     let ignore_case = args.flag_ignore_case;
 
     let mut all = rdr.byte_records().collect::<Result<Vec<_>, _>>()?;
-    // Tuple ordering and flag meanings:
-    // numeric: Sort numerically (true for numeric sort, false otherwise).
-    // natural: Sort in natural order (true for natural sort, false otherwise).
-    // reverse: Sort in reverse order (true for reverse sort, false otherwise).
-    // random: Sort randomly (true for random sort, false otherwise).
-    // faster: Use faster sorting algorithm (true for faster sort, false otherwise).
+    // Tuple ordering and boolean flag meanings:
+    // numeric: Sort numerically
+    // natural: Sort in natural order https://en.wikipedia.org/wiki/Natural_sort_order
+    // reverse: Sort in reverse order
+    // random: Sort randomly
+    // faster: Use faster parallel "unstable" sorting algorithm by using
+    //   non-allocating, par_sort_unstable_by
+    //   https://docs.rs/rayon/latest/rayon/slice/trait.ParallelSliceMut.html#method.par_sort_unstable_by
+    // if all flags are false, then we do a stable parallel, lexicographical sort
     match (numeric, natural, reverse, random, faster) {
         // --random sort
         (_, _, _, true, _) => {
