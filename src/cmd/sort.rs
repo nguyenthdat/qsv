@@ -155,6 +155,12 @@ pub fn run(argv: &[&str]) -> CliResult<()> {
     let ignore_case = args.flag_ignore_case;
 
     let mut all = rdr.byte_records().collect::<Result<Vec<_>, _>>()?;
+    // Tuple ordering and flag meanings:
+    // numeric: Sort numerically (true for numeric sort, false otherwise).
+    // natural: Sort in natural order (true for natural sort, false otherwise).
+    // reverse: Sort in reverse order (true for reverse sort, false otherwise).
+    // random: Sort randomly (true for random sort, false otherwise).
+    // faster: Use faster sorting algorithm (true for faster sort, false otherwise).
     match (numeric, natural, reverse, random, faster) {
         // --random sort
         (_, _, _, true, _) => {
