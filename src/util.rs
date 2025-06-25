@@ -1658,12 +1658,12 @@ Consider renaming the file or using a different input."#,
         Err(e) => {
             // Clean up the partially created file
             let _ = std::fs::remove_file(&decompressed_filepath);
-            return fail_clierror!(
+            fail_clierror!(
                 "Failed to decompress Snappy file '{}': {}. The file may be corrupted or \
                  incomplete.",
                 path.display(),
                 e
-            );
+            )
         },
     }
 }
