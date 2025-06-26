@@ -87,7 +87,7 @@ pub fn run(argv: &[&str]) -> CliResult<()> {
         let new_headers = if args.arg_headers.to_lowercase() == "_all_generic" {
             rename_headers_all_generic(num_cols)
         } else {
-            args.arg_headers.clone()
+            args.arg_headers
         };
         let mut new_rdr = csv::Reader::from_reader(new_headers.as_bytes());
         let new_headers = new_rdr.byte_headers()?.clone();
