@@ -1,9 +1,5 @@
 static USAGE: &str = r#"
-Sorts CSV data in alphabetical (with case-insensitive option), numerical,
-reverse, unique or random (with optional seed) order.
-
-The sort is done in lexicographical order.
-https://en.wikipedia.org/wiki/Lexicographic_order
+Sorts CSV data in lexicographical, natural, numerical, reverse, unique or random order.
 
 Note that this requires reading all of the CSV data into memory. If
 you need to sort a large file that may not fit into memory, use the
@@ -27,6 +23,7 @@ sort options:
     -u, --unique            When set, identical consecutive lines will be dropped
                             to keep only one line per sorted value.
 
+                            RANDOM SORTING OPTIONS:
     --random                Randomize (scramble) the data by row
     --seed <number>         Random Number Generator (RNG) seed to use if --random is set
     --rng <kind>            The RNG algorithm to use if --random is set.
@@ -64,6 +61,7 @@ Common options:
                             Must be a single character. (default: ,)
     --memcheck              Check if there is enough memory to load the entire
                             CSV into memory using CONSERVATIVE heuristics.
+                            Ignored if --random or --faster is set.
 "#;
 
 use std::{cmp, str::FromStr};
@@ -163,7 +161,7 @@ pub fn run(argv: &[&str]) -> CliResult<()> {
     // faster: Use faster parallel "unstable" sorting algorithm by using
     //   non-allocating, par_sort_unstable_by
     //   https://docs.rs/rayon/latest/rayon/slice/trait.ParallelSliceMut.html#method.par_sort_unstable_by
-    // if all flags are false, then we do a stable parallel, lexicographical sort
+    // if all flags are false (the default), then we do a stable parallel, lexicographical sort
     match (numeric, natural, reverse, random, faster) {
         // --random sort
         (_, _, _, true, _) => {
