@@ -977,31 +977,30 @@ pub fn compress_output_if_needed(
 ) -> Result<(), crate::clitypes::CliError> {
     use crate::cmd::snappy::compress;
 
-    if let Some(output) = output_file {
-        if std::path::Path::new(&output)
+    if let Some(output) = output_file
+        && std::path::Path::new(&output)
             .extension()
             .is_some_and(|ext| ext.eq_ignore_ascii_case("sz"))
-        {
-            log::info!("Compressing output with Snappy");
+    {
+        log::info!("Compressing output with Snappy");
 
-            // we need to copy the output to a tempfile first, and then
-            // compress the tempfile to the original output sz file
-            let mut tempfile = tempfile::NamedTempFile::new()?;
-            io::copy(&mut File::open(output.clone())?, tempfile.as_file_mut())?;
-            tempfile.flush()?;
+        // we need to copy the output to a tempfile first, and then
+        // compress the tempfile to the original output sz file
+        let mut tempfile = tempfile::NamedTempFile::new()?;
+        io::copy(&mut File::open(output.clone())?, tempfile.as_file_mut())?;
+        tempfile.flush()?;
 
-            // safety: we just created the tempfile, so we know that the path is valid utf8
-            // https://github.com/Stebalien/tempfile/issues/192
-            let input_fname = tempfile.path().to_str().unwrap();
-            let input = File::open(input_fname)?;
-            let output_sz_writer = std::fs::File::create(output)?;
-            compress(
-                input,
-                output_sz_writer,
-                util::max_jobs(),
-                DEFAULT_WTR_BUFFER_CAPACITY,
-            )?;
-        }
+        // safety: we just created the tempfile, so we know that the path is valid utf8
+        // https://github.com/Stebalien/tempfile/issues/192
+        let input_fname = tempfile.path().to_str().unwrap();
+        let input = File::open(input_fname)?;
+        let output_sz_writer = std::fs::File::create(output)?;
+        compress(
+            input,
+            output_sz_writer,
+            util::max_jobs(),
+            DEFAULT_WTR_BUFFER_CAPACITY,
+        )?;
     }
     Ok(())
 }

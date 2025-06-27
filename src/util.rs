@@ -1073,12 +1073,11 @@ Self-update only works with prebuilt binaries released on GitHub https://github.
         winfo!("Up to date ({curr_version})... no update required.");
     }
 
-    if !check_only {
-        if let Ok(status_code) =
+    if !check_only
+        && let Ok(status_code) =
             send_hwsurvey(&bin_name, updated, latest_release, curr_version, false)
-        {
-            log::info!("HW survey sent. Status code: {status_code}");
-        }
+    {
+        log::info!("HW survey sent. Status code: {status_code}");
     }
 
     Ok(updated)

@@ -805,10 +805,10 @@ pub fn run(argv: &[&str]) -> CliResult<()> {
         rconfig.path = Some(tempfile_path);
     } else {
         // check if the input file exists
-        if let Some(path) = rconfig.path.clone() {
-            if !path.exists() {
-                return fail_clierror!("File {:?} does not exist", path.display());
-            }
+        if let Some(path) = rconfig.path.clone()
+            && !path.exists()
+        {
+            return fail_clierror!("File {:?} does not exist", path.display());
         }
     }
 
@@ -1695,10 +1695,10 @@ impl Stats {
             TFloat | TInteger => {
                 // Handle null case first (short-circuit if null)
                 if sample_type == TNull {
-                    if self.which.include_nulls {
-                        if let Some(v) = self.online.as_mut() {
-                            v.add_null();
-                        }
+                    if self.which.include_nulls
+                        && let Some(v) = self.online.as_mut()
+                    {
+                        v.add_null();
                     }
                 } else {
                     // Common case: valid numeric samples

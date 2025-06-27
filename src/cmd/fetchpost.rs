@@ -409,10 +409,10 @@ pub fn run(argv: &[&str]) -> CliResult<()> {
             info!("flushed DiskCache directory: {diskcache_dir}");
         }
         // check if the cache directory exists, if it doesn't, create it
-        if !diskcache_dir.is_empty() {
-            if let Err(e) = fs::create_dir_all(&diskcache_dir) {
-                return fail_clierror!(r#"Cannot create cache directory "{diskcache_dir}": {e:?}"#);
-            }
+        if !diskcache_dir.is_empty()
+            && let Err(e) = fs::create_dir_all(&diskcache_dir)
+        {
+            return fail_clierror!(r#"Cannot create cache directory "{diskcache_dir}": {e:?}"#);
         }
         DISKCACHE_DIR.set(diskcache_dir).unwrap();
         // initialize DiskCache Config

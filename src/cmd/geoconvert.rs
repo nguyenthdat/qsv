@@ -353,129 +353,117 @@ pub fn run(argv: &[&str]) -> CliResult<()> {
                     },
                 }
             } else {
-                if let Some(y_col) = args.flag_latitude {
-                    if let Some(x_col) = args.flag_longitude {
-                        let mut rdr = csv::Reader::from_reader(buf_reader);
-                        let headers = rdr.headers()?.clone();
-                        let mut feature_collection =
-                            serde_json::json!({"type": "FeatureCollection", "features": []});
+                if let Some(y_col) = args.flag_latitude
+                    && let Some(x_col) = args.flag_longitude
+                {
+                    let mut rdr = csv::Reader::from_reader(buf_reader);
+                    let headers = rdr.headers()?.clone();
+                    let mut feature_collection =
+                        serde_json::json!({"type": "FeatureCollection", "features": []});
 
-                        let latitude_col_index =
-                            headers.iter().position(|y| y == y_col).ok_or_else(|| {
-                                CliError::IncorrectUsage(format!(
-                                    "Latitude column '{y_col}' not found"
-                                ))
+                    let latitude_col_index =
+                        headers.iter().position(|y| y == y_col).ok_or_else(|| {
+                            CliError::IncorrectUsage(format!("Latitude column '{y_col}' not found"))
+                        })?;
+                    let longitude_col_index =
+                        headers.iter().position(|x| x == x_col).ok_or_else(|| {
+                            CliError::IncorrectUsage(format!(
+                                "Longitude column '{x_col}' not found"
+                            ))
+                        })?;
+
+                    for result in rdr.records() {
+                        let record = result?;
+                        let mut feature = serde_json::json!({"type": "Feature", "geometry": {}, "properties": {}});
+
+                        // Add lat/lon coordinates geometry
+                        let latitude_value = record
+                            .get(latitude_col_index)
+                            .ok_or_else(|| CliError::Other("Missing latitude value".to_string()))?
+                            .parse::<f64>()
+                            .map_err(|e| CliError::Other(format!("Invalid latitude value: {e}")))?;
+                        let longitude_value = record
+                            .get(longitude_col_index)
+                            .ok_or_else(|| CliError::Other("Missing longitude value".to_string()))?
+                            .parse::<f64>()
+                            .map_err(|e| {
+                                CliError::Other(format!("Invalid longitude value: {e}"))
                             })?;
-                        let longitude_col_index =
-                            headers.iter().position(|x| x == x_col).ok_or_else(|| {
-                                CliError::IncorrectUsage(format!(
-                                    "Longitude column '{x_col}' not found"
-                                ))
-                            })?;
 
-                        for result in rdr.records() {
-                            let record = result?;
-                            let mut feature = serde_json::json!({"type": "Feature", "geometry": {}, "properties": {}});
+                        let geometry = feature.get_mut("geometry").ok_or_else(|| {
+                            CliError::IncorrectUsage("Missing geometry object".to_string())
+                        })?;
+                        let geometry_obj = geometry.as_object_mut().ok_or_else(|| {
+                            CliError::IncorrectUsage("Invalid geometry object".to_string())
+                        })?;
+                        geometry_obj.insert("type".to_string(), serde_json::Value::from("Point"));
+                        geometry_obj.insert(
+                            "coordinates".to_string(),
+                            serde_json::Value::from(vec![latitude_value, longitude_value]),
+                        );
 
-                            // Add lat/lon coordinates geometry
-                            let latitude_value = record
-                                .get(latitude_col_index)
-                                .ok_or_else(|| {
-                                    CliError::Other("Missing latitude value".to_string())
-                                })?
-                                .parse::<f64>()
-                                .map_err(|e| {
-                                    CliError::Other(format!("Invalid latitude value: {e}"))
-                                })?;
-                            let longitude_value = record
-                                .get(longitude_col_index)
-                                .ok_or_else(|| {
-                                    CliError::Other("Missing longitude value".to_string())
-                                })?
-                                .parse::<f64>()
-                                .map_err(|e| {
-                                    CliError::Other(format!("Invalid longitude value: {e}"))
-                                })?;
-
-                            let geometry = feature.get_mut("geometry").ok_or_else(|| {
-                                CliError::IncorrectUsage("Missing geometry object".to_string())
-                            })?;
-                            let geometry_obj = geometry.as_object_mut().ok_or_else(|| {
-                                CliError::IncorrectUsage("Invalid geometry object".to_string())
-                            })?;
-                            geometry_obj
-                                .insert("type".to_string(), serde_json::Value::from("Point"));
-                            geometry_obj.insert(
-                                "coordinates".to_string(),
-                                serde_json::Value::from(vec![latitude_value, longitude_value]),
-                            );
-
-                            // Add properties
-                            for (index, value) in record.iter().enumerate() {
-                                if index != longitude_col_index && index != latitude_col_index {
-                                    let properties =
-                                        feature.get_mut("properties").ok_or_else(|| {
-                                            CliError::Other("Missing properties object".to_string())
-                                        })?;
-                                    let properties_obj =
-                                        properties.as_object_mut().ok_or_else(|| {
-                                            CliError::Other("Invalid properties object".to_string())
-                                        })?;
-                                    let new_key = headers
-                                        .get(index)
-                                        .ok_or_else(|| {
-                                            CliError::Other(format!(
-                                                "Missing header at index {index}"
-                                            ))
-                                        })?
-                                        .to_string();
-                                    let new_value = serde_json::Value::from(value);
-                                    properties_obj.insert(new_key, new_value);
-                                }
-                            }
-
-                            // Add Feature to FeatureCollection
-                            let features =
-                                feature_collection.get_mut("features").ok_or_else(|| {
-                                    CliError::Other("Missing features array".to_string())
-                                })?;
-                            let features_array = features.as_array_mut().ok_or_else(|| {
-                                CliError::Other("Invalid features array".to_string())
-                            })?;
-                            features_array.push(feature);
-                        }
-
-                        // Write FeatureCollection
-                        let fc_string = feature_collection.to_string();
-                        let mut geometry = geozero::geojson::GeoJson(&fc_string);
-                        match args.arg_output_format {
-                            OutputFormat::Csv => {
-                                if let Some(max_len) = max_length {
-                                    process_csv_with_max_length(&mut wtr, max_len, |writer| {
-                                        let mut processor = CsvWriter::new(writer);
-                                        geometry.process(&mut processor)?;
-                                        Ok(())
+                        // Add properties
+                        for (index, value) in record.iter().enumerate() {
+                            if index != longitude_col_index && index != latitude_col_index {
+                                let properties =
+                                    feature.get_mut("properties").ok_or_else(|| {
+                                        CliError::Other("Missing properties object".to_string())
                                     })?;
-                                    return Ok(());
-                                }
-                                // If max_length is not set, write directly to the output
-                                let mut processor = CsvWriter::new(&mut wtr);
-                                geometry.process(&mut processor)?;
-                            },
-                            OutputFormat::Svg => {
-                                let mut processor = SvgWriter::new(&mut wtr, false);
-                                geometry.process(&mut processor)?;
-                            },
-                            OutputFormat::Geojsonl => {
-                                let mut processor = GeoJsonLineWriter::new(&mut wtr);
-                                geometry.process(&mut processor)?;
-                            },
-                            OutputFormat::Geojson => {
-                                wtr.write_all(fc_string.as_bytes())?;
-                            },
+                                let properties_obj =
+                                    properties.as_object_mut().ok_or_else(|| {
+                                        CliError::Other("Invalid properties object".to_string())
+                                    })?;
+                                let new_key = headers
+                                    .get(index)
+                                    .ok_or_else(|| {
+                                        CliError::Other(format!("Missing header at index {index}"))
+                                    })?
+                                    .to_string();
+                                let new_value = serde_json::Value::from(value);
+                                properties_obj.insert(new_key, new_value);
+                            }
                         }
-                        return Ok(());
+
+                        // Add Feature to FeatureCollection
+                        let features = feature_collection
+                            .get_mut("features")
+                            .ok_or_else(|| CliError::Other("Missing features array".to_string()))?;
+                        let features_array = features
+                            .as_array_mut()
+                            .ok_or_else(|| CliError::Other("Invalid features array".to_string()))?;
+                        features_array.push(feature);
                     }
+
+                    // Write FeatureCollection
+                    let fc_string = feature_collection.to_string();
+                    let mut geometry = geozero::geojson::GeoJson(&fc_string);
+                    match args.arg_output_format {
+                        OutputFormat::Csv => {
+                            if let Some(max_len) = max_length {
+                                process_csv_with_max_length(&mut wtr, max_len, |writer| {
+                                    let mut processor = CsvWriter::new(writer);
+                                    geometry.process(&mut processor)?;
+                                    Ok(())
+                                })?;
+                                return Ok(());
+                            }
+                            // If max_length is not set, write directly to the output
+                            let mut processor = CsvWriter::new(&mut wtr);
+                            geometry.process(&mut processor)?;
+                        },
+                        OutputFormat::Svg => {
+                            let mut processor = SvgWriter::new(&mut wtr, false);
+                            geometry.process(&mut processor)?;
+                        },
+                        OutputFormat::Geojsonl => {
+                            let mut processor = GeoJsonLineWriter::new(&mut wtr);
+                            geometry.process(&mut processor)?;
+                        },
+                        OutputFormat::Geojson => {
+                            wtr.write_all(fc_string.as_bytes())?;
+                        },
+                    }
+                    return Ok(());
                 }
                 return fail_clierror!(
                     "Please specify a geometry column with the --geometry option or \

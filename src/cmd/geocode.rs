@@ -1348,10 +1348,10 @@ async fn geocode_main(args: Args) -> CliResult<()> {
 fn check_index_file(index_file: &str) -> CliResult<()> {
     // check if index_file is a u16 with the values 500, 1000, 5000 or 15000
     // if it is, return OK
-    if let Ok(i) = index_file.parse::<u16>() {
-        if i == 500 || i == 1000 || i == 5000 || i == 15000 {
-            return Ok(());
-        }
+    if let Ok(i) = index_file.parse::<u16>()
+        && (i == 500 || i == 1000 || i == 5000 || i == 15000)
+    {
+        return Ok(());
     }
 
     if !std::path::Path::new(index_file)

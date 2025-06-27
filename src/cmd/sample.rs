@@ -377,22 +377,22 @@ fn check_stats_cache(
                                 .position(|field| field == weight_col.as_bytes())
                         };
 
-                        if let Some(idx) = idx {
-                            if let Some(col_stats) = stats.get(idx) {
-                                let min_weight = col_stats
-                                    .min
-                                    .clone()
-                                    .unwrap()
-                                    .parse::<f64>()
-                                    .unwrap_or_default();
-                                if min_weight < 0.0 {
-                                    return fail_incorrectusage_clierror!(
-                                        "Weights must be non-negative. Lowest weight: {min_weight}"
-                                    );
-                                }
-
-                                max_weight = col_stats.max.clone().unwrap().parse::<f64>().ok();
+                        if let Some(idx) = idx
+                            && let Some(col_stats) = stats.get(idx)
+                        {
+                            let min_weight = col_stats
+                                .min
+                                .clone()
+                                .unwrap()
+                                .parse::<f64>()
+                                .unwrap_or_default();
+                            if min_weight < 0.0 {
+                                return fail_incorrectusage_clierror!(
+                                    "Weights must be non-negative. Lowest weight: {min_weight}"
+                                );
                             }
+
+                            max_weight = col_stats.max.clone().unwrap().parse::<f64>().ok();
                         }
                     }
                 },

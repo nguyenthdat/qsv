@@ -121,15 +121,13 @@ pub fn run(argv: &[&str]) -> CliResult<()> {
     wtr.flush()?;
     drop(wtr);
 
-    if in_place {
-        if let Some(input_path_string) = input {
-            let input_path = std::path::Path::new(&input_path_string);
-            if let Some(input_extension_osstr) = input_path.extension() {
-                let mut backup_extension = input_extension_osstr.to_string_lossy().to_string();
-                backup_extension.push_str(".bak");
-                std::fs::rename(input_path, input_path.with_extension(backup_extension))?;
-                std::fs::copy(tempfile.path(), input_path)?;
-            }
+    if in_place && let Some(input_path_string) = input {
+        let input_path = std::path::Path::new(&input_path_string);
+        if let Some(input_extension_osstr) = input_path.extension() {
+            let mut backup_extension = input_extension_osstr.to_string_lossy().to_string();
+            backup_extension.push_str(".bak");
+            std::fs::rename(input_path, input_path.with_extension(backup_extension))?;
+            std::fs::copy(tempfile.path(), input_path)?;
         }
     }
 
