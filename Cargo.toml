@@ -74,7 +74,7 @@ inherits = "release"
 panic    = "abort"
 
 [dependencies]
-arboard = { version = "3.5.0", default-features = false, optional = true }
+arboard = { version = "3.6.0", default-features = false, optional = true }
 atoi_simd = "0.16"
 base62 = { version = "2.2", optional = true }
 bitvec = "1"
