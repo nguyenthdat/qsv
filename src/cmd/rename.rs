@@ -107,7 +107,7 @@ pub fn run(argv: &[&str]) -> CliResult<()> {
         // Input has a header row, so use the original logic
         let headers = rdr.byte_headers()?;
         let header_parts: Vec<&str> = args.arg_headers.split(',').collect();
-        let is_pairs = header_parts.len() % 2 == 0
+        let is_pairs = header_parts.len().is_multiple_of(2)
             && header_parts.len() >= 2
             && header_parts.chunks(2).any(|chunk| {
                 chunk.len() == 2
@@ -158,7 +158,7 @@ fn parse_rename_pairs(
     original_headers: &csv::ByteRecord,
 ) -> CliResult<csv::ByteRecord> {
     let pairs: Vec<&str> = pairs_str.split(',').collect();
-    if pairs.len() % 2 != 0 {
+    if !pairs.len().is_multiple_of(2) {
         return fail_incorrectusage_clierror!(
             "Invalid number of arguments for pair-based renaming. Expected even number of values, \
              got {}.",

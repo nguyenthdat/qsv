@@ -1018,7 +1018,7 @@ fn sample_systematic<R: io::Read, W: io::Write>(
     // Select records at regular intervals
     let mut selected_count = 0;
     for (i, record) in rdr.byte_records().enumerate().skip(start) {
-        if i % interval == 0 && selected_count < target_count {
+        if i.is_multiple_of(interval) && selected_count < target_count {
             wtr.write_byte_record(&record?)?;
             selected_count += 1;
         }

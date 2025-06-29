@@ -719,7 +719,7 @@ pub const fn num_of_chunks(nitems: usize, chunk_size: usize) -> usize {
         return nitems;
     }
     let mut n = nitems / chunk_size;
-    if nitems % chunk_size != 0 {
+    if !nitems.is_multiple_of(chunk_size) {
         n += 1;
     }
     n
@@ -2645,7 +2645,7 @@ pub fn optimal_batch_size(rconfig: &Config, batch_size: usize, num_jobs: usize) 
         || batch_size == 1
     {
         // the optimal batch size is the number of rows divided by the number of jobs
-        if num_rows % num_jobs == 0 {
+        if num_rows.is_multiple_of(num_jobs) {
             // there is no remainder as num_rows is divisible by num_jobs
             num_rows / num_jobs
         } else {

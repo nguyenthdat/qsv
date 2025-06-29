@@ -300,11 +300,11 @@ impl Args {
         };
 
         let mut wtr = self.new_writer(&headers, 0, self.flag_pad)?;
-        let mut i = 0;
+        let mut i: usize = 0;
         let mut nchunks: usize = 0;
         let mut row = csv::ByteRecord::new();
         while rdr.read_byte_record(&mut row)? {
-            if i > 0 && i % chunk_size == 0 {
+            if i > 0 && i.is_multiple_of(chunk_size) {
                 wtr.flush()?;
                 // Run filter command if specified
                 if self.flag_filter.is_some() {
