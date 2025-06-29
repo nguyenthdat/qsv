@@ -42,7 +42,7 @@
 arg_pat="$1"
 
 # the version of this script
-bm_version=6.6.0
+bm_version=6.6.1
 
 # CONFIGURABLE VARIABLES ---------------------------------------
 # change as needed to reflect your environment/workloads
@@ -96,31 +96,41 @@ if [[ "$arg_pat" == "help" ]]; then
   echo "       e.g. ./benchmarks.sh sort - will run benchmarks with \"sort\" in the benchmark name"
   echo "       if <argument> is omitted, all benchmarks will be executed."
   echo ""
-  echo "       if <argument> is \"reset\", the benchmark data will be downloaded and prepared again."
-  echo "          though the results/benchmark_results.csv historical archive will be preserved."
-  echo "       if <argument> is \"clean\", temporary files will be deleted."
-  echo "       if <argument> is \"setup\", setup and install all the required tools."
-  echo "       if <argument> is \"help\", help text is displayed."
+  echo "       if <argument> is:"
+  echo "          \"reset\": the benchmark data will be downloaded and prepared again."
+  echo "                     though the results/benchmark_results.csv"
+  echo "                     historical archive will be preserved."
+  echo "          \"clean\": temporary files will be deleted."
+  echo "          \"setup\": setup and install all the required tools."
+  echo "           \"help\": this help text is displayed."
   echo ""
-  echo "benchmarking: $raw_version"
-  echo "dogfooding: $benchmarker_version"
-  exit
+  echo "Current configuration:"
+  echo "  benchmarking: $raw_version"
+  echo "  dogfooding: $benchmarker_version"
+  echo "  qsv binary: $qsv_bin"
+  echo "  qsv benchmarker binary: $qsv_benchmarker_bin"
+  echo "  benchmark data: $data"
+  echo "  benchmark data url: $benchmark_data_url"
+  echo "  benchmark data zip: $datazip"
+  echo "  warmup runs: $warmup_runs"
+  echo "  benchmark runs: $benchmark_runs"
+  exit 0
 fi
 
 # check if required tools/dependencies are installed ---------
 
-  # check if benchmarker_bin has the apply feature enabled
-  if [[ "$benchmarker_version" != *"apply;"* ]]; then
-    echo "ERROR: $qsv_benchmarker_bin does not have the apply feature enabled."
-    echo "The qsv apply command is needed to format the benchmarks results."
-  exit
+# check if benchmarker_bin has the apply feature enabled
+if [[ "$benchmarker_version" != *"apply;"* ]]; then
+  echo "ERROR: $qsv_benchmarker_bin does not have the apply feature enabled."
+  echo "The qsv apply command is needed to format the benchmarks results."
+  exit 1
 fi
 
 # check if the benchmarker_bin has the luau feature enabled
 if [[ "$benchmarker_version" != *"Luau"* ]]; then
   echo "ERROR: $qsv_benchmarker_bin does not have the luau feature enabled."
   echo "The qsv luau command is needed to aggregate the benchmarks results."
-  exit
+  exit 1
 fi
 
 # check if the benchmarker_bin has the to feature enabled
@@ -130,7 +140,7 @@ if [[ "$benchmarker_version" != *"to;"* ]]; then
     echo "ERROR: $qsv_benchmarker_bin does not have the to feature enabled."
     echo "The qsv to xlsx command is needed to create an Excel spreadsheet"
     echo "as benchmark_data.xlsx does not exist."
-    exit
+    exit 1
   fi
 fi
 
