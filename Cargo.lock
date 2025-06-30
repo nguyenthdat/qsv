@@ -3760,9 +3760,9 @@ dependencies = [
 
 [[package]]
 name = "kiddo"
-version = "5.1.0"
+version = "5.2.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "edd950c7dd03fe7851b5bf993d63615ecaa457fe0e8d7a2a749427f9b9b83942"
+checksum = "52d0b22e8069fa029e15b7b0bf5bccc6d10c6abd26c3447970f708e2ee543afb"
 dependencies = [
  "aligned-vec",
  "array-init",
@@ -6690,9 +6690,9 @@ dependencies = [
 
 [[package]]
 name = "rust_xlsxwriter"
-version = "0.88.0"
+version = "0.88.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "11a9ee3bdc80c80c012e551066a1963a1e550690d186372f33fe3e0a8b3f7661"
+checksum = "1aeb5b05e174a2f19f17bcd1275fd12165ce6b86496233386357dcade748a921"
 dependencies = [
  "tempfile",
  "zip",
