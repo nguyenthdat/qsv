@@ -336,7 +336,7 @@ impl Args {
         }
 
         let mut pct_sum = 0.0_f64;
-        let mut pct = 0.0_f64;
+        let mut pct: f64;
         let mut count_sum = 0_u64;
         let pct_factor = if total_count > 0 {
             100.0_f64 / total_count.to_f64().unwrap_or(1.0_f64)
@@ -344,20 +344,24 @@ impl Args {
             0.0_f64
         };
 
+        // Pre-allocate the result vector with known capacity
+        // We might add an "Other" entry, so add 1 to capacity
+        let mut counts_final: Vec<(Vec<u8>, u64, f64)> = Vec::with_capacity(counts.len() + 1);
+
+        // Create NULL value once to avoid repeated to_vec allocations
+        let null_val = NULL_VAL.to_vec();
+
         #[allow(clippy::cast_precision_loss)]
-        let mut counts_final: Vec<(Vec<u8>, u64, f64)> = counts
-            .into_iter()
-            .map(|(byte_string, count)| {
-                count_sum += count;
-                pct = count as f64 * pct_factor;
-                pct_sum += pct;
-                if *b"" == **byte_string {
-                    (NULL_VAL.to_vec(), count, pct)
-                } else {
-                    (byte_string.to_owned(), count, pct)
-                }
-            })
-            .collect();
+        for (byte_string, count) in counts {
+            count_sum += count;
+            pct = count as f64 * pct_factor;
+            pct_sum += pct;
+            if *b"" == **byte_string {
+                counts_final.push((null_val.clone(), count, pct));
+            } else {
+                counts_final.push((byte_string.to_owned(), count, pct));
+            }
+        }
 
         let other_count = total_count - count_sum;
         if other_count > 0 && self.flag_other_text != "<NONE>" {
