@@ -533,8 +533,9 @@ fn unique_combined_with_validator_factory<'a>(
         )
     })?;
 
-    let mut column_names = Vec::new();
-    let mut column_indices = Vec::new();
+    let col_len = columns.len();
+    let mut column_names = Vec::with_capacity(col_len);
+    let mut column_indices = Vec::with_capacity(col_len);
 
     // Convert each column name/index to appropriate type
     for col in columns {
@@ -1421,7 +1422,7 @@ Try running `qsv validate schema {}` to check the JSON Schema file."#, args.arg_
     let mut valid_flags: BitVec = BitVec::with_capacity(record_count as usize);
     let batch_size = util::optimal_batch_size(&rconfig, args.flag_batch, num_jobs);
     let mut batch = Vec::with_capacity(batch_size);
-    let mut batch_validation_results = Vec::with_capacity(batch_size);
+    let mut batch_validation_results: Vec<Option<String>> = Vec::with_capacity(batch_size);
     let mut validation_error_messages: Vec<String> = Vec::with_capacity(50);
     let flag_trim = args.flag_trim;
     let flag_fail_fast = args.flag_fail_fast;
