@@ -1702,6 +1702,8 @@ fn to_json_instance(
                 if let Ok(v) = simdutf8::basic::from_utf8(value) {
                     Value::String(v.to_owned())
                 } else {
+                    // don't return an error if the string fails utf8 validation
+                    // send the lossy utf8 value
                     Value::String(String::from_utf8_lossy(value).into_owned())
                 }
             },
@@ -1710,7 +1712,7 @@ fn to_json_instance(
                     Value::Number(Number::from_f64(float).unwrap_or_else(|| Number::from(0)))
                 } else {
                     return fail_clierror!(
-                        "Can't cast into Number. key: {key}, value: {}",
+                        "Can't cast to Number. key: {key}, value: {}",
                         String::from_utf8_lossy(value)
                     );
                 }
@@ -1720,7 +1722,7 @@ fn to_json_instance(
                     Value::Number(Number::from(int))
                 } else {
                     return fail_clierror!(
-                        "Can't cast into Integer. key: {key}, value: {}",
+                        "Can't cast to Integer. key: {key}, value: {}",
                         String::from_utf8_lossy(value)
                     );
                 }
@@ -1730,7 +1732,7 @@ fn to_json_instance(
                 b"false" | b"0" => Value::Bool(false),
                 _ => {
                     return fail_clierror!(
-                        "Can't cast into Boolean. key: {key}, value: {}",
+                        "Can't cast to Boolean. key: {key}, value: {}",
                         String::from_utf8_lossy(value)
                     );
                 },
@@ -1989,7 +1991,7 @@ mod tests_for_csv_to_json_conversion {
         );
         assert!(&result.is_err());
         let error = result.err().unwrap().to_string();
-        similar_asserts::assert_eq!("Can't cast into Integer. key: C, value: 3.0e8", error);
+        similar_asserts::assert_eq!("Can't cast to Integer. key: C, value: 3.0e8", error);
     }
 }
 
