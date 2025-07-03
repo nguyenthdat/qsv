@@ -435,6 +435,7 @@ pub fn polars_count_input(conf: &Config, low_memory: bool) -> CliResult<u64> {
         prelude::*,
         sql::SQLContext,
     };
+    use polars_utils::plpath::PlPath;
 
     // info!("using polars");
 
@@ -472,7 +473,7 @@ pub fn polars_count_input(conf: &Config, low_memory: bool) -> CliResult<u64> {
     {
         // First, try to read the first row to check if the file is empty
         // do it in a block so schema_df is dropped early
-        let schema_df = match LazyCsvReader::new(filepath.clone())
+        let schema_df = match LazyCsvReader::new(PlPath::new(&filepath.to_string_lossy()))
             .with_separator(delimiter)
             .with_comment_prefix(comment_prefix.clone())
             .with_n_rows(Some(1))
@@ -502,7 +503,7 @@ pub fn polars_count_input(conf: &Config, low_memory: bool) -> CliResult<u64> {
     } else {
         // otherwise, read the file into a Polars LazyFrame
         // using the LazyCsvReader builder to set CSV read options
-        lazy_df = match LazyCsvReader::new(filepath.clone())
+        lazy_df = match LazyCsvReader::new(PlPath::new(&filepath.to_string_lossy()))
             .with_separator(delimiter)
             .with_comment_prefix(comment_prefix)
             .with_low_memory(low_memory)

@@ -25,7 +25,7 @@ pivotp arguments:
 pivotp options:
     -i, --index <cols>      The column(s) to use as the index (row labels).
                             Specify multiple columns by separating them with a comma.
-                            The output will have one row for each unique combination of the index’s values.
+                            The output will have one row for each unique combination of the index's values.
                             If None, all remaining columns not specified on --on and --values will be used.
                             At least one of --index and --values must be specified.
     -v, --values <cols>     The column(s) containing values to aggregate.
@@ -78,6 +78,7 @@ use csv::ByteRecord;
 use indicatif::HumanCount;
 use polars::prelude::*;
 use polars_ops::pivot::{PivotAgg, pivot_stable};
+use polars_utils::plpath::PlPath;
 use serde::Deserialize;
 
 use crate::{
@@ -535,7 +536,7 @@ pub fn run(argv: &[&str]) -> CliResult<()> {
     }
 
     // Create CSV reader config
-    let mut csv_reader = LazyCsvReader::new(&args.arg_input)
+    let mut csv_reader = LazyCsvReader::new(PlPath::new(&args.arg_input))
         .with_has_header(true)
         .with_try_parse_dates(args.flag_try_parsedates)
         .with_decimal_comma(args.flag_decimal_comma)

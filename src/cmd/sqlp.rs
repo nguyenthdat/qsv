@@ -296,6 +296,7 @@ use polars::{
     },
     sql::SQLContext,
 };
+use polars_utils::plpath::PlPath;
 use regex::Regex;
 use serde::Deserialize;
 
@@ -757,8 +758,10 @@ pub fn run(argv: &[&str]) -> CliResult<()> {
                 );
             }
 
+            let plpath = PlPath::new(&table.to_string_lossy());
+
             let mut lf = if cache_schemas || valid_schema_exists {
-                let mut work_lf = LazyCsvReader::new(table)
+                let mut work_lf = LazyCsvReader::new(plpath)
                     .with_has_header(true)
                     .with_missing_is_null(true)
                     .with_comment_prefix(comment_char.clone())
@@ -803,7 +806,7 @@ pub fn run(argv: &[&str]) -> CliResult<()> {
             } else {
                 // Read input file robustly
                 // First try, as --cache-schema is not enabled, try using the --infer-len length
-                let reader = LazyCsvReader::new(table)
+                let reader = LazyCsvReader::new(plpath.clone())
                     .with_has_header(true)
                     .with_missing_is_null(true)
                     .with_comment_prefix(comment_char.clone())
@@ -836,13 +839,14 @@ pub fn run(argv: &[&str]) -> CliResult<()> {
                         let schema: Schema = serde_json::from_str(&schema_json)?;
 
                         // Second try, using the inferred schema
-                        let reader_2ndtry = LazyCsvReader::new(table)
-                            .with_schema(Some(Arc::new(schema)))
-                            .with_try_parse_dates(args.flag_try_parsedates)
-                            .with_ignore_errors(args.flag_ignore_errors)
-                            .with_truncate_ragged_lines(args.flag_truncate_ragged_lines)
-                            .with_decimal_comma(args.flag_decimal_comma)
-                            .with_low_memory(args.flag_low_memory);
+                        let reader_2ndtry =
+                            LazyCsvReader::new(plpath.clone())
+                                .with_schema(Some(Arc::new(schema)))
+                                .with_try_parse_dates(args.flag_try_parsedates)
+                                .with_ignore_errors(args.flag_ignore_errors)
+                                .with_truncate_ragged_lines(args.flag_truncate_ragged_lines)
+                                .with_decimal_comma(args.flag_decimal_comma)
+                                .with_low_memory(args.flag_low_memory);
 
                         if let Ok(lf) = reader_2ndtry.finish() {
                             lf
@@ -850,7 +854,7 @@ pub fn run(argv: &[&str]) -> CliResult<()> {
                             // Second try didn't work.
                             // Try one last time without an infer schema length, scanning the whole
                             // file
-                            LazyCsvReader::new(table)
+                            LazyCsvReader::new(plpath)
                                 .with_infer_schema_length(None)
                                 .with_try_parse_dates(args.flag_try_parsedates)
                                 .with_ignore_errors(args.flag_ignore_errors)
@@ -862,7 +866,7 @@ pub fn run(argv: &[&str]) -> CliResult<()> {
                     } else {
                         // Ok, we failed to infer a schema, try without an infer schema length
                         // and scan the whole file to get the schema
-                        LazyCsvReader::new(table)
+                        LazyCsvReader::new(plpath)
                             .with_infer_schema_length(None)
                             .with_try_parse_dates(args.flag_try_parsedates)
                             .with_ignore_errors(args.flag_ignore_errors)
