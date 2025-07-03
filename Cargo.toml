@@ -440,6 +440,7 @@ nightly = [
     "polars/simd",
     "pyo3/nightly",
     "rand/nightly",
+    "simd-json/hints",
 ]
 
 [package.metadata.deb]
