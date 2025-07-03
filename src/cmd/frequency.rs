@@ -160,6 +160,7 @@ pub struct Args {
 
 const NULL_VAL: &[u8] = b"(NULL)";
 const NON_UTF8_ERR: &str = "<Non-UTF8 ERROR>";
+const EMPTY_BYTES: Vec<u8> = Vec::new();
 
 static UNIQUE_COLUMNS: OnceLock<Vec<usize>> = OnceLock::new();
 static COL_CARDINALITY_VEC: OnceLock<Vec<(String, u64)>> = OnceLock::new();
@@ -419,7 +420,6 @@ impl Args {
     where
         I: Iterator<Item = csv::Result<csv::ByteRecord>>,
     {
-        let null = &b""[..].to_vec();
         let nsel = sel.normal();
         let nsel_len = nsel.len();
 
@@ -523,8 +523,9 @@ impl Args {
                         freq_tables.get_unchecked_mut(i).add(field_buffer);
                     }
                 } else if !flag_no_nulls {
+                    // set to null (EMPTY_BYTES) as flag_no_nulls is false
                     unsafe {
-                        freq_tables.get_unchecked_mut(i).add(null.clone());
+                        freq_tables.get_unchecked_mut(i).add(EMPTY_BYTES);
                     }
                 }
             }
