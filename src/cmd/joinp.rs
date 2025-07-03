@@ -269,6 +269,7 @@ use std::{
 };
 
 use polars::prelude::*;
+use polars_utils::plpath::PlPath;
 use serde::Deserialize;
 use tempfile::tempdir;
 
@@ -873,7 +874,7 @@ impl Args {
             args: &Args,
             delim: u8,
         ) -> LazyCsvReader {
-            LazyCsvReader::new(file_path)
+            LazyCsvReader::new(PlPath::new(file_path))
                 .with_has_header(true)
                 .with_missing_is_null(args.flag_nulls)
                 .with_comment_prefix(comment_char.cloned())
