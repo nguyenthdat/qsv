@@ -283,13 +283,6 @@ whatlang = { version = "0.16", optional = true }
 xxhash-rust = { version = "0.8", features = ["xxh3"] }
 zip = "4"
 
-# enable parking_lot hardware lock elision on x86_64
-[target.'cfg(target_arch = "x86_64")'.dependencies]
-parking_lot = { version = "0.12", features = ["hardware-lock-elision"] }
-# otherwise, on non-x86_64, use the default
-[target.'cfg(not(target_arch = "x86_64"))'.dependencies]
-parking_lot = "0.12"
-
 [dev-dependencies]
 actix-governor = "0.8"
 actix-web = { version = "4.11", default-features = false, features = [

@@ -5919,7 +5919,6 @@ dependencies = [
  "newline-converter",
  "num_cpus",
  "odht",
- "parking_lot",
  "phf 0.12.1",
  "polars",
  "polars-ops",
