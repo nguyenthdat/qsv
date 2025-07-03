@@ -839,14 +839,13 @@ pub fn run(argv: &[&str]) -> CliResult<()> {
                         let schema: Schema = serde_json::from_str(&schema_json)?;
 
                         // Second try, using the inferred schema
-                        let reader_2ndtry =
-                            LazyCsvReader::new(plpath.clone())
-                                .with_schema(Some(Arc::new(schema)))
-                                .with_try_parse_dates(args.flag_try_parsedates)
-                                .with_ignore_errors(args.flag_ignore_errors)
-                                .with_truncate_ragged_lines(args.flag_truncate_ragged_lines)
-                                .with_decimal_comma(args.flag_decimal_comma)
-                                .with_low_memory(args.flag_low_memory);
+                        let reader_2ndtry = LazyCsvReader::new(plpath.clone())
+                            .with_schema(Some(Arc::new(schema)))
+                            .with_try_parse_dates(args.flag_try_parsedates)
+                            .with_ignore_errors(args.flag_ignore_errors)
+                            .with_truncate_ragged_lines(args.flag_truncate_ragged_lines)
+                            .with_decimal_comma(args.flag_decimal_comma)
+                            .with_low_memory(args.flag_low_memory);
 
                         if let Ok(lf) = reader_2ndtry.finish() {
                             lf
