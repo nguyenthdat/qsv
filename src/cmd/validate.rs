@@ -1157,8 +1157,8 @@ pub fn run(argv: &[&str]) -> CliResult<()> {
                         return fail_encoding_clierror!(
                             "non-utf8 sequence detected in header, position {pos:?}.\n{err}\nUse \
                              `qsv input` to fix formatting and to handle non-utf8 sequences.\n
-                             You may also want to transcode your data to UTF-8 first using `iconv` \
-                             or `recode`."
+                             Alternatively, transcode your data to UTF-8 first using `iconv` or \
+                             `recode`."
                         );
                     }
                     // its not a UTF-8 error, report a generic header validation error
@@ -1248,7 +1248,7 @@ pub fn run(argv: &[&str]) -> CliResult<()> {
                     r#"non-utf8 sequence at record {record_idx}.
 Invalid record: {record:?}
 Use `qsv input` to fix formatting and to handle non-utf8 sequences.
-You may also want to transcode your data to UTF-8 first using `iconv` or `recode`."#
+Alternatively, transcode your data to UTF-8 first using `iconv` or `recode`."#
                 );
             }
 
@@ -1689,13 +1689,15 @@ fn to_json_instance(
 ) -> CliResult<Value> {
     let mut json_object_map = Map::with_capacity(header_len);
 
+    let mut json_value;
+
     for ((key, json_type), value) in header_types.iter().zip(record.iter()) {
         if value.is_empty() {
             json_object_map.insert(key.clone(), Value::Null);
             continue;
         }
 
-        let json_value = match json_type {
+        json_value = match json_type {
             JSONtypes::String => {
                 if let Ok(v) = simdutf8::basic::from_utf8(value) {
                     Value::String(v.to_owned())
