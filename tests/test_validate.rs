@@ -29,7 +29,7 @@ fn validate_good_tab() {
 
     let got: String = wrk.stdout(&mut cmd);
     let expected = r#"Valid: 29 Columns: ("case_enquiry_id", "open_dt", "target_dt", "closed_dt", "ontime", "case_status", "closure_reason", "case_title", "subject", "reason", "type", "queue", "department", "submittedphoto", "closedphoto", "location", "fire_district", "pwd_district", "city_council_district", "police_district", "neighborhood", "neighborhood_services_district", "ward", "precinct", "location_street_name", "location_zipcode", "latitude", "longitude", "source"); Records: 100; Delimiter: TAB"#;
-    similar_asserts::assert_eq!(got, expected);
+    assert_eq!(got, expected);
 }
 
 #[test]
@@ -59,7 +59,7 @@ fn validate_good_csv_msg() {
 
     let got: String = wrk.stdout(&mut cmd);
     let expected = r#"Valid: 3 Columns: ("title", "name", "real age (earth years)"); Records: 3; Delimiter: ,"#;
-    similar_asserts::assert_eq!(got, expected);
+    assert_eq!(got, expected);
 }
 
 #[test]
@@ -74,7 +74,7 @@ fn validate_empty_csv_msg() {
 
     let got: String = wrk.stdout(&mut cmd);
     let expected = r#"Valid: 3 Columns: ("title", "name", "real age (earth years)"); Records: 0; Delimiter: ,"#;
-    similar_asserts::assert_eq!(got, expected);
+    assert_eq!(got, expected);
 }
 
 #[test]
@@ -105,7 +105,7 @@ fn validate_good_csv_pretty_json() {
     "real age (earth years)"
   ]
 }"#;
-    similar_asserts::assert_eq!(got, expected);
+    assert_eq!(got, expected);
 }
 
 #[test]
@@ -125,7 +125,7 @@ fn validate_good_csv_json() {
 
     let got: String = wrk.stdout(&mut cmd);
     let expected = r#"{"delimiter_char":",","header_row":true,"quote_char":"\"","num_records":3,"num_fields":3,"fields":["title","name","age"]}"#;
-    similar_asserts::assert_eq!(got, expected);
+    assert_eq!(got, expected);
 }
 
 #[test]
@@ -147,7 +147,7 @@ fn validate_bad_csv() {
     let expected = r#"Validation error: CSV error: record 2 (line: 3, byte: 36): found record with 2 fields, but the previous record has 3 fields.
 Use `qsv fixlengths` to fix record length issues.
 "#;
-    similar_asserts::assert_eq!(got, expected);
+    assert_eq!(got, expected);
 
     wrk.assert_err(&mut cmd);
 }
@@ -171,7 +171,7 @@ fn validate_bad_csv_first_record() {
     let expected = r#"Validation error: CSV error: record 1 (line: 2, byte: 15): found record with 2 fields, but the previous record has 3 fields.
 Use `qsv fixlengths` to fix record length issues.
 "#;
-    similar_asserts::assert_eq!(got, expected);
+    assert_eq!(got, expected);
 
     wrk.assert_err(&mut cmd);
 }
@@ -195,7 +195,7 @@ fn validate_bad_csv_last_record() {
     let expected = r#"Validation error: CSV error: record 3 (line: 4, byte: 54): found record with 4 fields, but the previous record has 3 fields.
 Use `qsv fixlengths` to fix record length issues.
 "#;
-    similar_asserts::assert_eq!(got, expected);
+    assert_eq!(got, expected);
 
     wrk.assert_err(&mut cmd);
 }
@@ -228,7 +228,7 @@ fn validate_bad_csv_prettyjson() {
   ]
 }
 "#;
-    similar_asserts::assert_eq!(got, expected);
+    assert_eq!(got, expected);
 
     wrk.assert_err(&mut cmd);
 }
@@ -273,12 +273,12 @@ fn validate_adur_public_toilets_dataset_with_json_schema() {
 
     // check invalid file output
     let invalid_output: String = wrk.from_str(&wrk.path("data.csv.invalid"));
-    similar_asserts::assert_eq!(adur_invalids().to_string(), invalid_output);
+    assert_eq!(adur_invalids().to_string(), invalid_output);
 
     // check validation error output
 
     let validation_error_output: String = wrk.from_str(&wrk.path("data.csv.validation-errors.tsv"));
-    similar_asserts::assert_eq!(adur_errors(), validation_error_output);
+    assert_eq!(adur_errors(), validation_error_output);
     wrk.assert_err(&mut cmd);
 }
 
@@ -302,7 +302,7 @@ fn validate_adur_public_toilets_dataset_with_json_schema_valid_output() {
 
     let out = wrk.output_stderr(&mut cmd);
     let expected = "13\n";
-    similar_asserts::assert_eq!(out, expected);
+    assert_eq!(out, expected);
 
     let got: Vec<Vec<String>> = wrk.read_stdout(&mut cmd);
     let expected = vec![
@@ -321,7 +321,7 @@ fn validate_adur_public_toilets_dataset_with_json_schema_valid_output() {
         svec!["07/07/2014 00:00", "http://opendatacommunities.org/id/district-council/adur", "Adur", "http://id.esd.org.uk/service/579", "Public toilets", "BEACH TOILETS BASIN ROAD SOUTH SOUTHWICK", "OSGB36", "522007", "106062", "http://www.ordnancesurvey.co.uk/business-and-government/help-and-support/public-sector/guidance/derived-data-exemptions.html", "Female and male", "None", "No", "No", "No", "No", "No", "No", "No", "", "", "http://www.adur-worthing.gov.uk/streets-and-travel/public-toilets/", "", "ADC", "surveyor_14@adur-worthing.gov.uk", "01903 221471", "Grounds staff only not public", "60032527", "", "PUBLIC CONVENIENCE NORTH PAVILION BUCKINGHAM PARK UPPER SHOREHAM ROAD SHOREHAM-BY-SEA", "", ""], 
         svec!["07/07/2014 00:00", "http://opendatacommunities.org/id/district-council/adur", "Adur", "http://id.esd.org.uk/service/579", "Public toilets", "BEACH TOILETS BASIN ROAD SOUTH SOUTHWICK", "OSGB36", "522083", "105168", "http://www.ordnancesurvey.co.uk/business-and-government/help-and-support/public-sector/guidance/derived-data-exemptions.html", "Female and male", "Unisex", "Yes", "No", "No", "No", "No", "No", "No", "", "", "http://www.adur-worthing.gov.uk/streets-and-travel/public-toilets/", "09.00 - 17.00", "ADC", "surveyor_15@adur-worthing.gov.uk", "01903 221471", "", "60034215", "", "PUBLIC CONVENIENCES CIVIC CENTRE HAM ROAD SHOREHAM-BY-SEA", "", ""]    
     ];
-    similar_asserts::assert_eq!(got, expected);
+    assert_eq!(got, expected);
 
     wrk.assert_err(&mut cmd);
 }
@@ -347,7 +347,7 @@ fn validate_with_schema_noheader() {
 
     let got = wrk.output_stderr(&mut cmd);
     let expected = "Cannot validate CSV without headers against a JSON Schema.\n".to_string();
-    similar_asserts::assert_eq!(got, expected);
+    assert_eq!(got, expected);
 
     wrk.assert_err(&mut cmd);
 }
@@ -367,11 +367,11 @@ fn validate_adur_public_toilets_dataset_with_json_schema_url() {
     wrk.output(&mut cmd);
 
     let invalid_output: String = wrk.from_str(&wrk.path("data.csv.invalid"));
-    similar_asserts::assert_eq!(adur_invalids().to_string(), invalid_output);
+    assert_eq!(adur_invalids().to_string(), invalid_output);
 
     // check validation error output
     let validation_error_output: String = wrk.from_str(&wrk.path("data.csv.validation-errors.tsv"));
-    similar_asserts::assert_eq!(adur_errors(), validation_error_output);
+    assert_eq!(adur_errors(), validation_error_output);
     wrk.assert_err(&mut cmd);
 }
 
@@ -433,17 +433,17 @@ fn validate_dynenum_with_column() {
 3	product	"Orange" is not a valid dynamicEnum value
 4	product	"Grape" is not a valid dynamicEnum value
 "#;
-    similar_asserts::assert_eq!(validation_errors, expected_errors);
+    assert_eq!(validation_errors, expected_errors);
 
     // Check valid records
     let valid_records: Vec<Vec<String>> = wrk.read_csv("data.csv.valid");
     let expected_valid = vec![svec!["1", "Apple", "fruit"], svec!["2", "Banana", "fruit"]];
-    similar_asserts::assert_eq!(valid_records, expected_valid);
+    assert_eq!(valid_records, expected_valid);
 
     // Check invalid records
     let invalid_records: Vec<Vec<String>> = wrk.read_csv("data.csv.invalid");
     let expected_invalid = vec![svec!["3", "Orange", "fruit"], svec!["4", "Grape", "fruit"]];
-    similar_asserts::assert_eq!(invalid_records, expected_invalid);
+    assert_eq!(invalid_records, expected_invalid);
 
     wrk.assert_err(&mut cmd);
 }
@@ -505,17 +505,17 @@ fn validate_dynenum_with_column_index() {
         .unwrap();
     let expected_errors = "row_number\tfield\terror\n2\tcode\t\"D4\" is not a valid dynamicEnum \
                            value\n4\tcode\t\"X9\" is not a valid dynamicEnum value\n";
-    similar_asserts::assert_eq!(validation_errors, expected_errors);
+    assert_eq!(validation_errors, expected_errors);
 
     // Check valid records
     let valid_records: Vec<Vec<String>> = wrk.read_csv("data.csv.valid");
     let expected_valid = vec![svec!["1", "fruit", "A1"], svec!["3", "fruit", "B2"]];
-    similar_asserts::assert_eq!(valid_records, expected_valid);
+    assert_eq!(valid_records, expected_valid);
 
     // Check invalid records
     let invalid_records: Vec<Vec<String>> = wrk.read_csv("data.csv.invalid");
     let expected_invalid = vec![svec!["2", "vegetable", "D4"], svec!["4", "fruit", "X9"]];
-    similar_asserts::assert_eq!(invalid_records, expected_invalid);
+    assert_eq!(invalid_records, expected_invalid);
 
     wrk.assert_err(&mut cmd);
 }
@@ -560,7 +560,7 @@ fn validate_dynenum_with_invalid_column() {
     // Check error output
     let got = wrk.output_stderr(&mut cmd);
     #[cfg(feature = "lite")]
-    similar_asserts::assert_eq!(got, "1 out of 1 records invalid.\n");
+    assert_eq!(got, "1 out of 1 records invalid.\n");
     #[cfg(not(feature = "lite"))]
     assert!(got.ends_with(
         "Cannot compile JSONschema. error: Column 'nonexistent_column' not found in lookup \
@@ -617,17 +617,17 @@ fn validate_dynenum_with_remote_csv() {
 2	fruit	"mango" is not a valid dynamicEnum value
 4	fruit	"dragonfruit" is not a valid dynamicEnum value
 "#;
-    similar_asserts::assert_eq!(validation_errors, expected_errors);
+    assert_eq!(validation_errors, expected_errors);
 
     // Check valid records
     let valid_records: Vec<Vec<String>> = wrk.read_csv("data.csv.valid");
     let expected_valid = vec![svec!["1", "banana"], svec!["3", "apple"]];
-    similar_asserts::assert_eq!(valid_records, expected_valid);
+    assert_eq!(valid_records, expected_valid);
 
     // Check invalid records
     let invalid_records: Vec<Vec<String>> = wrk.read_csv("data.csv.invalid");
     let expected_invalid = vec![svec!["2", "mango"], svec!["4", "dragonfruit"]];
-    similar_asserts::assert_eq!(invalid_records, expected_invalid);
+    assert_eq!(invalid_records, expected_invalid);
 
     wrk.assert_err(&mut cmd);
 }
@@ -744,9 +744,8 @@ fn validate_lite_dynenum_combinations() {
             .read_to_string("data.csv.validation-errors.tsv")
             .unwrap();
         let error_count = validation_errors.lines().count() - 1; // subtract header row
-        similar_asserts::assert_eq!(
-            error_count,
-            expected_invalid_count,
+        assert_eq!(
+            error_count, expected_invalid_count,
             "Failed for URI: {}",
             uri
         );
@@ -801,7 +800,7 @@ fn validate_unique_combined_with() {
 3		Combination of values for columns name, email is not unique
 5		Combination of values for columns name, email is not unique
 "#;
-    similar_asserts::assert_eq!(validation_errors, expected_errors);
+    assert_eq!(validation_errors, expected_errors);
 
     // Check valid records
     let valid_records: Vec<Vec<String>> = wrk.read_csv("data.csv.valid");
@@ -810,7 +809,7 @@ fn validate_unique_combined_with() {
         svec!["2", "Jane Smith", "jane@example.com", "HR"],
         svec!["4", "Bob Wilson", "bob@example.com", "IT"],
     ];
-    similar_asserts::assert_eq!(valid_records, expected_valid);
+    assert_eq!(valid_records, expected_valid);
 
     // Check invalid records
     let invalid_records: Vec<Vec<String>> = wrk.read_csv("data.csv.invalid");
@@ -818,7 +817,7 @@ fn validate_unique_combined_with() {
         svec!["3", "John Doe", "john@example.com", "IT"],
         svec!["5", "Jane Smith", "jane@example.com", "HR"],
     ];
-    similar_asserts::assert_eq!(invalid_records, expected_invalid);
+    assert_eq!(invalid_records, expected_invalid);
 
     wrk.assert_err(&mut cmd);
 }
@@ -871,7 +870,7 @@ fn validate_unique_combined_with_indices() {
 3		Combination of values for columns 1, 2 is not unique
 5		Combination of values for columns 1, 2 is not unique
 "#;
-    similar_asserts::assert_eq!(validation_errors, expected_errors);
+    assert_eq!(validation_errors, expected_errors);
 
     // Check valid records
     let valid_records: Vec<Vec<String>> = wrk.read_csv("data.csv.valid");
@@ -880,7 +879,7 @@ fn validate_unique_combined_with_indices() {
         svec!["2", "Jane Smith", "jane@example.com", "HR"],
         svec!["4", "Bob Wilson", "bob@example.com", "IT"],
     ];
-    similar_asserts::assert_eq!(valid_records, expected_valid);
+    assert_eq!(valid_records, expected_valid);
 
     // Check invalid records
     let invalid_records: Vec<Vec<String>> = wrk.read_csv("data.csv.invalid");
@@ -888,7 +887,7 @@ fn validate_unique_combined_with_indices() {
         svec!["3", "John Doe", "john@example.com", "IT"],
         svec!["5", "Jane Smith", "jane@example.com", "HR"],
     ];
-    similar_asserts::assert_eq!(invalid_records, expected_invalid);
+    assert_eq!(invalid_records, expected_invalid);
 
     wrk.assert_err(&mut cmd);
 }
@@ -941,7 +940,7 @@ fn validate_unique_combined_with_both_names_and_indices() {
 3		Combination of values for columns name, 2 is not unique
 5		Combination of values for columns name, 2 is not unique
 "#;
-    similar_asserts::assert_eq!(validation_errors, expected_errors);
+    assert_eq!(validation_errors, expected_errors);
 
     // Check valid records
     let valid_records: Vec<Vec<String>> = wrk.read_csv("data.csv.valid");
@@ -950,7 +949,7 @@ fn validate_unique_combined_with_both_names_and_indices() {
         svec!["2", "Jane Smith", "jane@example.com", "HR"],
         svec!["4", "Bob Wilson", "bob@example.com", "IT"],
     ];
-    similar_asserts::assert_eq!(valid_records, expected_valid);
+    assert_eq!(valid_records, expected_valid);
 
     // Check invalid records
     let invalid_records: Vec<Vec<String>> = wrk.read_csv("data.csv.invalid");
@@ -958,7 +957,7 @@ fn validate_unique_combined_with_both_names_and_indices() {
         svec!["3", "John Doe", "john@example.com", "IT"],
         svec!["5", "Jane Smith", "jane@example.com", "HR"],
     ];
-    similar_asserts::assert_eq!(invalid_records, expected_invalid);
+    assert_eq!(invalid_records, expected_invalid);
 
     wrk.assert_err(&mut cmd);
 }
@@ -1020,7 +1019,7 @@ fn validate_unique_combined_with_empty_values() {
     let expected_errors = r#"row_number	field	error
 5		Combination of values for columns name, email is not unique
 "#;
-    similar_asserts::assert_eq!(validation_errors, expected_errors);
+    assert_eq!(validation_errors, expected_errors);
 
     // Check valid records
     let valid_records: Vec<Vec<String>> = wrk.read_csv("data.csv.valid");
@@ -1030,12 +1029,12 @@ fn validate_unique_combined_with_empty_values() {
         svec!["3", "John Doe", "", "IT"],
         svec!["4", "", "", "IT"],
     ];
-    similar_asserts::assert_eq!(valid_records, expected_valid);
+    assert_eq!(valid_records, expected_valid);
 
     // Check invalid records
     let invalid_records: Vec<Vec<String>> = wrk.read_csv("data.csv.invalid");
     let expected_invalid = vec![svec!["5", "", "", "HR"]];
-    similar_asserts::assert_eq!(invalid_records, expected_invalid);
+    assert_eq!(invalid_records, expected_invalid);
 
     wrk.assert_err(&mut cmd);
 }
@@ -1088,7 +1087,7 @@ fn validate_unique_combined_with_special_chars() {
 3		Combination of values for columns name, email is not unique
 5		Combination of values for columns name, email is not unique
 "#;
-    similar_asserts::assert_eq!(validation_errors, expected_errors);
+    assert_eq!(validation_errors, expected_errors);
 
     // Check valid records
     let valid_records: Vec<Vec<String>> = wrk.read_csv("data.csv.valid");
@@ -1097,7 +1096,7 @@ fn validate_unique_combined_with_special_chars() {
         svec!["2", "Jane-Smith", "jane.smith@example.com", "HR"],
         svec!["4", "Bob_Wilson", "bob.wilson@example.com", "IT"],
     ];
-    similar_asserts::assert_eq!(valid_records, expected_valid);
+    assert_eq!(valid_records, expected_valid);
 
     // Check invalid records
     let invalid_records: Vec<Vec<String>> = wrk.read_csv("data.csv.invalid");
@@ -1105,7 +1104,7 @@ fn validate_unique_combined_with_special_chars() {
         svec!["3", "John Doe", "john.doe@example.com", "IT"],
         svec!["5", "Jane-Smith", "jane.smith@example.com", "HR"],
     ];
-    similar_asserts::assert_eq!(invalid_records, expected_invalid);
+    assert_eq!(invalid_records, expected_invalid);
 
     wrk.assert_err(&mut cmd);
 }
@@ -1177,7 +1176,7 @@ fn validate_dynenum_with_multiple_columns() {
     let expected_errors = r#"row_number	field	error
 3	product	"Orange" is not a valid dynamicEnum value
 "#;
-    similar_asserts::assert_eq!(validation_errors, expected_errors);
+    assert_eq!(validation_errors, expected_errors);
 
     // Check valid records
     let valid_records: Vec<Vec<String>> = wrk.read_csv("data.csv.valid");
@@ -1187,12 +1186,12 @@ fn validate_dynenum_with_multiple_columns() {
         svec!["4", "Carrot", "vegetable", "inactive"],
         svec!["5", "Dragon Fruit", "fruit", "active"],
     ];
-    similar_asserts::assert_eq!(valid_records, expected_valid);
+    assert_eq!(valid_records, expected_valid);
 
     // Check invalid records
     let invalid_records: Vec<Vec<String>> = wrk.read_csv("data.csv.invalid");
     let expected_invalid = vec![svec!["3", "Orange", "fruit", "active"]];
-    similar_asserts::assert_eq!(invalid_records, expected_invalid);
+    assert_eq!(invalid_records, expected_invalid);
 
     wrk.assert_err(&mut cmd);
 }
@@ -1254,17 +1253,17 @@ fn validate_dynenum_with_caching() {
     let expected_errors = r#"row_number	field	error
 2	product	"Orange" is not a valid dynamicEnum value
 "#;
-    similar_asserts::assert_eq!(validation_errors, expected_errors);
+    assert_eq!(validation_errors, expected_errors);
 
     // Check valid records
     let valid_records: Vec<Vec<String>> = wrk.read_csv("data.csv.valid");
     let expected_valid = vec![svec!["1", "Apple"], svec!["3", "Banana"]];
-    similar_asserts::assert_eq!(valid_records, expected_valid);
+    assert_eq!(valid_records, expected_valid);
 
     // Check invalid records
     let invalid_records: Vec<Vec<String>> = wrk.read_csv("data.csv.invalid");
     let expected_invalid = vec![svec!["2", "Orange"]];
-    similar_asserts::assert_eq!(invalid_records, expected_invalid);
+    assert_eq!(invalid_records, expected_invalid);
 
     wrk.assert_err(&mut cmd);
 }
@@ -1366,7 +1365,7 @@ fn validate_unique_combined_with_mixed_names_and_indices() {
 3		Combination of values for columns name, role, 2 is not unique
 5		Combination of values for columns name, role, 2 is not unique
 "#;
-    similar_asserts::assert_eq!(validation_errors, expected_errors);
+    assert_eq!(validation_errors, expected_errors);
 
     // Check valid records
     let valid_records: Vec<Vec<String>> = wrk.read_csv("data.csv.valid");
@@ -1377,7 +1376,7 @@ fn validate_unique_combined_with_mixed_names_and_indices() {
         svec!["6", "Alice Brown", "alice@example.com", "IT", "Developer"],
         svec!["7", "Alice Brown", "alice@example.com", "IT", "Manager"],
     ];
-    similar_asserts::assert_eq!(valid_records, expected_valid);
+    assert_eq!(valid_records, expected_valid);
 
     // Check invalid records
     let invalid_records: Vec<Vec<String>> = wrk.read_csv("data.csv.invalid");
@@ -1385,7 +1384,7 @@ fn validate_unique_combined_with_mixed_names_and_indices() {
         svec!["3", "John Doe", "john@example.com", "IT", "Developer"],
         svec!["5", "Jane Smith", "jane@example.com", "HR", "Manager"],
     ];
-    similar_asserts::assert_eq!(invalid_records, expected_invalid);
+    assert_eq!(invalid_records, expected_invalid);
 
     wrk.assert_err(&mut cmd);
 }

@@ -23,7 +23,7 @@ fn rename() {
         svec!["2", "a"],
         svec!["3", "d"],
     ];
-    similar_asserts::assert_eq!(got, expected);
+    assert_eq!(got, expected);
 }
 
 #[test]
@@ -49,7 +49,7 @@ fn rename_generic() {
         svec!["2", "a"],
         svec!["3", "d"],
     ];
-    similar_asserts::assert_eq!(got, expected);
+    assert_eq!(got, expected);
 }
 
 #[test]
@@ -70,7 +70,7 @@ fn rename_noheaders() {
         svec!["2", "a"],
         svec!["3", "d"],
     ];
-    similar_asserts::assert_eq!(got, expected);
+    assert_eq!(got, expected);
 }
 
 #[test]
@@ -91,7 +91,7 @@ fn rename_noheaders_generic() {
         svec!["2", "a"],
         svec!["3", "d"],
     ];
-    similar_asserts::assert_eq!(got, expected);
+    assert_eq!(got, expected);
 }
 
 #[test]
@@ -117,7 +117,7 @@ fn rename_pairs() {
         svec!["2", "a", "y"],
         svec!["3", "d", "z"],
     ];
-    similar_asserts::assert_eq!(got, expected);
+    assert_eq!(got, expected);
 }
 
 #[test]
@@ -143,7 +143,7 @@ fn rename_pairs_single() {
         svec!["2", "a"],
         svec!["3", "d"],
     ];
-    similar_asserts::assert_eq!(got, expected);
+    assert_eq!(got, expected);
 }
 
 #[test]
@@ -167,7 +167,7 @@ fn rename_pairs_multiple() {
         svec!["1", "2", "3", "4"],
         svec!["5", "6", "7", "8"],
     ];
-    similar_asserts::assert_eq!(got, expected);
+    assert_eq!(got, expected);
 }
 
 #[test]

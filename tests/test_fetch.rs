@@ -30,7 +30,7 @@ fn fetch_simple() {
 {"country":"United States","country abbreviation":"US","post code":"90210","places":[{"place name":"Beverly Hills","longitude":"-118.4065","latitude":"34.0901","state":"California","state abbreviation":"CA"}]}
 {"country":"United States","country abbreviation":"US","post code":"94105","places":[{"place name":"San Francisco","longitude":"-122.3892","latitude":"37.7864","state":"California","state abbreviation":"CA"}]}
 {"country":"United States","country abbreviation":"US","post code":"92802","places":[{"place name":"Anaheim","longitude":"-117.9228","latitude":"33.8085","state":"California","state abbreviation":"CA"}]}"#;
-    similar_asserts::assert_eq!(got, expected);
+    assert_eq!(got, expected);
 }
 
 #[test]
@@ -103,7 +103,7 @@ https://api.zippopotam.us/us/92802,"{
     }
   ]
 }""#;
-    similar_asserts::assert_eq!(got, expected);
+    assert_eq!(got, expected);
 }
 
 #[test]
@@ -164,7 +164,7 @@ fn fetch_simple_new_col() {
         ],
     ];
 
-    similar_asserts::assert_eq!(got, expected);
+    assert_eq!(got, expected);
 }
 
 #[test]
@@ -225,7 +225,7 @@ fn fetch_simple_report() {
         ],
         // svec!["https://query.wikidata.org/sparql?query=SELECT%20?dob%20WHERE%20{wd:Q42%20wdt:P569%20?dob.}&format=json", "200", "0", "0", r#"{"head":{"vars":["dob"]},"results":{"bindings":[{"dob":{"datatype":"http://www.w3.org/2001/XMLSchema#dateTime","type":"literal","value":"1952-03-11T00:00:00Z"}}]}}"#],
     ];
-    similar_asserts::assert_eq!(got, expected);
+    assert_eq!(got, expected);
 }
 
 #[test]
@@ -254,7 +254,7 @@ fn fetch_simple_url_template() {
 {"country":"United States","country abbreviation":"US","post code":"90210","places":[{"place name":"Beverly Hills","longitude":"-118.4065","latitude":"34.0901","state":"California","state abbreviation":"CA"}]}
 {"country":"United States","country abbreviation":"US","post code":"94105","places":[{"place name":"San Francisco","longitude":"-122.3892","latitude":"37.7864","state":"California","state abbreviation":"CA"}]}
 {"country":"United States","country abbreviation":"US","post code":"92802","places":[{"place name":"Anaheim","longitude":"-117.9228","latitude":"33.8085","state":"California","state abbreviation":"CA"}]}"#;
-    similar_asserts::assert_eq!(got, expected);
+    assert_eq!(got, expected);
 }
 
 #[test]
@@ -295,7 +295,7 @@ fn fetch_simple_redis() {
 {"country":"United States","country abbreviation":"US","post code":"92802","places":[{"place name":"Anaheim","longitude":"-117.9228","latitude":"33.8085","state":"California","state abbreviation":"CA"}]}
 {"errors":[{"title":"Invalid URL","detail":"relative URL without a base"}]}"#;
 
-    similar_asserts::assert_eq!(got, expected);
+    assert_eq!(got, expected);
 }
 
 #[test]
@@ -337,7 +337,7 @@ fn fetch_simple_diskcache() {
 {"country":"United States","country abbreviation":"US","post code":"92802","places":[{"place name":"Anaheim","longitude":"-117.9228","latitude":"33.8085","state":"California","state abbreviation":"CA"}]}
 {"errors":[{"title":"Invalid URL","detail":"relative URL without a base"}]}"#;
 
-    similar_asserts::assert_eq!(got, expected);
+    assert_eq!(got, expected);
 
     wrk.assert_success(&mut cmd);
 
@@ -353,7 +353,7 @@ fn fetch_simple_diskcache() {
         .args(&["--report", "short"]);
 
     let got = wrk.stdout::<String>(&mut cmd_2);
-    similar_asserts::assert_eq!(got, expected);
+    assert_eq!(got, expected);
 
     // sleep for a bit to make sure the cache is written to disk
     std::thread::sleep(std::time::Duration::from_secs(2));
@@ -367,7 +367,7 @@ fn fetch_simple_diskcache() {
 
     let fetchreport_noelapsed = wrk.stdout::<String>(&mut cmd3);
     // read the output file and compare it with the expected output
-    similar_asserts::assert_eq!(
+    assert_eq!(
         fetchreport_noelapsed,
         r#"url,status,cache_hit,retries,response
 https://api.zippopotam.us/us/99999,404,1,5,"{""errors"":[{""title"":""HTTP ERROR"",""detail"":""HTTP ERROR 404 - Not Found""}]}"
@@ -409,7 +409,7 @@ fn fetch_jaq_single() {
         svec!["https://api.zippopotam.us/us/92802", "\"Anaheim\""],
     ];
 
-    similar_asserts::assert_eq!(got, expected);
+    assert_eq!(got, expected);
 }
 
 #[test]
@@ -443,7 +443,7 @@ fn fetch_jaq_single_file() {
         svec!["https://api.zippopotam.us/us/94105", "\"San Francisco\""],
         svec!["https://api.zippopotam.us/us/92802", "\"Anaheim\""],
     ];
-    similar_asserts::assert_eq!(got, expected);
+    assert_eq!(got, expected);
 }
 
 #[test]
@@ -532,7 +532,7 @@ fn fetch_jaq_multiple() {
         ],
         svec!["https://api.zippopotam.us/us/92802", "[\"Anaheim\",\"CA\"]"],
     ];
-    similar_asserts::assert_eq!(got, expected);
+    assert_eq!(got, expected);
 }
 
 #[test]
@@ -572,7 +572,7 @@ fn fetch_jaq_multiple_file() {
         ],
         svec!["https://api.zippopotam.us/us/92802", "[\"Anaheim\",\"CA\"]"],
     ];
-    similar_asserts::assert_eq!(got, expected);
+    assert_eq!(got, expected);
 }
 
 #[test]
@@ -597,7 +597,7 @@ fn fetch_custom_header() {
 
     let got = wrk.stdout::<String>(&mut cmd);
     let expected = "[\"DEMO_KEY\",\"ABC123XYZ\"]";
-    similar_asserts::assert_eq!(got, expected);
+    assert_eq!(got, expected);
 }
 
 #[test]
@@ -963,7 +963,7 @@ fn fetch_ratelimit() {
             "\"The quick brown fox jumped over the lazy dog by the zigzag quarry site Smurf\""
         ],
     ];
-    similar_asserts::assert_eq!(got, expected);
+    assert_eq!(got, expected);
 
     // init stop webserver and wait until server gracefully exit
     println!("STOPPING Webserver");
@@ -1052,7 +1052,7 @@ fn fetch_complex_url_template() {
         svec!["Snappy", "blue", "\"Snappy blue Smurf\""],
     ];
 
-    similar_asserts::assert_eq!(got, expected);
+    assert_eq!(got, expected);
 
     // init stop webserver and wait until server gracefully exit
     println!("STOPPING Webserver");
@@ -1134,7 +1134,7 @@ fn fetchpost_simple_test() {
         ],
     ];
 
-    similar_asserts::assert_eq!(got_parsed, expected);
+    assert_eq!(got_parsed, expected);
 }
 
 #[test]
@@ -1220,7 +1220,7 @@ fn fetchpost_simple_diskcache() {
         ],
     ];
 
-    similar_asserts::assert_eq!(got_parsed, expected);
+    assert_eq!(got_parsed, expected);
 
     assert!(temp_dir.join("fetchpost_v1/conf").exists());
 
@@ -1252,7 +1252,7 @@ fn fetchpost_simple_diskcache() {
 
     //     got_parsed2.push(record_parsed2.clone());
     // }
-    // similar_asserts::assert_eq!(got_parsed2, expected);
+    // assert_eq!(got_parsed2, expected);
 
     // // sleep for a bit to make sure the cache is written to disk
     // std::thread::sleep(std::time::Duration::from_secs(2));
@@ -1266,7 +1266,7 @@ fn fetchpost_simple_diskcache() {
 
     // let fetchreport_noelapsed = wrk.stdout::<String>(&mut cmd3);
     // // read the output file and compare it with the expected output
-    // similar_asserts::assert_eq!(
+    // assert_eq!(
     //     fetchreport_noelapsed,
     //     r#"url,status,cache_hit,retries,response
     // https://api.zippopotam.us/us/99999,404,1,5,"{""errors"":[{""title"":""HTTP ERROR"",""detail"":""HTTP ERROR 404 - Not Found""}]}"
@@ -1363,7 +1363,7 @@ fn fetchpost_compress_test() {
         ],
     ];
 
-    similar_asserts::assert_eq!(got_parsed, expected);
+    assert_eq!(got_parsed, expected);
 }
 
 #[test]
@@ -1457,7 +1457,7 @@ fn fetchpost_literalurl_test() {
         ],
     ];
 
-    similar_asserts::assert_eq!(got_parsed, expected);
+    assert_eq!(got_parsed, expected);
 }
 
 #[test]
@@ -1526,7 +1526,7 @@ fn fetchpost_simple_report() {
         ],
     ];
 
-    similar_asserts::assert_eq!(got, expected);
+    assert_eq!(got, expected);
 }
 
 #[test]
@@ -1592,7 +1592,7 @@ fn fetchpost_payload_template() {
         ],
     ];
 
-    similar_asserts::assert_eq!(got, expected);
+    assert_eq!(got, expected);
 }
 
 #[test]
@@ -1670,7 +1670,7 @@ fn fetchpost_payload_template_with_globals() {
         ],
     ];
 
-    similar_asserts::assert_eq!(got, expected);
+    assert_eq!(got, expected);
 }
 
 #[test]
@@ -1738,7 +1738,7 @@ fn fetchpost_payload_template_with_report() {
         ],
     ];
 
-    similar_asserts::assert_eq!(got, expected);
+    assert_eq!(got, expected);
 
     let report = wrk.read_to_string("data.csv.fetchpost-report.tsv").unwrap();
     assert!(!report.is_empty());
@@ -1810,7 +1810,7 @@ fn fetchpost_disk_cache() {
     // Second request should be cached
     let got2 = wrk.stdout::<String>(&mut cmd);
 
-    similar_asserts::assert_eq!(&got1, &got2);
+    assert_eq!(&got1, &got2);
 
     // Clean up
     fs::remove_dir_all(temp_dir).unwrap();
@@ -1867,7 +1867,7 @@ fn fetchpost_content_type() {
         .arg("data.csv");
 
     let got = wrk.stdout::<String>(&mut cmd);
-    similar_asserts::assert_eq!(
+    assert_eq!(
         got,
         r#"{"Message":"Hello World","URL":"https://httpbin.org/post"}"#
     );
@@ -1881,7 +1881,7 @@ fn fetchpost_content_type() {
         .arg("data.csv");
 
     let got = wrk.stdout::<String>(&mut cmd);
-    similar_asserts::assert_eq!(got, r#"{"message":"Hello World"}"#);
+    assert_eq!(got, r#"{"message":"Hello World"}"#);
 }
 
 #[test]
@@ -1912,7 +1912,7 @@ fn test_fetchpost_column_list_globals() {
         .arg("data.csv");
 
     let got = wrk.stdout::<String>(&mut cmd);
-    similar_asserts::assert_eq!(
+    assert_eq!(
         got,
         r#"{"api_key":"secret123","message":"Hello World","user_id":"user456"}"#
     );
@@ -1948,7 +1948,7 @@ fn test_fetch_jaq_invalid_json() {
         ],
     ];
 
-    similar_asserts::assert_eq!(got, expected);
+    assert_eq!(got, expected);
 }
 
 #[test]
@@ -1972,7 +1972,7 @@ fn test_fetch_jaq_invalid_selector() {
         svec!["https://api.zippopotam.us/us/90210", ""],
     ];
 
-    similar_asserts::assert_eq!(got, expected);
+    assert_eq!(got, expected);
 }
 
 #[test]
@@ -1996,7 +1996,7 @@ fn test_fetch_jaq_number() {
         svec!["https://api.zippopotam.us/us/90210", "\"-118.4065\""],
     ];
 
-    similar_asserts::assert_eq!(got, expected);
+    assert_eq!(got, expected);
 }
 
 #[test]
@@ -2023,5 +2023,5 @@ fn test_fetch_jaq_array() {
         ],
     ];
 
-    similar_asserts::assert_eq!(got, expected);
+    assert_eq!(got, expected);
 }

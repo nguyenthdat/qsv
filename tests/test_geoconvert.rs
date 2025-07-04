@@ -66,7 +66,7 @@ Abernathy,0,0
 Abilene,0,0
 Ackerly,0,0
 Addison,0,0"#;
-    similar_asserts::assert_eq!(got, expected);
+    assert_eq!(got, expected);
 }
 
 #[test]
@@ -101,5 +101,5 @@ MULTIPOLYG...,2,Abernathy,0,0
 POLYGON((-...,3,Abilene,0,0
 POLYGON((-...,4,Ackerly,0,0
 POLYGON((-...,5,Addison,0,0"#;
-    similar_asserts::assert_eq!(got, expected);
+    assert_eq!(got, expected);
 }

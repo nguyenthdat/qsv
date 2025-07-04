@@ -19,7 +19,7 @@ fn edit_by_col_name() {
 a,3
 b,2"
     .to_string();
-    similar_asserts::assert_eq!(got, expected);
+    assert_eq!(got, expected);
 }
 
 #[test]
@@ -41,7 +41,7 @@ fn edit_by_col_index() {
 a,3
 b,2"
     .to_string();
-    similar_asserts::assert_eq!(got, expected);
+    assert_eq!(got, expected);
 }
 
 #[test]
@@ -66,7 +66,7 @@ b,2",
 a,1
 b,2"
     .to_string();
-    similar_asserts::assert_eq!(got, expected);
+    assert_eq!(got, expected);
 }
 
 #[test]
@@ -90,7 +90,7 @@ b,2,y",
 z,1,x
 b,2,y"
         .to_string();
-    similar_asserts::assert_eq!(got, expected);
+    assert_eq!(got, expected);
 }
 
 #[test]
@@ -112,7 +112,7 @@ fn edit_by_col_underscore() {
 a,3
 b,2"
     .to_string();
-    similar_asserts::assert_eq!(got, expected);
+    assert_eq!(got, expected);
 }
 
 #[test]
@@ -146,6 +146,6 @@ a,1
 b,2
 "
     .to_string();
-    similar_asserts::assert_eq!(got, expected);
-    similar_asserts::assert_eq!(got_backup, expected_backup);
+    assert_eq!(got, expected);
+    assert_eq!(got_backup, expected_backup);
 }

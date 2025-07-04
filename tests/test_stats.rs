@@ -130,7 +130,7 @@ fn test_stats<S>(
         if field == "skewness" { 40 } else { 15 },
         cmp::min(field_val.len(), expected.len()),
     );
-    similar_asserts::assert_eq!(&field_val[0..len], &expected[0..len]);
+    assert_eq!(&field_val[0..len], &expected[0..len]);
 }
 
 fn setup<S>(
@@ -632,7 +632,7 @@ fn stats_prefer_dmy() {
     let got2: String = wrk.stdout(&mut cmd);
     let expected2 = wrk.load_test_resource("boston311-100-stats.csv");
 
-    similar_asserts::assert_eq!(dos2unix(&got2), dos2unix(&expected2).trim_end());
+    assert_eq!(dos2unix(&got2), dos2unix(&expected2).trim_end());
 }
 
 #[test]
@@ -660,7 +660,7 @@ fn stats_prefer_mdy() {
 
     let expected2 = wrk.load_test_resource("boston311-100-stats.csv");
 
-    similar_asserts::assert_eq!(dos2unix(&got2), dos2unix(&expected2).trim_end());
+    assert_eq!(dos2unix(&got2), dos2unix(&expected2).trim_end());
 }
 
 #[test]
@@ -686,7 +686,7 @@ fn stats_rounding() {
     let got2: String = wrk.stdout(&mut cmd);
     let expected2 = wrk.load_test_resource("boston311-100-everything-8places-stats.csv");
 
-    similar_asserts::assert_eq!(dos2unix(&got2), dos2unix(&expected2).trim_end());
+    assert_eq!(dos2unix(&got2), dos2unix(&expected2).trim_end());
 }
 
 #[test]
@@ -732,7 +732,7 @@ fn stats_no_date_inference() {
     let got2: String = wrk.stdout(&mut cmd);
     let expected2 = wrk.load_test_resource("boston311-100-everything-nodate-stats.csv");
 
-    similar_asserts::assert_eq!(dos2unix(&got2), dos2unix(&expected2).trim_end());
+    assert_eq!(dos2unix(&got2), dos2unix(&expected2).trim_end());
 }
 
 #[test]
@@ -760,7 +760,7 @@ fn stats_with_date_inference() {
     let got2: String = wrk.stdout(&mut cmd);
     let expected2 = wrk.load_test_resource("boston311-100-everything-date-stats.csv");
 
-    similar_asserts::assert_eq!(dos2unix(&got2), dos2unix(&expected2).trim_end());
+    assert_eq!(dos2unix(&got2), dos2unix(&expected2).trim_end());
 }
 
 #[test]
@@ -787,7 +787,7 @@ fn stats_with_date_inference_default_whitelist() {
     let expected2 =
         wrk.load_test_resource("boston311-100-everything-inferdates-defaultwhitelist-stats.csv");
 
-    similar_asserts::assert_eq!(dos2unix(&got2), dos2unix(&expected2).trim_end());
+    assert_eq!(dos2unix(&got2), dos2unix(&expected2).trim_end());
 }
 
 #[test]
@@ -812,7 +812,7 @@ fn stats_with_date_inference_variance_stddev() {
     let expected2 =
         wrk.load_test_resource("boston311-100-everything-date-stats-variance-stddev.csv");
 
-    similar_asserts::assert_eq!(dos2unix(&got2), dos2unix(&expected2).trim_end());
+    assert_eq!(dos2unix(&got2), dos2unix(&expected2).trim_end());
 }
 
 #[test]
@@ -840,7 +840,7 @@ fn stats_with_date_type() {
     let got2: String = wrk.stdout(&mut cmd);
     let expected2 = wrk.load_test_resource("boston311-100-everything-datenotime-stats.csv");
 
-    similar_asserts::assert_eq!(dos2unix(&got2), dos2unix(&expected2).trim_end());
+    assert_eq!(dos2unix(&got2), dos2unix(&expected2).trim_end());
 }
 
 #[test]
@@ -855,7 +855,7 @@ fn stats_typesonly() {
 
     let expected = wrk.load_test_resource("boston311-100-typesonly-stats.csv");
 
-    similar_asserts::assert_eq!(dos2unix(&got), dos2unix(&expected).trim_end());
+    assert_eq!(dos2unix(&got), dos2unix(&expected).trim_end());
 }
 
 #[test]
@@ -873,7 +873,7 @@ fn stats_typesonly_with_dates() {
 
     let expected = wrk.load_test_resource("boston311-100-typesonly-withdates-stats.csv");
 
-    similar_asserts::assert_eq!(dos2unix(&got), dos2unix(&expected).trim_end());
+    assert_eq!(dos2unix(&got), dos2unix(&expected).trim_end());
 }
 
 #[test]
@@ -894,7 +894,7 @@ fn stats_typesonly_cache_threshold_zero() {
 
     let expected = wrk.load_test_resource("boston311-100-typesonly-withdates-stats.csv");
 
-    similar_asserts::assert_eq!(dos2unix(&got), dos2unix(&expected).trim_end());
+    assert_eq!(dos2unix(&got), dos2unix(&expected).trim_end());
 
     // check that the stats cache files were NOT created
     assert!(!Path::new(&wrk.path("boston311-100.stats.csv")).exists());
@@ -916,7 +916,7 @@ fn stats_typesonly_cache() {
 
     let expected = wrk.load_test_resource("boston311-100-typesonly-withdates-stats.csv");
 
-    similar_asserts::assert_eq!(dos2unix(&got), dos2unix(&expected).trim_end());
+    assert_eq!(dos2unix(&got), dos2unix(&expected).trim_end());
 }
 
 #[test]
@@ -946,7 +946,7 @@ fn stats_cache() {
     let got2: String = wrk.stdout(&mut cmd);
     let expected2 = wrk.load_test_resource("boston311-100-stats.csv");
 
-    similar_asserts::assert_eq!(dos2unix(&got2), dos2unix(&expected2).trim_end());
+    assert_eq!(dos2unix(&got2), dos2unix(&expected2).trim_end());
 
     // check that the stats cache files were created
     assert!(Path::new(&wrk.path("boston311-100.stats.csv")).exists());
@@ -985,7 +985,7 @@ fn stats_cache_negative_threshold() {
     let got2: String = wrk.stdout(&mut cmd);
     let expected2 = wrk.load_test_resource("boston311-100-stats.csv");
 
-    similar_asserts::assert_eq!(dos2unix(&got2), dos2unix(&expected2).trim_end());
+    assert_eq!(dos2unix(&got2), dos2unix(&expected2).trim_end());
 
     // check that the stats cache files were created
     assert!(Path::new(&wrk.path("boston311-100.stats.csv")).exists());
@@ -1023,7 +1023,7 @@ fn stats_cache_negative_threshold_unmet() {
     let got2: String = wrk.stdout(&mut cmd);
     let expected2 = wrk.load_test_resource("boston311-100-stats.csv");
 
-    similar_asserts::assert_eq!(dos2unix(&got2), dos2unix(&expected2).trim_end());
+    assert_eq!(dos2unix(&got2), dos2unix(&expected2).trim_end());
 
     // check that the stats cache files were created
     assert!(Path::new(&wrk.path("boston311-100.stats.csv")).exists());
@@ -1064,7 +1064,7 @@ fn stats_cache_negative_threshold_five() {
     let got2: String = wrk.stdout(&mut cmd);
     let expected2 = wrk.load_test_resource("boston311-100-stats.csv");
 
-    similar_asserts::assert_eq!(dos2unix(&got2), dos2unix(&expected2).trim_end());
+    assert_eq!(dos2unix(&got2), dos2unix(&expected2).trim_end());
 
     // check that the stats cache files were created
     assert!(!Path::new(&wrk.path("boston311-100.stats.csv")).exists());
@@ -1085,7 +1085,7 @@ fn stats_antimodes_len_500() {
 
     let expected = wrk.load_test_resource("boston311-100-antimodes-len500-stats.csv");
 
-    similar_asserts::assert_eq!(dos2unix(&got), dos2unix(&expected).trim_end());
+    assert_eq!(dos2unix(&got), dos2unix(&expected).trim_end());
 }
 
 #[test]
@@ -1102,7 +1102,7 @@ fn stats_infer_boolean_1_0() {
 
     let expected = wrk.load_test_resource("boston311-10-boolean-1or0-stats.csv");
 
-    similar_asserts::assert_eq!(dos2unix(&got), dos2unix(&expected).trim_end());
+    assert_eq!(dos2unix(&got), dos2unix(&expected).trim_end());
 }
 
 #[test]
@@ -1119,7 +1119,7 @@ fn stats_infer_boolean_t_f() {
 
     let expected = wrk.load_test_resource("boston311-10-boolean-tf-stats.csv");
 
-    similar_asserts::assert_eq!(dos2unix(&got), dos2unix(&expected).trim_end());
+    assert_eq!(dos2unix(&got), dos2unix(&expected).trim_end());
 }
 
 #[test]
@@ -1138,7 +1138,7 @@ fn stats_infer_boolean_true_false() {
 
     let expected = wrk.load_test_resource("boston311-10-boolean-tf-stats.csv");
 
-    similar_asserts::assert_eq!(dos2unix(&got), dos2unix(&expected).trim_end());
+    assert_eq!(dos2unix(&got), dos2unix(&expected).trim_end());
 }
 
 #[test]
@@ -1196,7 +1196,7 @@ fn stats_typesonly_infer_boolean_t_f() {
 
     let expected = wrk.load_test_resource("boston311-10-typesonly-boolean-tf-stats.csv");
 
-    similar_asserts::assert_eq!(dos2unix(&got), dos2unix(&expected).trim_end());
+    assert_eq!(dos2unix(&got), dos2unix(&expected).trim_end());
 }
 
 #[test]
@@ -1234,7 +1234,7 @@ fn stats_is_ascii() {
     let got2: String = wrk.stdout(&mut cmd);
     let expected2 = wrk.load_test_resource("boston311-100-with-nonascii-stats.csv");
 
-    similar_asserts::assert_eq!(dos2unix(&got2), dos2unix(&expected2).trim_end());
+    assert_eq!(dos2unix(&got2), dos2unix(&expected2).trim_end());
 }
 
 #[test]
@@ -1252,7 +1252,7 @@ fn stats_everything_utf8_japanese_issue817() {
 
     // let got: String = wrk.stdout(&mut cmd);
     // let expected = wrk.load_test_resource("utf8-japanesedata-stats-everything.csv");
-    // similar_asserts::assert_eq!(dos2unix(&got).trim_end(), dos2unix(&expected).trim_end());
+    // assert_eq!(dos2unix(&got).trim_end(), dos2unix(&expected).trim_end());
 }
 
 #[test]
@@ -1291,7 +1291,7 @@ fn stats_leading_zero_handling() {
             "ae045ecc55c3c99d40dd2b7369e55db9d15d1a19988850c496aa3afd456e164e"
         ],
     ];
-    similar_asserts::assert_eq!(got, expected);
+    assert_eq!(got, expected);
 }
 
 #[test]
@@ -1553,7 +1553,7 @@ fn stats_zero_cv() {
             "6e3c1035ebfe08ef286abbc7fd528717ff0ee129fbb9aacca5f27c529e39eff8"
         ],
     ];
-    similar_asserts::assert_eq!(got, expected);
+    assert_eq!(got, expected);
 }
 
 #[test]
@@ -1591,7 +1591,7 @@ qsv__columncount																										3
 qsv__filesize_bytes																										62
 qsv__fingerprint_hash																										cf6ba47ee7251a17b8d7789636b2c5d2302ea6e0fb69572f1eaf25aead083cef
 "#;
-    similar_asserts::assert_eq!(got, expected);
+    assert_eq!(got, expected);
 }
 
 #[test]
@@ -1629,7 +1629,7 @@ qsv__columncount;;;;;;;;;;;;;;;;;;;;;;;;;;3
 qsv__filesize_bytes;;;;;;;;;;;;;;;;;;;;;;;;;;62
 qsv__fingerprint_hash;;;;;;;;;;;;;;;;;;;;;;;;;;cf6ba47ee7251a17b8d7789636b2c5d2302ea6e0fb69572f1eaf25aead083cef
 "#;
-    similar_asserts::assert_eq!(got, expected);
+    assert_eq!(got, expected);
 }
 
 #[test]
@@ -1669,7 +1669,7 @@ qsv__rowcount,,,,,,,,,,,,,,,,,,,,,,,,,,5
 qsv__columncount,,,,,,,,,,,,,,,,,,,,,,,,,,3
 qsv__filesize_bytes,,,,,,,,,,,,,,,,,,,,,,,,,,62
 qsv__fingerprint_hash,,,,,,,,,,,,,,,,,,,,,,,,,,cf6ba47ee7251a17b8d7789636b2c5d2302ea6e0fb69572f1eaf25aead083cef"#;
-    similar_asserts::assert_eq!(got, expected);
+    assert_eq!(got, expected);
 }
 
 mod stats_infer_nothing {
@@ -1805,7 +1805,7 @@ fn stats_vis_whitespace() {
         svec!["qsv__filesize_bytes", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "323"], 
         svec!["qsv__fingerprint_hash", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "39f84fb60ced1488a91fc3a7a6e22692dafb414e0d43f09ab768c5f9981db630"]
     ];
-    // similar_asserts::
+    //
     assert_eq!(got, expected);
 }
 
@@ -1899,7 +1899,7 @@ fn stats_percentiles() {
         ],
     ];
 
-    similar_asserts::assert_eq!(got, expected);
+    assert_eq!(got, expected);
 }
 
 #[test]
@@ -1997,7 +1997,7 @@ fn stats_percentiles_floats() {
         ],
     ];
 
-    //similar_asserts::
+    //
     assert_eq!(got, expected);
 }
 
@@ -2087,7 +2087,7 @@ fn stats_percentiles_with_dates() {
         ],
     ];
 
-    similar_asserts::assert_eq!(got, expected);
+    assert_eq!(got, expected);
 }
 
 #[test]
@@ -2175,7 +2175,7 @@ fn stats_percentiles_with_nulls() {
         ],
     ];
 
-    similar_asserts::assert_eq!(got, expected);
+    assert_eq!(got, expected);
 }
 
 #[test]
@@ -2238,7 +2238,7 @@ fn stats_percentiles_mixed_types() {
         ],
     ];
 
-    similar_asserts::assert_eq!(got, expected);
+    assert_eq!(got, expected);
 }
 
 #[test]
@@ -2326,7 +2326,7 @@ fn stats_percentiles_edge_cases() {
         ],
     ];
 
-    similar_asserts::assert_eq!(got, expected);
+    assert_eq!(got, expected);
 }
 
 #[test]
@@ -2419,7 +2419,7 @@ fn stats_percentiles_custom_list() {
         ],
     ];
 
-    similar_asserts::assert_eq!(got, expected);
+    assert_eq!(got, expected);
 }
 
 #[test]
@@ -2472,7 +2472,7 @@ fn stats_percentiles_single_value() {
         ],
     ];
 
-    similar_asserts::assert_eq!(got, expected);
+    assert_eq!(got, expected);
 }
 
 #[test]
@@ -2491,7 +2491,7 @@ fn stats_infer_boolean_prefix_pattern() {
 
     let expected = wrk.load_test_resource("boston311-10-boolean-tf-stats.csv");
 
-    similar_asserts::assert_eq!(dos2unix(&got), dos2unix(&expected).trim_end());
+    assert_eq!(dos2unix(&got), dos2unix(&expected).trim_end());
 }
 
 #[test]
@@ -2510,7 +2510,7 @@ fn stats_infer_boolean_multiple_patterns() {
 
     let expected = wrk.load_test_resource("boston311-10-boolean-tf-stats.csv");
 
-    similar_asserts::assert_eq!(dos2unix(&got), dos2unix(&expected).trim_end());
+    assert_eq!(dos2unix(&got), dos2unix(&expected).trim_end());
 }
 
 #[test]
@@ -2529,7 +2529,7 @@ fn stats_infer_boolean_case_insensitive() {
 
     let expected = wrk.load_test_resource("boston311-10-boolean-tf-stats.csv");
 
-    similar_asserts::assert_eq!(dos2unix(&got), dos2unix(&expected).trim_end());
+    assert_eq!(dos2unix(&got), dos2unix(&expected).trim_end());
 }
 
 #[test]
@@ -2726,7 +2726,7 @@ fn stats_issue_2668_semicolon_separator() {
         ],
     ];
 
-    similar_asserts::assert_eq!(got, expected);
+    assert_eq!(got, expected);
 }
 
 #[test]

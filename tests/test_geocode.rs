@@ -39,7 +39,7 @@ fn geocode_suggest() {
         svec!["95.213424, 190,1234565"], // suggest expects a city name, not lat, long
         svec!["(14.55027, 121.03269)"],
     ];
-    similar_asserts::assert_eq!(got, expected);
+    assert_eq!(got, expected);
 }
 
 #[test]
@@ -87,7 +87,7 @@ fn geocode_suggest_select() {
         svec!["15", "16", "95.213424, 190,1234565"], // suggest expects a city name, not lat, long
         svec!["17", "18", "(14.55027, 121.03269)"],
     ];
-    similar_asserts::assert_eq!(got, expected);
+    assert_eq!(got, expected);
 }
 
 #[test]
@@ -103,7 +103,7 @@ fn geocode_suggestnow_default() {
         svec!["Location"],
         svec!["Brooklyn, New York US: 40.6501, -73.94958"],
     ];
-    similar_asserts::assert_eq!(got, expected);
+    assert_eq!(got, expected);
 }
 
 #[test]
@@ -140,7 +140,7 @@ fn geocode_suggestnow_formatstr_dyncols() {
             "America/New_York"
         ],
     ];
-    similar_asserts::assert_eq!(got, expected);
+    assert_eq!(got, expected);
 }
 
 #[test]
@@ -181,7 +181,7 @@ fn geocode_suggest_intl() {
         svec!["95.213424, 190,1234565"],
         svec!["Havana, La Habana Province CU"],
     ];
-    similar_asserts::assert_eq!(got, expected);
+    assert_eq!(got, expected);
 }
 
 #[test]
@@ -224,7 +224,7 @@ fn geocode_suggest_intl_country_filter() {
         svec!["95.213424, 190,1234565"],
         svec!["Savannah, Georgia US"],
     ];
-    similar_asserts::assert_eq!(got, expected);
+    assert_eq!(got, expected);
 }
 
 #[test]
@@ -264,7 +264,7 @@ fn geocode_suggestnow() {
 
     let got: Vec<Vec<String>> = wrk.read_stdout(&mut cmd);
     let expected = vec![svec!["Location"], svec!["Paris, Texas US"]];
-    similar_asserts::assert_eq!(got, expected);
+    assert_eq!(got, expected);
 }
 
 #[test]
@@ -284,7 +284,7 @@ fn geocode_reversenow() {
         svec!["Location"],
         svec!["Brooklyn, Kings County, New York - 2736074 America/New_York"],
     ];
-    similar_asserts::assert_eq!(got, expected);
+    assert_eq!(got, expected);
 }
 
 #[test]
@@ -370,7 +370,7 @@ fn geocode_suggest_intl_multi_country_filter() {
         svec!["95.213424, 190,1234565"],
         svec!["Savannah, Georgia US"],
     ];
-    similar_asserts::assert_eq!(got, expected);
+    assert_eq!(got, expected);
 }
 
 #[test]
@@ -421,7 +421,7 @@ fn geocode_suggest_filter_country_admin1() {
         // and the closest match for Makati in the US is McAllen in Texas
         svec!["McKinney, Texas, Collin US"],
     ];
-    similar_asserts::assert_eq!(got, expected);
+    assert_eq!(got, expected);
 }
 
 #[test]
@@ -463,7 +463,7 @@ fn geocode_suggest_invalid() {
         svec!["<ERROR>"], // suggest expects a city name, not lat, long
         svec!["(14.55027, 121.03269)"],
     ];
-    similar_asserts::assert_eq!(got, expected);
+    assert_eq!(got, expected);
 }
 
 #[test]
@@ -505,7 +505,7 @@ fn geocode_suggest_dynfmt() {
         svec!["95.213424, 190,1234565"], // invalid lat, long
         svec!["14.55027:121.03269 - Makati City, National Capital Region:- PH AS PHP "],
     ];
-    similar_asserts::assert_eq!(got, expected);
+    assert_eq!(got, expected);
 }
 
 #[test]
@@ -553,7 +553,7 @@ fn geocode_suggest_pretty_json() {
             "{\n  \"cityrecord\":{\n  \"id\": 1703417,\n  \"name\": \"Makati City\",\n  \"latitude\": 14.55027,\n  \"longitude\": 121.03269,\n  \"country\": {\n    \"id\": 1694008,\n    \"code\": \"PH\",\n    \"name\": \"Philippines\"\n  },\n  \"admin_division\": {\n    \"id\": 7521311,\n    \"code\": \"PH.NCR\",\n    \"name\": \"Metro Manila\"\n  },\n  \"admin2_division\": {\n    \"id\": 11395838,\n    \"code\": \"PH.NCR.137600000\",\n    \"name\": \"Southern Manila District\"\n  },\n  \"timezone\": \"Asia/Manila\",\n  \"names\": {\n    \"en\": \"Makati City\"\n  },\n  \"country_names\": {\n    \"en\": \"Philippines\"\n  },\n  \"admin1_names\": {\n    \"en\": \"National Capital Region\"\n  },\n  \"admin2_names\": null,\n  \"population\": 510383\n},\n  \"countryrecord\":{\n  \"info\": {\n    \"iso\": \"PH\",\n    \"iso3\": \"PHL\",\n    \"iso_numeric\": \"608\",\n    \"fips\": \"RP\",\n    \"name\": \"Philippines\",\n    \"capital\": \"Manila\",\n    \"area\": \"300000\",\n    \"population\": 106651922,\n    \"continent\": \"AS\",\n    \"tld\": \".ph\",\n    \"currency_code\": \"PHP\",\n    \"currency_name\": \"Peso\",\n    \"phone\": \"63\",\n    \"postal_code_format\": \"####\",\n    \"postal_code_regex\": \"^(\\\\d{4})$\",\n    \"languages\": \"tl,en-PH,fil,ceb,ilo,hil,war,pam,bik,bcl,pag,mrw,tsg,mdh,cbk,krj,sgd,msb,akl,ibg,yka,mta,abx\",\n    \"geonameid\": 1694008,\n    \"neighbours\": \"\",\n    \"equivalent_fips_code\": \"\"\n  },\n  \"names\": {\n    \"en\": \"Philippines\"\n  },\n  \"capital_names\": {\n    \"en\": \"Manila\"\n  }\n}\n \"us_fips_codes\":{\n  \"us_state_code\": \"\",\n  \"us_state_name\": \"National Capital Region\",\n  \"us_state_fips_code\": \"null\",\n  \"us_county\": \"\",\n  \"us_county_fips_code\": \"\"\n}\n}"
         ],
     ];
-    similar_asserts::assert_eq!(got, expected);
+    assert_eq!(got, expected);
 }
 
 #[test]
@@ -588,7 +588,7 @@ fn geocode_suggest_invalid_dynfmt() {
         svec!["95.213424, 190,1234565"], // invalid lat, long
         svec!["Invalid dynfmt template."],
     ];
-    similar_asserts::assert_eq!(got, expected);
+    assert_eq!(got, expected);
 }
 
 #[test]
@@ -627,7 +627,7 @@ fn geocode_suggest_fmt() {
         svec!["40.71427, -74.00597"], // suggest doesn't work with lat, long
         svec!["Makati City, National Capital Region PH"],
     ];
-    similar_asserts::assert_eq!(got, expected);
+    assert_eq!(got, expected);
 }
 
 #[test]
@@ -665,7 +665,7 @@ fn geocode_suggest_fmt_json() {
 This is not a Location and it will not be geocoded
 "40.71427, -74.00597"
 "{""cityrecord"":{""id"":1703417,""name"":""Makati City"",""latitude"":14.55027,""longitude"":121.03269,""country"":{""id"":1694008,""code"":""PH"",""name"":""Philippines""},""admin_division"":{""id"":7521311,""code"":""PH.NCR"",""name"":""Metro Manila""},""admin2_division"":{""id"":11395838,""code"":""PH.NCR.137600000"",""name"":""Southern Manila District""},""timezone"":""Asia/Manila"",""names"":{""en"":""Makati City""},""country_names"":{""en"":""Philippines""},""admin1_names"":{""en"":""National Capital Region""},""admin2_names"":null,""population"":510383}, ""countryrecord"":{""info"":{""iso"":""PH"",""iso3"":""PHL"",""iso_numeric"":""608"",""fips"":""RP"",""name"":""Philippines"",""capital"":""Manila"",""area"":""300000"",""population"":106651922,""continent"":""AS"",""tld"":"".ph"",""currency_code"":""PHP"",""currency_name"":""Peso"",""phone"":""63"",""postal_code_format"":""####"",""postal_code_regex"":""^(\\d{4})$"",""languages"":""tl,en-PH,fil,ceb,ilo,hil,war,pam,bik,bcl,pag,mrw,tsg,mdh,cbk,krj,sgd,msb,akl,ibg,yka,mta,abx"",""geonameid"":1694008,""neighbours"":"""",""equivalent_fips_code"":""""},""names"":{""en"":""Philippines""},""capital_names"":{""en"":""Manila""}} ""us_fips_codes"":{""us_state_code"":"""",""us_state_name"":""National Capital Region"",""us_state_fips_code"":""null"",""us_county"":"""",""us_county_fips_code"":""""}}""######;
-    similar_asserts::assert_eq!(got, expected);
+    assert_eq!(got, expected);
 }
 
 #[test]
@@ -749,7 +749,7 @@ fn geocode_suggest_fmt_cityrecord() {
              Some({\"en\": \"National Capital Region\"}), admin2_names: None, population: 510383 }"
         ],
     ];
-    similar_asserts::assert_eq!(got, expected);
+    assert_eq!(got, expected);
 }
 
 #[test]
@@ -797,7 +797,7 @@ fn geocode_reverse() {
              be geocoded."
         ],
     ];
-    similar_asserts::assert_eq!(got, expected);
+    assert_eq!(got, expected);
 }
 
 #[test]
@@ -834,7 +834,7 @@ fn geocode_reverse_fmtstring() {
         svec!["This is not a Location and it will not be geocoded"],
         svec!["95.213424, 190,1234565"], // invalid lat,long
     ];
-    similar_asserts::assert_eq!(got, expected);
+    assert_eq!(got, expected);
 }
 
 #[test]
@@ -871,7 +871,7 @@ fn geocode_reverse_fmtstring_intl() {
         svec!["This is not a Location and it will not be geocoded"],
         svec!["95.213424, 190,1234565"], // invalid lat,long
     ];
-    similar_asserts::assert_eq!(got, expected);
+    assert_eq!(got, expected);
 }
 
 #[test]
@@ -908,7 +908,7 @@ fn geocode_reverse_fmtstring_intl_dynfmt() {
         svec!["This is not a Location and it will not be geocoded"],
         svec!["95.213424, 190,1234565"], // invalid lat,long
     ];
-    similar_asserts::assert_eq!(got, expected);
+    assert_eq!(got, expected);
 }
 
 #[test]
@@ -945,7 +945,7 @@ fn geocode_reverse_fmtstring_intl_invalid_dynfmt() {
         svec!["This is not a Location and it will not be geocoded"],
         svec!["95.213424, 190,1234565"], // invalid lat,long
     ];
-    similar_asserts::assert_eq!(got, expected);
+    assert_eq!(got, expected);
 }
 
 #[test]
@@ -1063,7 +1063,7 @@ fn geocode_suggest_dyncols_fmt() {
             "PHP"
         ],
     ];
-    similar_asserts::assert_eq!(got, expected);
+    assert_eq!(got, expected);
 }
 
 #[test]
@@ -1166,7 +1166,7 @@ fn geocode_reverse_dyncols_fmt() {
             ""
         ],
     ];
-    similar_asserts::assert_eq!(got, expected);
+    assert_eq!(got, expected);
 }
 
 #[test]
@@ -1206,7 +1206,7 @@ fn geocode_countryinfo() {
         svec!["95.213424, 190,1234565"],
         svec!["Germany"], // passed thru as its not a valid country code
     ];
-    similar_asserts::assert_eq!(got, expected);
+    assert_eq!(got, expected);
 }
 
 #[test]
@@ -1253,7 +1253,7 @@ fn geocode_countryinfo_formatstr() {
         svec!["95.213424, 190,1234565"],
         svec!["Germany"],
     ];
-    similar_asserts::assert_eq!(got, expected);
+    assert_eq!(got, expected);
 }
 
 #[test]
@@ -1476,7 +1476,7 @@ fn geocode_countryinfo_formatstr_pretty_json() {
         svec!["95.213424, 190,1234565"],
         svec!["Germany"],
     ];
-    similar_asserts::assert_eq!(got, expected);
+    assert_eq!(got, expected);
 }
 
 #[test]
@@ -1489,7 +1489,7 @@ fn geocode_countryinfonow() {
     let got: Vec<Vec<String>> = wrk.read_stdout(&mut cmd);
     wrk.assert_success(&mut cmd);
     let expected = vec![svec!["Location"], svec!["United States"]];
-    similar_asserts::assert_eq!(got, expected);
+    assert_eq!(got, expected);
 }
 
 #[test]
@@ -1511,7 +1511,7 @@ fn geocode_countryinfonow_formatstr() {
         svec!["Location"],
         svec!["Canada Pop: 37058856 in NA using Dollar all in 9984670 square kms."],
     ];
-    similar_asserts::assert_eq!(got, expected);
+    assert_eq!(got, expected);
 }
 
 #[test]
@@ -1555,5 +1555,5 @@ fn geocode_countryinfonow_formatstr_pretty_json() {
     "en": "Mexico City"
   }
 }"######;
-    similar_asserts::assert_eq!(got, expected);
+    assert_eq!(got, expected);
 }
