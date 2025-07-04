@@ -92,7 +92,7 @@ calamine = { version = "0.28", features = ["dates"] }
 censor = { version = "0.3", optional = true }
 chrono = { version = "0.4", default-features = false }
 chrono-tz = "0.10"
-console = { version = "0.15", optional = true }
+console = { version = "0.16", optional = true }
 cpc = { version = "2", optional = true }
 crc32fast = { version = "1.4", optional = true }
 crossbeam-channel = "0.5"
@@ -139,7 +139,7 @@ gzp = { version = "1", default-features = false, features = [
 hashbrown = { version = "0.15", optional = true }
 human-panic = "2"
 indexmap = "2.9"
-indicatif = "0.17"
+indicatif = "0.18"
 itertools = "0.14"
 itoa = "1"
 jaq-core = "2"
@@ -340,7 +340,7 @@ localzone = { git = "https://github.com/jqnatividad/localzone", branch = "bump-d
 rfd = { git = "https://github.com/PolyMeilex/rfd", rev = "db842f5" }
 
 # use our patched fork of self_update to bump zip 2 to 4, until our PR is merged
-self_update = { git = "https://github.com/jqnatividad/self_update", branch = "bump-zip-2-to-4" }
+self_update = { git = "https://github.com/jqnatividad/self_update", branch = "bump-deps-july2025" }
 
 # use our patched fork of sled to get rid of unmaintained instant
 sled = { git = "https://github.com/dathere/sled", branch = "v0.34.7-bumped-parking_lot_to_0.12" }
