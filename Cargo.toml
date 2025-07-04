@@ -315,6 +315,9 @@ csv-index = { git = "https://github.com/dathere/rust-csv", branch = "qsv-optimiz
 # our redis PR is still pending
 cached = { git = "https://github.com/jqnatividad/cached", branch = "bump-redis-to-0.32-hashbrown-to-0.15" }
 
+# we also now co-maintain calamine, but there are still unreleased fixes
+calamine = { git = "https://github.com/tafia/calamine", rev = "65467b3" }
+
 # use our patched fork of csvlens to add natural sort until our PR is merged
 csvlens = { git = "https://github.com/jqnatividad/csvlens", branch = "133-natural-sort" }
 
