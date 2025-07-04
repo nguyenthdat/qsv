@@ -171,7 +171,7 @@ fn test_slice(
             .collect::<Vec<String>>();
         let expected = format!("[{}]", expected_vec.join(","));
 
-        similar_asserts::assert_eq!(got, expected);
+        assert_eq!(got, expected);
     } else {
         let got: Vec<Vec<String>> = wrk.read_stdout(&mut cmd);
         let mut expected = expected
@@ -181,7 +181,7 @@ fn test_slice(
         if headers {
             expected.insert(0, svec!["header"]);
         }
-        similar_asserts::assert_eq!(got, expected);
+        assert_eq!(got, expected);
     }
 }
 
@@ -197,7 +197,7 @@ fn test_index(name: &str, idx: isize, expected: &str, headers: bool, use_index: 
     if headers {
         expected.insert(0, svec!["header"]);
     }
-    similar_asserts::assert_eq!(got, expected);
+    assert_eq!(got, expected);
 }
 
 slice_tests!(slice_simple, Some(0), Some(1), &["a"]);
@@ -364,7 +364,7 @@ fn test_slice_invert(
             .collect::<Vec<String>>();
         let expected = format!("[{}]", expected_vec.join(","));
 
-        similar_asserts::assert_eq!(got, expected);
+        assert_eq!(got, expected);
     } else {
         let got: Vec<Vec<String>> = wrk.read_stdout(&mut cmd);
         let mut expected = expected
@@ -374,7 +374,7 @@ fn test_slice_invert(
         if headers {
             expected.insert(0, svec!["header"]);
         }
-        similar_asserts::assert_eq!(got, expected);
+        assert_eq!(got, expected);
     }
 }
 
@@ -474,7 +474,7 @@ fn slice_from_parquet() {
 
     let got: String = wrk.stdout(&mut cmd);
     let expected = r#"[{"Unique Key":"20520945","Created Date":"05/27/2011 12:00:00 AM","Closed Date":null,"Agency":"HPD","Agency Name":"Department of Housing Preservation and Development","Complaint Type":"PAINT - PLASTER","Descriptor":"WALLS","Location Type":"RESIDENTIAL BUILDING","Incident Zip":"11225","Incident Address":"1700 BEDFORD AVENUE","Street Name":"BEDFORD AVENUE","Cross Street 1":"MONTGOMERY STREET","Cross Street 2":"SULLIVAN PLACE","Intersection Street 1":null,"Intersection Street 2":null,"Address Type":"ADDRESS","City":"BROOKLYN","Landmark":null,"Facility Type":"N/A","Status":"Open","Due Date":null,"Resolution Description":"The following complaint conditions are still open.HPD may attempt to contact you to verify the correction of the condition or may conduct an inspection.","Resolution Action Updated Date":"06/15/2011 12:00:00 AM","Community Board":"09 BROOKLYN","BBL":"3013020001","Borough":"BROOKLYN","X Coordinate (State Plane)":"996197","Y Coordinate (State Plane)":"181752","Open Data Channel Type":"UNKNOWN","Park Facility Name":"Unspecified","Park Borough":"BROOKLYN","Vehicle Type":null,"Taxi Company Borough":null,"Taxi Pick Up Location":null,"Bridge Highway Name":null,"Bridge Highway Direction":null,"Road Ramp":null,"Bridge Highway Segment":null,"Latitude":null,"Longitude":null,"Location":null}]"#;
-    similar_asserts::assert_eq!(got, expected);
+    assert_eq!(got, expected);
 }
 
 #[cfg(feature = "polars")]

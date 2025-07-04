@@ -185,11 +185,11 @@ pub fn reset_sigpipe() {
 /// ```
 /// let s = "hello\tworld\n";
 /// let vis = visualize_whitespace(s);
-/// similar_asserts::assert_eq!(vis, "hello《→》world《¶》");
+/// assert_eq!(vis, "hello《→》world《¶》");
 ///
 /// let spaces = "   ";
 /// let vis = visualize_whitespace(spaces);
-/// similar_asserts::assert_eq!(vis, "《_》《_》《_》");
+/// assert_eq!(vis, "《_》《_》《_》");
 /// ```
 pub fn visualize_whitespace(s: &str) -> String {
     // Check if string is all spaces

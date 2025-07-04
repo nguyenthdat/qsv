@@ -25,7 +25,7 @@ macro_rules! select_test {
                         .map(|s| s.to_string())
                         .collect::<Vec<String>>(),
                 ];
-                similar_asserts::assert_eq!(got, expected);
+                assert_eq!(got, expected);
             }
 
             #[test]
@@ -45,7 +45,7 @@ macro_rules! select_test {
                         .map(|s| s.to_string())
                         .collect::<Vec<String>>(),
                 ];
-                similar_asserts::assert_eq!(got, expected);
+                assert_eq!(got, expected);
             }
         }
     };
@@ -251,7 +251,7 @@ fn test_select_sort() {
             "value7", "value4"
         ],
     ];
-    similar_asserts::assert_eq!(got, expected);
+    assert_eq!(got, expected);
 }
 
 #[test]
@@ -268,7 +268,7 @@ fn test_select_sort_subset() {
         svec!["8", "9", "4", "7"],
         svec!["value3", "value2", "value7", "value4"],
     ];
-    similar_asserts::assert_eq!(got, expected);
+    assert_eq!(got, expected);
 }
 
 #[test]
@@ -297,7 +297,7 @@ fn test_select_random_seeded() {
             "value6", "value10"
         ],
     ];
-    similar_asserts::assert_eq!(got, expected);
+    assert_eq!(got, expected);
 }
 
 #[test]
@@ -317,7 +317,7 @@ fn test_select_random_seeded_subset() {
         svec!["7", "4", "9", "8"],
         svec!["value4", "value7", "value2", "value3"],
     ];
-    similar_asserts::assert_eq!(got, expected);
+    assert_eq!(got, expected);
 }
 
 // Add tests for semicolon-separated CSV files
@@ -345,7 +345,7 @@ fn test_select_semicolon_separator() {
 
     // Now the output should be correct
     let expected = vec![svec!["h1"], svec!["a"]];
-    similar_asserts::assert_eq!(got, expected);
+    assert_eq!(got, expected);
 }
 
 // Test handling of out-of-bounds indices
@@ -363,7 +363,7 @@ fn test_select_out_of_bounds_indices() {
 
     // The output should be empty because the index is out of bounds
     let expected: Vec<Vec<String>> = vec![];
-    similar_asserts::assert_eq!(got, expected);
+    assert_eq!(got, expected);
 }
 
 // Test the robustness of the select function with different CSV formats
@@ -387,7 +387,7 @@ fn test_select_robustness() {
 
     // The output should be empty because the index is out of bounds
     let expected: Vec<Vec<String>> = vec![];
-    similar_asserts::assert_eq!(got, expected);
+    assert_eq!(got, expected);
 
     // Test with a valid index
     let mut cmd = wrk.command("select");
@@ -398,5 +398,5 @@ fn test_select_robustness() {
 
     // The output should contain the second column
     let expected = vec![svec!["h2"], svec!["b"]];
-    similar_asserts::assert_eq!(got, expected);
+    assert_eq!(got, expected);
 }

@@ -4,9 +4,9 @@ use crate::workdir::Workdir;
 
 macro_rules! split_eq {
     ($wrk:expr_2021, $path:expr_2021, $expected:expr_2021) => {
-        // similar_asserts::assert_eq!($wrk.path($path).into_os_string().into_string().unwrap(),
+        // assert_eq!($wrk.path($path).into_os_string().into_string().unwrap(),
         // $expected.to_owned());
-        similar_asserts::assert_eq!(
+        assert_eq!(
             $wrk.from_str::<String>(&$wrk.path($path)),
             $expected.to_owned()
         );
@@ -776,7 +776,7 @@ fn split_nooutdir() {
     wrk.assert_err(&mut cmd);
     let got = wrk.output_stderr(&mut cmd);
     let expected = "usage error: <outdir> is not specified or is a file.\n";
-    similar_asserts::assert_eq!(got, expected);
+    assert_eq!(got, expected);
 }
 
 #[test]
