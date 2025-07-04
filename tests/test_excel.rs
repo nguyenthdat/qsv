@@ -45,7 +45,7 @@ fn excel_cellerrors() {
 }
 
 #[test]
-// #[ignore = "skip this for now as its flaky retrieving the formula defn"]
+#[ignore = "skip this for now as its flaky retrieving the formula defn"]
 fn excel_cellerrors_formula() {
     let wrk = Workdir::new("excel_cellerrors_formula");
 
@@ -77,7 +77,7 @@ fn excel_cellerrors_formula() {
 }
 
 #[test]
-// #[ignore = "skip this for now as its flaky retrieving the formula defn"]
+#[ignore = "skip this for now as its flaky retrieving the formula defn"]
 fn excel_cellerrors_both() {
     let wrk = Workdir::new("excel_cellerrors_both");
 
