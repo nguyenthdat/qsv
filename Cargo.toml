@@ -54,7 +54,7 @@ name = "tests"
 path = "tests/tests.rs"
 
 [[bench]]
-name = "trim_benchmark"
+name    = "trim_benchmark"
 harness = false
 
 [profile.release]
@@ -130,12 +130,13 @@ futures-util = "0.3"
 gender_guesser = { version = "0.2", optional = true }
 geosuggest-core = { version = "0.7", features = ["geoip2"], optional = true }
 geosuggest-utils = { version = "0.7", optional = true }
-geozero = { version = "0.14.0", features = ["with-csv", "with-shp"], optional = true }
+geozero = { version = "0.14.0", features = [
+    "with-csv",
+    "with-shp",
+], optional = true }
 governor = { version = "0.10", optional = true }
 grex = { version = "1.4", default-features = false }
-gzp = { version = "1", default-features = false, features = [
-    "snappy_default",
-] }
+gzp = { version = "1", default-features = false, features = ["snappy_default"] }
 hashbrown = { version = "0.15", optional = true }
 human-panic = "2"
 indexmap = "2.9"
@@ -179,7 +180,7 @@ mlua = { version = "0.10", features = [
 ], optional = true }
 num_cpus = "1"
 odht = "0.3"
-phf = { version = "0.12", features = ["macros"]}
+phf = { version = "0.12", features = ["macros"] }
 polars = { version = "0.49", features = [
     "asof_join",
     "avro",
@@ -423,7 +424,7 @@ geocode = [
     "sled",
 ]
 luau = ["mlua", "sanitize-filename"]
-polars = ["dep:polars", "bytemuck",  "dep:polars-ops", "dep:polars-utils"]
+polars = ["dep:polars", "bytemuck", "dep:polars-ops", "dep:polars-utils"]
 prompt = ["rfd"]
 python = ["pyo3"]
 to = ["csvs_convert"]
