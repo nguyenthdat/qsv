@@ -160,9 +160,9 @@ pub struct Args {
 
 const NULL_VAL: &[u8] = b"(NULL)";
 const NON_UTF8_ERR: &str = "<Non-UTF8 ERROR>";
-const EMPTY_BYTES: Vec<u8> = Vec::new();
+const EMPTY_BYTE_VEC: Vec<u8> = Vec::new();
 
-static UNIQUE_COLUMNS: OnceLock<Vec<usize>> = OnceLock::new();
+static UNIQUE_COLUMNS_VEC: OnceLock<Vec<usize>> = OnceLock::new();
 static COL_CARDINALITY_VEC: OnceLock<Vec<(String, u64)>> = OnceLock::new();
 static FREQ_ROW_COUNT: OnceLock<u64> = OnceLock::new();
 
@@ -197,7 +197,7 @@ pub fn run(argv: &[&str]) -> CliResult<()> {
 
     // safety: we know that UNIQUE_COLUMNS has been previously set when compiling frequencies
     // by sel_headers fn
-    let all_unique_headers = UNIQUE_COLUMNS.get().unwrap();
+    let unique_headers_vec = UNIQUE_COLUMNS_VEC.get().unwrap();
 
     wtr.write_record(vec!["field", "value", "count", "percentage"])?;
     let head_ftables = headers.iter().zip(tables);
@@ -213,7 +213,7 @@ pub fn run(argv: &[&str]) -> CliResult<()> {
         };
 
         let mut sorted_counts: Vec<(Vec<u8>, u64, f64)>;
-        all_unique_header = all_unique_headers.contains(&i);
+        all_unique_header = unique_headers_vec.contains(&i);
 
         if all_unique_header {
             // if the column has all unique values, we don't need to sort the counts
@@ -432,7 +432,7 @@ impl Args {
         let mut field_buffer: Vec<u8> = Vec::with_capacity(1024);
         let mut row_buffer: csv::ByteRecord = csv::ByteRecord::with_capacity(200, nsel_len);
 
-        let all_unique_headers = UNIQUE_COLUMNS.get().unwrap();
+        let unique_headers_vec = UNIQUE_COLUMNS_VEC.get().unwrap();
 
         // assign flags to local variables for faster access
         let flag_no_nulls = self.flag_no_nulls;
@@ -442,7 +442,7 @@ impl Args {
         // compile a vector of bool flags for all_unique_headers
         // so we can skip the contains check in the hot loop below
         let all_unique_flag_vec: Vec<bool> = (0..nsel_len)
-            .map(|i| all_unique_headers.contains(&i))
+            .map(|i| unique_headers_vec.contains(&i))
             .collect();
 
         // optimize the capacity of the freq_tables based on the cardinality of the columns
@@ -529,7 +529,7 @@ impl Args {
                 } else if !flag_no_nulls {
                     // set to null (EMPTY_BYTES) as flag_no_nulls is false
                     unsafe {
-                        freq_tables.get_unchecked_mut(i).add(EMPTY_BYTES);
+                        freq_tables.get_unchecked_mut(i).add(EMPTY_BYTE_VEC);
                     }
                 }
             }
@@ -626,7 +626,7 @@ impl Args {
         let headers = rdr.byte_headers()?;
         let all_unique_headers_vec = self.get_unique_headers(headers)?;
 
-        UNIQUE_COLUMNS
+        UNIQUE_COLUMNS_VEC
             .set(all_unique_headers_vec)
             .map_err(|_| "Cannot set UNIQUE_COLUMNS")?;
 
