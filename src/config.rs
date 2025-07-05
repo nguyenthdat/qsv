@@ -28,7 +28,7 @@ pub const DEFAULT_WTR_BUFFER_CAPACITY: usize = 512 * (1 << 10);
 const DEFAULT_SNIFFER_SAMPLE: usize = 100;
 
 // file size at which we warn user that a large file has not been indexed
-const NO_INDEX_WARNING_FILESIZE: u64 = 100_000_000; // 100MB
+const NO_INDEX_WARNING_FILESIZE: u64 = 100 * (1 << 20); // 100MB
 
 // so we don't have to keep checking if the index has been created
 static AUTO_INDEXED: AtomicBool = AtomicBool::new(false);
@@ -393,16 +393,19 @@ impl Config {
         self
     }
 
-    // comment read_buffer() and write_buffer() out for now, as they're not used
-    // pub const fn read_buffer(mut self, buffer: u32) -> Config {
-    //     self.read_buffer = buffer;
-    //     self
-    // }
+    pub fn set_read_buffer(mut self, buffer: usize) -> Config {
+        self.read_buffer = buffer
+            .try_into()
+            .unwrap_or(DEFAULT_RDR_BUFFER_CAPACITY as u32);
+        self
+    }
 
-    // pub const fn write_buffer(mut self, buffer: u32) -> Config {
-    //     self.write_buffer = buffer;
-    //     self
-    // }
+    pub fn set_write_buffer(mut self, buffer: usize) -> Config {
+        self.write_buffer = buffer
+            .try_into()
+            .unwrap_or(DEFAULT_WTR_BUFFER_CAPACITY as u32);
+        self
+    }
 
     #[allow(clippy::missing_const_for_fn)]
     pub fn select(mut self, sel_cols: SelectColumns) -> Config {
