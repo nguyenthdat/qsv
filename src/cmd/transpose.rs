@@ -94,15 +94,14 @@ impl Args {
     }
 
     fn multipass_transpose_streaming(&self) -> CliResult<()> {
-        let mut wtr = self.wconfig().writer()?;
-
         // Get the number of columns from the first row
         let nrows = self.rconfig().reader()?.byte_headers()?.len();
 
         // Memory map the file for efficient access
-        // safety: we know we have a file input at this stage
         let file = File::open(self.arg_input.as_ref().unwrap())?;
+        // safety: we know we have a file input at this stage
         let mmap = unsafe { MmapOptions::new().populate().map(&file)? };
+        let mut wtr = self.wconfig().writer()?;
 
         let mut record = ByteRecord::with_capacity(1024, nrows);
 
