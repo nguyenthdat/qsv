@@ -343,7 +343,7 @@ use whatlang::detect;
 use crate::{
     CliResult,
     clitypes::CliError,
-    config::{Config, Delimiter},
+    config::{Config, DEFAULT_RDR_BUFFER_CAPACITY, Delimiter},
     regex_oncelock,
     select::SelectColumns,
     util,
@@ -458,7 +458,14 @@ pub fn run(argv: &[&str]) -> CliResult<()> {
     let rconfig = Config::new(args.arg_input.as_ref())
         .delimiter(args.flag_delimiter)
         .no_headers(args.flag_no_headers)
-        .select(args.arg_column);
+        .select(args.arg_column)
+        // since apply does batch processing,
+        // use a bigger read buffer unless the user set their own buffer
+        .set_read_buffer(if std::env::var("QSV_RDR_BUFFER_CAPACITY").is_err() {
+            DEFAULT_RDR_BUFFER_CAPACITY * 10
+        } else {
+            DEFAULT_RDR_BUFFER_CAPACITY
+        });
 
     let mut rdr = rconfig.reader()?;
     let mut wtr = Config::new(args.flag_output.as_ref()).writer()?;
