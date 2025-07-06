@@ -35,7 +35,7 @@ use serde::Deserialize;
 
 use crate::{
     CliResult,
-    config::{Config, DEFAULT_RDR_BUFFER_CAPACITY, DEFAULT_WTR_BUFFER_CAPACITY, Delimiter},
+    config::{Config, DEFAULT_WTR_BUFFER_CAPACITY, Delimiter},
     util,
 };
 
@@ -133,6 +133,5 @@ impl Args {
         Config::new(self.arg_input.as_ref())
             .delimiter(self.flag_delimiter)
             .no_headers(true)
-            .set_read_buffer(DEFAULT_RDR_BUFFER_CAPACITY * 20)
     }
 }
