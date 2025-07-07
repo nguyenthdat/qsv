@@ -265,7 +265,7 @@ use crate::lookup;
 use crate::lookup::{LookupTableOptions, load_lookup_table};
 use crate::{
     CliError, CliResult,
-    config::{Config, DEFAULT_WTR_BUFFER_CAPACITY, Delimiter},
+    config::{Config, DEFAULT_RDR_BUFFER_CAPACITY, DEFAULT_WTR_BUFFER_CAPACITY, Delimiter},
     util,
 };
 
@@ -1076,7 +1076,13 @@ pub fn run(argv: &[&str]) -> CliResult<()> {
         Ordering::Relaxed,
     );
 
-    let mut rconfig = Config::new(args.arg_input.as_ref()).no_headers(args.flag_no_headers);
+    let mut rconfig = Config::new(args.arg_input.as_ref())
+        .no_headers(args.flag_no_headers)
+        .set_read_buffer(if std::env::var("QSV_RDR_BUFFER_CAPACITY").is_err() {
+            DEFAULT_RDR_BUFFER_CAPACITY * 10
+        } else {
+            DEFAULT_RDR_BUFFER_CAPACITY
+        });
 
     if args.flag_delimiter.is_some() {
         rconfig = rconfig.delimiter(args.flag_delimiter);
