@@ -1460,6 +1460,10 @@ impl ColumnNameParser {
 pub fn round_num(dec_f64: f64, places: u32) -> String {
     use rust_decimal::{Decimal, RoundingStrategy};
 
+    if dec_f64.is_nan() {
+        return String::new();
+    }
+
     // if places is the sentinel value 9999, we don't round, just return the number as is
     if places == 9999 {
         return ryu::Buffer::new().format(dec_f64).to_owned();
