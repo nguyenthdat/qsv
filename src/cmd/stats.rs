@@ -1217,7 +1217,7 @@ impl Args {
 
         init_date_inference(self.flag_infer_dates, &headers, whitelist)?;
 
-        let stats = self.compute(&sel, rdr.byte_records());
+        let stats = self.compute(&sel, rdr.byte_records(), 0);
         Ok((headers, stats))
     }
 
@@ -1261,7 +1261,8 @@ impl Args {
                 let it = idx.byte_records().take(chunk_size);
                 // safety: this will only return an Error if the channel has been disconnected
                 unsafe {
-                    send.send(args.compute(&sel, it)).unwrap_unchecked();
+                    send.send(args.compute(&sel, it, idx_count))
+                        .unwrap_unchecked();
                 }
             });
         }
@@ -1299,12 +1300,12 @@ impl Args {
     }
 
     #[inline]
-    fn compute<I>(&self, sel: &Selection, it: I) -> Vec<Stats>
+    fn compute<I>(&self, sel: &Selection, it: I, record_count: u64) -> Vec<Stats>
     where
         I: Iterator<Item = csv::Result<csv::ByteRecord>>,
     {
         let sel_len = sel.len();
-        let mut stats = self.new_stats(sel_len);
+        let mut stats = self.new_stats(sel_len, record_count);
 
         // safety: we know INFER_DATE_FLAGS is Some because we called init_date_inference
         let infer_date_flags = INFER_DATE_FLAGS.get().unwrap();
@@ -1356,23 +1357,28 @@ impl Args {
     }
 
     #[inline]
-    fn new_stats(&self, record_len: usize) -> Vec<Stats> {
+    fn new_stats(&self, record_len: usize, record_count: u64) -> Vec<Stats> {
         let mut stats: Vec<Stats> = Vec::with_capacity(record_len);
         stats.extend(repeat_n(
-            Stats::new(WhichStats {
-                include_nulls:   self.flag_nulls,
-                sum:             !self.flag_typesonly || self.flag_infer_boolean,
-                range:           !self.flag_typesonly || self.flag_infer_boolean,
-                dist:            !self.flag_typesonly,
-                cardinality:     self.flag_everything || self.flag_cardinality,
-                median:          !self.flag_everything && self.flag_median && !self.flag_quartiles,
-                mad:             self.flag_everything || self.flag_mad,
-                quartiles:       self.flag_everything || self.flag_quartiles,
-                mode:            self.flag_everything || self.flag_mode,
-                typesonly:       self.flag_typesonly,
-                percentiles:     self.flag_everything || self.flag_percentiles,
-                percentile_list: self.flag_percentile_list.clone(),
-            }),
+            Stats::new(
+                WhichStats {
+                    include_nulls:   self.flag_nulls,
+                    sum:             !self.flag_typesonly || self.flag_infer_boolean,
+                    range:           !self.flag_typesonly || self.flag_infer_boolean,
+                    dist:            !self.flag_typesonly,
+                    cardinality:     self.flag_everything || self.flag_cardinality,
+                    median:          !self.flag_everything
+                        && self.flag_median
+                        && !self.flag_quartiles,
+                    mad:             self.flag_everything || self.flag_mad,
+                    quartiles:       self.flag_everything || self.flag_quartiles,
+                    mode:            self.flag_everything || self.flag_mode,
+                    typesonly:       self.flag_typesonly,
+                    percentiles:     self.flag_everything || self.flag_percentiles,
+                    percentile_list: self.flag_percentile_list.clone(),
+                },
+                record_count,
+            ),
             record_len,
         ));
         stats
@@ -1600,7 +1606,7 @@ fn timestamp_ms_to_rfc3339(timestamp: i64, typ: FieldType) -> String {
 }
 
 impl Stats {
-    fn new(which: WhichStats) -> Stats {
+    fn new(which: WhichStats, record_count: u64) -> Stats {
         let (mut sum, mut minmax, mut online, mut online_len, mut modes, mut unsorted_stats) =
             (None, None, None, None, None, None);
         if which.sum {
@@ -1614,11 +1620,19 @@ impl Stats {
             online_len = Some(stats::OnlineStats::default());
         }
         if which.mode || which.cardinality {
-            modes = Some(stats::Unsorted::default());
+            modes = if record_count > 0 {
+                Some(stats::Unsorted::with_capacity(record_count as usize))
+            } else {
+                Some(stats::Unsorted::new())
+            };
         }
         // we use the same Unsorted struct for median, mad, quartiles & percentiles
         if which.quartiles || which.median || which.mad || which.percentiles {
-            unsorted_stats = Some(stats::Unsorted::default());
+            unsorted_stats = if record_count > 0 {
+                Some(stats::Unsorted::with_capacity(record_count as usize))
+            } else {
+                Some(stats::Unsorted::new())
+            };
         }
         Stats {
             typ: FieldType::default(),
@@ -2077,12 +2091,17 @@ impl Stats {
             #[allow(clippy::cast_precision_loss)]
             let sem = std_dev / (v.len() as f64).sqrt();
             let mean = v.mean();
-            let cv = (std_dev / mean) * 100_f64;
+            let mean_string = util::round_num(mean, round_places);
+            let cv = if mean_string == "0" {
+                f64::NAN
+            } else {
+                (std_dev / mean) * 100.0
+            };
             let geometric_mean = v.geometric_mean();
             let harmonic_mean = v.harmonic_mean();
             if self.typ == TFloat || self.typ == TInteger {
                 pieces.extend_from_slice(&[
-                    util::round_num(mean, round_places),
+                    mean_string,
                     util::round_num(sem, round_places),
                     util::round_num(geometric_mean, round_places),
                     util::round_num(harmonic_mean, round_places),
