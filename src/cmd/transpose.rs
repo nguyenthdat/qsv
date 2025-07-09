@@ -68,13 +68,11 @@ pub fn run(argv: &[&str]) -> CliResult<()> {
 impl Args {
     fn in_memory_transpose(&self) -> CliResult<()> {
         // we're loading the entire file into memory, we need to check avail mem
-        if let Some(path) = self.rconfig().path {
-            if let Err(e) = util::mem_file_check(&path, false, self.flag_memcheck) {
-                eprintln!(
-                    "File too large for in-memory transpose: {e}.\nDoing multipass transpose..."
-                );
-                return self.multipass_transpose_streaming();
-            }
+        if let Some(path) = self.rconfig().path
+            && let Err(e) = util::mem_file_check(&path, false, self.flag_memcheck)
+        {
+            eprintln!("File too large for in-memory transpose: {e}.\nDoing multipass transpose...");
+            return self.multipass_transpose_streaming();
         }
 
         let mut rdr = self.rconfig().reader()?;
