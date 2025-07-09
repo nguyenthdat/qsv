@@ -2077,12 +2077,21 @@ impl Stats {
             #[allow(clippy::cast_precision_loss)]
             let sem = std_dev / (v.len() as f64).sqrt();
             let mean = v.mean();
-            let cv = (std_dev / mean) * 100_f64;
+            let mean_string = util::round_num(mean, round_places);
+            // if mean is 0, we can't calculate the CV, so we return NaN
+            // we do this as checking for 0.0 floating point values is not reliable
+            // so we do util::round_num() first as that is what is returned to the user
+            // for 0.0 floating point values.
+            let cv = if mean_string == "0" {
+                f64::NAN
+            } else {
+                (std_dev / mean) * 100.0_f64
+            };
             let geometric_mean = v.geometric_mean();
             let harmonic_mean = v.harmonic_mean();
             if self.typ == TFloat || self.typ == TInteger {
                 pieces.extend_from_slice(&[
-                    util::round_num(mean, round_places),
+                    mean_string,
                     util::round_num(sem, round_places),
                     util::round_num(geometric_mean, round_places),
                     util::round_num(harmonic_mean, round_places),
