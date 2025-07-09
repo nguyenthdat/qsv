@@ -1613,12 +1613,17 @@ impl Stats {
             online = Some(stats::OnlineStats::default());
             online_len = Some(stats::OnlineStats::default());
         }
+
+        // preallocate memory for the unsorted stats structs
+        // if we dont't have a record count, we use a default of 10,000
+        // to avoid allocating too much memory
+        let record_count = *RECORD_COUNT.get().unwrap_or(&10_000) as usize;
         if which.mode || which.cardinality {
-            modes = Some(stats::Unsorted::default());
+            modes = Some(stats::Unsorted::with_capacity(record_count));
         }
         // we use the same Unsorted struct for median, mad, quartiles & percentiles
         if which.quartiles || which.median || which.mad || which.percentiles {
-            unsorted_stats = Some(stats::Unsorted::default());
+            unsorted_stats = Some(stats::Unsorted::with_capacity(record_count));
         }
         Stats {
             typ: FieldType::default(),
