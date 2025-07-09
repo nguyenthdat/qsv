@@ -1288,7 +1288,7 @@ source = "git+https://github.com/jqnatividad/cached?branch=bump-redis-to-0.32-ha
 [[package]]
 name = "calamine"
 version = "0.28.0"
-source = "git+https://github.com/tafia/calamine?rev=65467b3#65467b369e5b72fbbbfe77587e805a0b9bba81e0"
+source = "git+https://github.com/tafia/calamine?rev=c9d5868#c9d5868ae074967263126820a170082f49cdef47"
 dependencies = [
  "atoi_simd",
  "byteorder",
