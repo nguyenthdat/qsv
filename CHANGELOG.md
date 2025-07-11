@@ -6,6 +6,45 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.0.0] - 2025-07-11
+
+## What's Changed
+* build(deps): bump libc from 0.2.173 to 0.2.174 by @dependabot[bot] in https://github.com/dathere/qsv/pull/2794
+* `feat`: `schema` JSON schema description property set to cmdline used to generate the JSON schema by @jqnatividad in https://github.com/dathere/qsv/pull/2796
+* build(deps): bump phf from 0.11.3 to 0.12.1 by @dependabot[bot] in https://github.com/dathere/qsv/pull/2797
+* deps: bump polars from 0.48 to 0.49 by @jqnatividad in https://github.com/dathere/qsv/pull/2798
+* `sqlp` & `joinp`:  `--decimal-comma` option is not only for parsing input CSVs, it's also used when writing output CSVs by @jqnatividad in https://github.com/dathere/qsv/pull/2800
+* build(deps): bump flexi_logger from 0.31.0 to 0.31.1 by @dependabot[bot] in https://github.com/dathere/qsv/pull/2801
+* build(deps): bump zip from 4.1.0 to 4.2.0 by @dependabot[bot] in https://github.com/dathere/qsv/pull/2802
+* feat: `validate` improved JSON Schema schema validation by @jqnatividad in https://github.com/dathere/qsv/pull/2803
+* feat: update completions for qsv v5.1.0 by @rzmk in https://github.com/dathere/qsv/pull/2804
+* feat: `lens` add `--wrap-mode` option by @jqnatividad in https://github.com/dathere/qsv/pull/2805
+* feat: `rename` pair-based renaming by @jqnatividad in https://github.com/dathere/qsv/pull/2806
+* feat: `sort` add `--natural` sort option by @jqnatividad in https://github.com/dathere/qsv/pull/2808
+* build(deps): bump flexi_logger from 0.31.1 to 0.31.2 by @dependabot[bot] in https://github.com/dathere/qsv/pull/2812
+* build(deps): bump arboard from 3.5.0 to 3.6.0 by @dependabot[bot] in https://github.com/dathere/qsv/pull/2814
+* build(deps): bump minijinja from 2.10.2 to 2.11.0 by @dependabot[bot] in https://github.com/dathere/qsv/pull/2815
+* build(deps): bump minijinja-contrib from 2.10.2 to 2.11.0 by @dependabot[bot] in https://github.com/dathere/qsv/pull/2816
+* build(deps): bump reqwest from 0.12.20 to 0.12.21 by @dependabot[bot] in https://github.com/dathere/qsv/pull/2817
+* build(deps): bump indicatif from 0.17.11 to 0.17.12 by @dependabot[bot] in https://github.com/dathere/qsv/pull/2818
+* build(deps): bump tokio from 1.45.1 to 1.46.0 by @dependabot[bot] in https://github.com/dathere/qsv/pull/2821
+* build(deps): bump reqwest from 0.12.21 to 0.12.22 by @dependabot[bot] in https://github.com/dathere/qsv/pull/2820
+* dep: bump polars to latest upstream - adapt to PlPath api reqt by @jqnatividad in https://github.com/dathere/qsv/pull/2822
+* build(deps): bump qsv-stats from 0.33.0 to 0.34.0 by @dependabot[bot] in https://github.com/dathere/qsv/pull/2823
+* build(deps): bump tokio from 1.46.0 to 1.46.1 by @dependabot[bot] in https://github.com/dathere/qsv/pull/2825
+* deps: Remove similar-asserts and go back to std asserts by @jqnatividad in https://github.com/dathere/qsv/pull/2826
+* perf: `transpose` refactored for perf by @jqnatividad in https://github.com/dathere/qsv/pull/2827
+* build(deps): bump jaq-std from 2.1.1 to 2.1.2 by @dependabot[bot] in https://github.com/dathere/qsv/pull/2830
+* build(deps): bump jaq-core from 2.2.0 to 2.2.1 by @dependabot[bot] in https://github.com/dathere/qsv/pull/2831
+* build(deps): bump jaq-json from 1.1.2 to 1.1.3 by @dependabot[bot] in https://github.com/dathere/qsv/pull/2832
+* build(deps): bump human-panic from 2.0.2 to 2.0.3 by @dependabot[bot] in https://github.com/dathere/qsv/pull/2833
+* build(deps): bump zip from 4.2.0 to 4.3.0 by @dependabot[bot] in https://github.com/dathere/qsv/pull/2835
+* build(deps): bump sysinfo from 0.35.2 to 0.36.0 by @dependabot[bot] in https://github.com/dathere/qsv/pull/2836
+* perf: bump to faster geosuggest to 0.8 by @jqnatividad in https://github.com/dathere/qsv/pull/2837
+
+
+**Full Changelog**: https://github.com/dathere/qsv/compare/5.1.0...6.0.0
+
 ## [5.1.0] - 2025-06-16
 
 ### Added
