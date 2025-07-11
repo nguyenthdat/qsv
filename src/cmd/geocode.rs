@@ -822,15 +822,7 @@ async fn geocode_main(args: Args) -> CliResult<()> {
             .replace(".zip", ".txt");
 
         // setup languages
-        let languages_string_vec = args
-            .flag_languages
-            .split(',')
-            .map(|s| s.trim().to_ascii_uppercase())
-            .collect::<Vec<String>>();
-        let languages_vec: Vec<&str> = languages_string_vec
-            .iter()
-            .map(std::string::String::as_str)
-            .collect();
+        let languages_vec: Vec<&str> = args.flag_languages.split(',').map(AsRef::as_ref).collect();
 
         info!("geocode_index_file: {geocode_index_file} Languages: {languages_vec:?}");
 
@@ -853,7 +845,7 @@ async fn geocode_main(args: Args) -> CliResult<()> {
         let updater = IndexUpdater::new(indexupdater_settings.clone())
             .map_err(|_| CliError::Other("Error initializing IndexUpdater".to_string()))?;
 
-        let storage = storage::Storage::new();
+        let index_storage = storage::Storage::new();
 
         match geocode_cmd {
             // check if Geoname index needs to be updated from the Geonames website
@@ -862,7 +854,7 @@ async fn geocode_main(args: Args) -> CliResult<()> {
                 winfo!("Checking main Geonames website for updates...");
                 check_index_file(&geocode_index_file)?;
 
-                let metadata = storage
+                let metadata = index_storage
                     .read_metadata(geocode_index_file)
                     .map_err(|e| format!("index-check error: {e}"))?;
 
@@ -911,26 +903,25 @@ async fn geocode_main(args: Args) -> CliResult<()> {
                 check_index_file(&geocode_index_file)?;
 
                 if args.flag_force {
-                    winfo!("Forcing fresh build of Geonames index: {geocode_index_file}");
                     winfo!(
-                        "Using cities URL: {}  Languages: {:?}",
-                        args.flag_cities_url,
-                        languages_vec
-                    );
-                    winfo!(
-                        "This will take a while as we need to download data & rebuild the index..."
-                    );
+                        r#"To rebuild the index, use the geosuggest crate directly:
 
-                    let engine_data = updater.build().await.map_err(|_| {
-                        CliError::Other("Error building geonames index.".to_string())
-                    })?;
-                    storage
-                        .dump_to(geocode_index_file.clone(), &engine_data)
-                        .map_err(|e| format!("{e}"))?;
-                    winfo!("Geonames index successfully rebuilt: {geocode_index_file}");
+git clone https://github.com/estin/geosuggest.git
+cd geosuggest
+cargo run -p geosuggest-utils --bin geosuggest-build-index --release --features=cli,tracing -- \
+    from-urls \
+    --cities-url {cities_url} \
+    --cities-filename {cities_filename} \
+    --languages {languages} \
+    --output {geocode_index_file}"#,
+                        cities_url = args.flag_cities_url,
+                        cities_filename = cities_filename,
+                        languages = args.flag_languages,
+                        geocode_index_file = geocode_index_file,
+                    );
                 } else {
                     winfo!("Checking main Geonames website for updates...");
-                    let metadata = storage
+                    let metadata = index_storage
                         .read_metadata(geocode_index_file.clone())
                         .map_err(|e| format!("index-update error: {e}"))?;
 
@@ -944,7 +935,7 @@ async fn geocode_main(args: Args) -> CliResult<()> {
                         let engine = updater.build().await.map_err(|_| {
                             CliError::Other("Error updating geonames index.".to_string())
                         })?;
-                        let _ = storage.dump_to(geocode_index_file.clone(), &engine);
+                        let _ = index_storage.dump_to(geocode_index_file.clone(), &engine);
                         winfo!("Updates successfully applied: {geocode_index_file}");
                     } else {
                         winfo!("Skipping update. Geonames index is up-to-date.");
@@ -963,7 +954,8 @@ async fn geocode_main(args: Args) -> CliResult<()> {
                     // copy it to the default geocode index file
 
                     if engine_data.metadata.is_some() {
-                        let _ = storage.dump_to(active_geocode_index_file.clone(), &engine_data);
+                        let _ =
+                            index_storage.dump_to(active_geocode_index_file.clone(), &engine_data);
                         winfo!(
                             "Valid Geonames index file {index_file} successfully copied to \
                              {active_geocode_index_file}. It will be used from now on or until \
