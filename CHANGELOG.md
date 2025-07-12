@@ -6,6 +6,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## What's Changed
+* feat: update completions for qsv v6.0.0 by @rzmk in https://github.com/dathere/qsv/pull/2838
+* build(deps): bump chrono-tz from 0.10.3 to 0.10.4 by @dependabot[bot] in https://github.com/dathere/qsv/pull/2839
+* build(deps): bump qsv-stats from 0.35.0 to 0.36.0 by @dependabot[bot] in https://github.com/dathere/qsv/pull/2840
+
+
+**Full Changelog**: https://github.com/dathere/qsv/compare/6.0.0...6.0.1
+
 ## [6.0.0] - 2025-07-11
 
 ## Highlights:
