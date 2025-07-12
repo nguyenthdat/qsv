@@ -42,7 +42,7 @@
 arg_pat="$1"
 
 # the version of this script
-bm_version=6.6.1
+bm_version=6.6.2
 
 # CONFIGURABLE VARIABLES ---------------------------------------
 # change as needed to reflect your environment/workloads
@@ -531,7 +531,7 @@ run flatten_condensed "$qsv_bin" flatten "$data" --condense 50
 run fmt "$qsv_bin" fmt --crlf "$data"
 run fmt_no_crlf "$qsv_bin" fmt "$data"
 run fmt_no_final_newline "$qsv_bin" fmt --no-final-newline "$data"
-run foreach "$qsv_bin" foreach City "echo {}" "$data"
+run foreach "$qsv_bin" foreach City \"echo {}\" "$data"
 run frequency "$qsv_bin" frequency "$data"
 run --index frequency_index "$qsv_bin" frequency "$data"
 run --index frequency_index_stats_mode_auto env QSV_STATS_MODE=auto bash -c \'"$qsv_bin" frequency "$data"\'
@@ -582,9 +582,9 @@ run luau_script_colidx "$qsv_bin" luau map turnaround_time --colindex "file:turn
 run luau_script_no_globals "$qsv_bin" luau map turnaround_time --no-globals "file:turnaround_time.luau" "$data"
 run luau_script_no_globals_colidx "$qsv_bin" luau map turnaround_time --no-globals --colindex "file:turnaround_time.luau" "$data"
 run partition "$qsv_bin" partition \'Community Board\' /tmp/partitioned "$data"
-run pivotp_basic "$qsv_bin" pivotp "Agency" --index "Borough" --values "Complaint Type" "$data"
-run pivotp_smart "$qsv_bin" pivotp "Agency" --index "Borough" --values "Complaint Type" --agg smart "$data"
-run pivotp_dates "$qsv_bin" pivotp "Created Date" --index "Borough" --values "Complaint Type" --try-parsedates "$data"
+run pivotp_basic "$qsv_bin" pivotp "Agency" --index "Borough" --values \"Complaint Type\" "$data"
+run pivotp_smart "$qsv_bin" pivotp "Agency" --index "Borough" --values \"Complaint Type\" --agg smart "$data"
+run pivotp_dates "$qsv_bin" pivotp \"Created Date\" --index "Borough" --values \"Complaint Type\" --try-parsedates "$data"
 run pseudo "$qsv_bin" pseudo \'Unique Key\' "$data"
 run pseudo_formatstr "$qsv_bin" pseudo \'Unique Key\' --formatstr 'ID-{}' --increment 5 "$data"
 run rename "$qsv_bin" rename \'unique_key,created_date,closed_date,agency,agency_name,complaint_type,descriptor,loctype,zip,addr1,street,xstreet1,xstreet2,inter1,inter2,addrtype,city,landmark,facility_type,status,due_date,res_desc,res_act_date,comm_board,bbl,boro,xcoord,ycoord,opendata_type,parkname,parkboro,vehtype,taxi_boro,taxi_loc,bridge_hwy_name,bridge_hwy_dir,ramp,bridge_hwy_seg,lat,long,loc\' "$data"
@@ -604,8 +604,8 @@ run sample_100000_seeded_secure "$qsv_bin" sample 100000 --rng cryptosecure --se
 run sample_bernoulli "$qsv_bin" sample --bernoulli 0.25 --seed 42 "$data"
 run sample_1000_systematic "$qsv_bin" sample 1000 --systematic random --seed 42 "$data"
 run sample_1000_stratified "$qsv_bin" sample 1000 --stratified "Agency" --seed 42 "$data"
-run sample_1000_weighted "$qsv_bin" sample 1000 --weighted "Incident Zip" --seed 42 "$data"
-run sample_1000_cluster "$qsv_bin" sample 1000 --cluster "Incident Zip" --seed 42 "$data"
+run sample_1000_weighted "$qsv_bin" sample 1000 --weighted \"Incident Zip\" --seed 42 "$data"
+run sample_1000_cluster "$qsv_bin" sample 1000 --cluster \"Incident Zip\" --seed 42 "$data"
 run --index sample_100000_seeded_index "$qsv_bin" sample --seed 42 100000 "$data"
 run --index sample_100000_seeded_index_faster "$qsv_bin" sample --rng faster --seed 42 100000 "$data"
 run --index sample_100000_seeded_index_secure "$qsv_bin" sample --rng cryptosecure --seed 42 100000 "$data"
