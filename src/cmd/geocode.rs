@@ -1177,7 +1177,7 @@ cargo run -p geosuggest-utils --bin geosuggest-build-index --release --features=
 
     // reuse batch buffers
     let batchsize: usize = if args.flag_batch == 0 {
-        util::count_rows(&rconfig)? as usize
+        std::cmp::max(1000, util::count_rows(&rconfig)? as usize)
     } else {
         args.flag_batch
     };
