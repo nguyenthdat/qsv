@@ -1119,6 +1119,7 @@ Register-ArgumentCompleter -Native -CommandName 'qsv' -ScriptBlock {
             [CompletionResult]::new('--ignore-case', '--ignore-case', [CompletionResultType]::ParameterName, 'ignore-case')
             [CompletionResult]::new('--freeze-columns', '--freeze-columns', [CompletionResultType]::ParameterName, 'freeze-columns')
             [CompletionResult]::new('--monochrome', '--monochrome', [CompletionResultType]::ParameterName, 'monochrome')
+            [CompletionResult]::new('--wrap-mode', '--wrap-mode', [CompletionResultType]::ParameterName, 'wrap-mode')
             [CompletionResult]::new('--prompt', '--prompt', [CompletionResultType]::ParameterName, 'prompt')
             [CompletionResult]::new('--echo-column', '--echo-column', [CompletionResultType]::ParameterName, 'echo-column')
             [CompletionResult]::new('--debug', '--debug', [CompletionResultType]::ParameterName, 'debug')
@@ -1592,6 +1593,7 @@ Register-ArgumentCompleter -Native -CommandName 'qsv' -ScriptBlock {
         'qsv;sort' {
             [CompletionResult]::new('--select', '--select', [CompletionResultType]::ParameterName, 'select')
             [CompletionResult]::new('--numeric', '--numeric', [CompletionResultType]::ParameterName, 'numeric')
+            [CompletionResult]::new('--natural', '--natural', [CompletionResultType]::ParameterName, 'natural')
             [CompletionResult]::new('--reverse', '--reverse', [CompletionResultType]::ParameterName, 'reverse')
             [CompletionResult]::new('--ignore-case', '--ignore-case', [CompletionResultType]::ParameterName, 'ignore-case')
             [CompletionResult]::new('--unique', '--unique', [CompletionResultType]::ParameterName, 'unique')

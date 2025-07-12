@@ -1161,6 +1161,7 @@ _arguments "${_arguments_options[@]}" : \
 '--ignore-case[]' \
 '--freeze-columns[]' \
 '--monochrome[]' \
+'--wrap-mode[]' \
 '--prompt[]' \
 '--echo-column[]' \
 '--debug[]' \
@@ -1750,6 +1751,7 @@ _arguments "${_arguments_options[@]}" : \
 _arguments "${_arguments_options[@]}" : \
 '--select[]' \
 '--numeric[]' \
+'--natural[]' \
 '--reverse[]' \
 '--ignore-case[]' \
 '--unique[]' \

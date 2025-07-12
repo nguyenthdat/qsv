@@ -1038,6 +1038,7 @@ set edit:completion:arg-completer[qsv] = {|@words|
             cand --ignore-case 'ignore-case'
             cand --freeze-columns 'freeze-columns'
             cand --monochrome 'monochrome'
+            cand --wrap-mode 'wrap-mode'
             cand --prompt 'prompt'
             cand --echo-column 'echo-column'
             cand --debug 'debug'
@@ -1463,6 +1464,7 @@ set edit:completion:arg-completer[qsv] = {|@words|
         &'qsv;sort'= {
             cand --select 'select'
             cand --numeric 'numeric'
+            cand --natural 'natural'
             cand --reverse 'reverse'
             cand --ignore-case 'ignore-case'
             cand --unique 'unique'
