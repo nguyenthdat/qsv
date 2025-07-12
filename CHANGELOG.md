@@ -6,10 +6,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## What's Changed
-* feat: update completions for qsv v6.0.0 by @rzmk in https://github.com/dathere/qsv/pull/2838
+## [6.0.1] - 2025-07-12
+
+This is a patch release with bug fixes and minor improvements.
+
+---
+
+### Changed
+* feat: updated completions for qsv v6.0.0 by @rzmk in [#2838](https://github.com/dathere/qsv/pull/2838)
+* docs: updated sample schema.json based on NYC311 1M row sample benchmark data 
+* docs: updated sample stats output using NYC 311 1M row sample benchmark data
 * build(deps): bump chrono-tz from 0.10.3 to 0.10.4 by @dependabot[bot] in https://github.com/dathere/qsv/pull/2839
 * build(deps): bump qsv-stats from 0.35.0 to 0.36.0 by @dependabot[bot] in https://github.com/dathere/qsv/pull/2840
+* bumped indirect dependencies
+* Added benchmark_data.* to .gitignore
+
+### Fixed
+* `geocode`: make `--batch=0` mode more robust by setting a minimum batch size of 1,000 rows https://github.com/dathere/qsv/commit/2fa90bcc7df57a338a4851bafb361e886cea97c5
+* `jsonl`: correct batchsize calculation to use input file instead of output file for line counting https://github.com/dathere/qsv/commit/742dc777a3d2d2f3d70e72078d69cfdc39c04b4b
+* `benchmarks`: fixed benchmarks with unescaped parameters with embedded spaces https://github.com/dathere/qsv/commit/ad95596b8400154b50042e2cb8352900d0198904
+
+### Removed
+- Removed retired publishing workflows (linux-glibc-231-musl-123 and wix-installer)
 
 
 **Full Changelog**: https://github.com/dathere/qsv/compare/6.0.0...6.0.1
