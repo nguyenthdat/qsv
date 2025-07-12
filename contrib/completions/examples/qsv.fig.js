@@ -2499,6 +2499,9 @@ const completion: Fig.Spec = {
           name: "--monochrome",
         },
         {
+          name: "--wrap-mode",
+        },
+        {
           name: "--prompt",
         },
         {
@@ -3568,6 +3571,9 @@ const completion: Fig.Spec = {
         },
         {
           name: "--numeric",
+        },
+        {
+          name: "--natural",
         },
         {
           name: "--reverse",

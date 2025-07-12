@@ -943,6 +943,7 @@ module completions {
     --ignore-case
     --freeze-columns
     --monochrome
+    --wrap-mode
     --prompt
     --echo-column
     --debug
@@ -1366,6 +1367,7 @@ module completions {
   export extern "qsv sort" [
     --select
     --numeric
+    --natural
     --reverse
     --ignore-case
     --unique

@@ -835,6 +835,7 @@ complete -c qsv -n "__fish_qsv_using_subcommand lens" -l find
 complete -c qsv -n "__fish_qsv_using_subcommand lens" -l ignore-case
 complete -c qsv -n "__fish_qsv_using_subcommand lens" -l freeze-columns
 complete -c qsv -n "__fish_qsv_using_subcommand lens" -l monochrome
+complete -c qsv -n "__fish_qsv_using_subcommand lens" -l wrap-mode
 complete -c qsv -n "__fish_qsv_using_subcommand lens" -l prompt
 complete -c qsv -n "__fish_qsv_using_subcommand lens" -l echo-column
 complete -c qsv -n "__fish_qsv_using_subcommand lens" -l debug
@@ -1134,6 +1135,7 @@ complete -c qsv -n "__fish_qsv_using_subcommand sniff" -l progressbar
 complete -c qsv -n "__fish_qsv_using_subcommand sniff" -s h -l help -d 'Print help'
 complete -c qsv -n "__fish_qsv_using_subcommand sort" -l select
 complete -c qsv -n "__fish_qsv_using_subcommand sort" -l numeric
+complete -c qsv -n "__fish_qsv_using_subcommand sort" -l natural
 complete -c qsv -n "__fish_qsv_using_subcommand sort" -l reverse
 complete -c qsv -n "__fish_qsv_using_subcommand sort" -l ignore-case
 complete -c qsv -n "__fish_qsv_using_subcommand sort" -l unique
