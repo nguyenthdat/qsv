@@ -1560,6 +1560,7 @@ fn geocode_countryinfonow_formatstr_pretty_json() {
 
 #[test]
 #[serial]
+#[ignore = "GeoIP2 database requires a license and is not included in the repo"]
 fn geocode_iplookup() {
     let wrk = Workdir::new("geocode_iplookup");
     wrk.create(
@@ -1596,6 +1597,7 @@ fn geocode_iplookup() {
 
 #[test]
 #[serial]
+#[ignore = "GeoIP2 database requires a license and is not included in the repo"]
 fn geocode_iplookup_formatstr() {
     let wrk = Workdir::new("geocode_iplookup_formatstr");
     wrk.create(
@@ -1627,6 +1629,7 @@ fn geocode_iplookup_formatstr() {
 
 #[test]
 #[serial]
+#[ignore = "GeoIP2 database requires a license and is not included in the repo"]
 fn geocode_iplookup_formatstr_dynfmt() {
     let wrk = Workdir::new("geocode_iplookup_formatstr_dynfmt");
     wrk.create(
@@ -1661,6 +1664,7 @@ fn geocode_iplookup_formatstr_dynfmt() {
 
 #[test]
 #[serial]
+#[ignore = "GeoIP2 database requires a license and is not included in the repo"]
 fn geocode_iplookup_formatstr_json() {
     let wrk = Workdir::new("geocode_iplookup_formatstr_json");
     wrk.create(
@@ -1692,6 +1696,7 @@ fn geocode_iplookup_formatstr_json() {
 
 #[test]
 #[serial]
+#[ignore = "GeoIP2 database requires a license and is not included in the repo"]
 fn geocode_iplookup_formatstr_pretty_json() {
     let wrk = Workdir::new("geocode_iplookup_formatstr_pretty_json");
     wrk.create(
@@ -1721,6 +1726,7 @@ fn geocode_iplookup_formatstr_pretty_json() {
 
 #[test]
 #[serial]
+#[ignore = "GeoIP2 database requires a license and is not included in the repo"]
 fn geocode_iplookup_formatstr_cityrecord() {
     let wrk = Workdir::new("geocode_iplookup_formatstr_cityrecord");
     wrk.create(
@@ -1752,6 +1758,7 @@ fn geocode_iplookup_formatstr_cityrecord() {
 
 #[test]
 #[serial]
+#[ignore = "GeoIP2 database requires a license and is not included in the repo"]
 fn geocode_iplookup_dyncols_fmt() {
     let wrk = Workdir::new("geocode_iplookup_dyncols_fmt");
     wrk.create(
@@ -1793,6 +1800,7 @@ fn geocode_iplookup_dyncols_fmt() {
 
 #[test]
 #[serial]
+#[ignore = "GeoIP2 database requires a license and is not included in the repo"]
 fn geocode_iplookup_invalid_result() {
     let wrk = Workdir::new("geocode_iplookup_invalid_result");
     wrk.create(
@@ -1826,6 +1834,7 @@ fn geocode_iplookup_invalid_result() {
 
 #[test]
 #[serial]
+#[ignore = "GeoIP2 database requires a license and is not included in the repo"]
 fn geocode_iplookupnow() {
     let wrk = Workdir::new("geocode_iplookupnow");
     let mut cmd = wrk.command("geocode");
@@ -1843,6 +1852,7 @@ fn geocode_iplookupnow() {
 
 #[test]
 #[serial]
+#[ignore = "GeoIP2 database requires a license and is not included in the repo"]
 fn geocode_iplookupnow_url() {
     let wrk = Workdir::new("geocode_iplookupnow_url");
     let mut cmd = wrk.command("geocode");
@@ -1860,6 +1870,7 @@ fn geocode_iplookupnow_url() {
 
 #[test]
 #[serial]
+#[ignore = "GeoIP2 database requires a license and is not included in the repo"]
 fn geocode_iplookupnow_formatstr() {
     let wrk = Workdir::new("geocode_iplookupnow_formatstr");
     let mut cmd = wrk.command("geocode");
@@ -1876,6 +1887,7 @@ fn geocode_iplookupnow_formatstr() {
 
 #[test]
 #[serial]
+#[ignore = "GeoIP2 database requires a license and is not included in the repo"]
 fn geocode_iplookupnow_formatstr_dynfmt() {
     let wrk = Workdir::new("geocode_iplookupnow_formatstr_dynfmt");
     let mut cmd = wrk.command("geocode");
@@ -1896,6 +1908,7 @@ fn geocode_iplookupnow_formatstr_dynfmt() {
 
 #[test]
 #[serial]
+#[ignore = "GeoIP2 database requires a license and is not included in the repo"]
 fn geocode_iplookupnow_formatstr_json() {
     let wrk = Workdir::new("geocode_iplookupnow_formatstr_json");
     let mut cmd = wrk.command("geocode");
@@ -1914,6 +1927,7 @@ fn geocode_iplookupnow_formatstr_json() {
 
 #[test]
 #[serial]
+#[ignore = "GeoIP2 database requires a license and is not included in the repo"]
 fn geocode_iplookupnow_formatstr_pretty_json() {
     let wrk = Workdir::new("geocode_iplookupnow_formatstr_pretty_json");
     let mut cmd = wrk.command("geocode");
@@ -1931,6 +1945,7 @@ fn geocode_iplookupnow_formatstr_pretty_json() {
 
 #[test]
 #[serial]
+#[ignore = "GeoIP2 database requires a license and is not included in the repo"]
 fn geocode_iplookupnow_formatstr_cityrecord() {
     let wrk = Workdir::new("geocode_iplookupnow_formatstr_cityrecord");
     let mut cmd = wrk.command("geocode");
@@ -1950,6 +1965,7 @@ fn geocode_iplookupnow_formatstr_cityrecord() {
 
 #[test]
 #[serial]
+#[ignore = "GeoIP2 database requires a license and is not included in the repo"]
 fn geocode_iplookupnow_private_ip() {
     let wrk = Workdir::new("geocode_iplookupnow_private_ip");
     let mut cmd = wrk.command("geocode");
@@ -1964,6 +1980,7 @@ fn geocode_iplookupnow_private_ip() {
 
 #[test]
 #[serial]
+#[ignore = "GeoIP2 database requires a license and is not included in the repo"]
 fn geocode_iplookupnow_localhost() {
     let wrk = Workdir::new("geocode_iplookupnow_localhost");
     let mut cmd = wrk.command("geocode");
@@ -1978,6 +1995,7 @@ fn geocode_iplookupnow_localhost() {
 
 #[test]
 #[serial]
+#[ignore = "GeoIP2 database requires a license and is not included in the repo"]
 fn geocode_iplookupnow_invalid_ip() {
     let wrk = Workdir::new("geocode_iplookupnow_invalid_ip");
     let mut cmd = wrk.command("geocode");
@@ -1992,6 +2010,7 @@ fn geocode_iplookupnow_invalid_ip() {
 
 #[test]
 #[serial]
+#[ignore = "GeoIP2 database requires a license and is not included in the repo"]
 fn geocode_iplookupnow_invalid_url() {
     let wrk = Workdir::new("geocode_iplookupnow_invalid_url");
     let mut cmd = wrk.command("geocode");

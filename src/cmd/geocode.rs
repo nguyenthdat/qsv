@@ -981,7 +981,11 @@ async fn geocode_main(args: Args) -> CliResult<()> {
         // load the GeoIP2 database
         engine_data
             .load_geoip2(geoip2_filename.clone())
-            .map_err(|e| CliError::Other(format!("Error loading GeoIP2 database: {e}")))?;
+            .map_err(|e| {
+                CliError::Other(format!(
+                    r#"Error loading GeoIP2 database "{geoip2_filename}": {e}"#
+                ))
+            })?;
     }
 
     let engine = engine_data
