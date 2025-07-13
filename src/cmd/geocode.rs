@@ -903,21 +903,11 @@ async fn geocode_main(args: Args) -> CliResult<()> {
                 check_index_file(&geocode_index_file)?;
 
                 if args.flag_force {
-                    winfo!(
-                        r#"To rebuild the index, use the geosuggest crate directly:
-
-git clone https://github.com/estin/geosuggest.git
-cd geosuggest
-cargo run -p geosuggest-utils --bin geosuggest-build-index --release --features=cli,tracing -- \
-    from-urls \
-    --cities-url {cities_url} \
-    --cities-filename {cities_filename} \
-    --languages {languages} \
-    --output {geocode_index_file}"#,
-                        cities_url = args.flag_cities_url,
-                        cities_filename = cities_filename,
-                        languages = args.flag_languages,
-                        geocode_index_file = geocode_index_file,
+                    display_rebuild_instructions(
+                        &args.flag_cities_url,
+                        &cities_filename,
+                        &args.flag_languages,
+                        &geocode_index_file,
                     );
                 } else {
                     winfo!("Checking main Geonames website for updates...");
@@ -928,15 +918,13 @@ cargo run -p geosuggest-utils --bin geosuggest-build-index --release --features=
                     if updater.has_updates(&metadata.unwrap()).await.map_err(|_| {
                         CliError::Network("Geonames update check failed.".to_string())
                     })? {
-                        winfo!(
-                            "Updating/Rebuilding Geonames index. This will take a while as we \
-                             need to download data from Geonames & rebuild the index..."
+                        winfo!("Updates available at Geonames.org.");
+                        display_rebuild_instructions(
+                            &args.flag_cities_url,
+                            &cities_filename,
+                            &args.flag_languages,
+                            &geocode_index_file,
                         );
-                        let engine = updater.build().await.map_err(|_| {
-                            CliError::Other("Error updating geonames index.".to_string())
-                        })?;
-                        let _ = index_storage.dump_to(geocode_index_file.clone(), &engine);
-                        winfo!("Updates successfully applied: {geocode_index_file}");
                     } else {
                         winfo!("Skipping update. Geonames index is up-to-date.");
                     }
@@ -1334,6 +1322,31 @@ cargo run -p geosuggest-utils --bin geosuggest-build-index --release --features=
         util::finish_progress(&progress);
     }
     Ok(wtr.flush()?)
+}
+
+/// Display instructions for rebuilding the Geonames index using the geosuggest crate directly
+fn display_rebuild_instructions(
+    cities_url: &str,
+    cities_filename: &str,
+    languages: &str,
+    geocode_index_file: &str,
+) {
+    winfo!(
+        r#"To rebuild the index, use the geosuggest crate directly:
+
+git clone https://github.com/estin/geosuggest.git
+cd geosuggest
+cargo run -p geosuggest-utils --bin geosuggest-build-index --release --features=cli,tracing -- \
+    from-urls \
+    --cities-url {cities_url} \
+    --cities-filename {cities_filename} \
+    --languages {languages} \
+    --output {geocode_index_file}"#,
+        cities_url = cities_url,
+        cities_filename = cities_filename,
+        languages = languages,
+        geocode_index_file = geocode_index_file,
+    );
 }
 
 /// check if index_file exists and ends with a .rkyv extension
