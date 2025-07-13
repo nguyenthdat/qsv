@@ -1176,6 +1176,9 @@ async fn geocode_main(args: Args) -> CliResult<()> {
 
     let invalid_result = args.flag_invalid_result.unwrap_or_default();
 
+    let min_score = args.flag_min_score;
+    let k_weight = args.flag_k_weight;
+
     // main loop to read CSV and construct batches for parallel processing.
     // each batch is processed via Rayon parallel iterator.
     // loop exits when batch is empty.
@@ -1200,9 +1203,6 @@ async fn geocode_main(args: Args) -> CliResult<()> {
             // break out of infinite loop when at EOF
             break 'batch_loop;
         }
-
-        let min_score = args.flag_min_score;
-        let k_weight = args.flag_k_weight;
 
         // do actual apply command via Rayon parallel iterator
         batch
@@ -1671,6 +1671,22 @@ fn search_index(
         } else {
             formatstr
         };
+
+        // %dyncols: handling for IP lookup
+        if formatstr.starts_with("%dyncols:") {
+            let countryrecord = engine.country_info(country)?;
+            add_dyncols(
+                record,
+                cityrecord,
+                countryrecord,
+                &nameslang,
+                country,
+                capital,
+                column_values,
+            );
+            return Some(DYNCOLS_POPULATED.to_string());
+        }
+
         return Some(format_result(
             engine, cityrecord, &nameslang, country, capital, formatstr, false,
         ));
@@ -1738,7 +1754,13 @@ fn search_index(
     None
 }
 
-#[cached]
+#[cached(
+    ty = "SizedCache<String, Option<IpAddr>>",
+    create = "{ SizedCache::try_with_size(CACHE_SIZE).unwrap_or_else(|_| \
+              SizedCache::with_size(FALLBACK_CACHE_SIZE)) }",
+    key = "String",
+    convert = r#"{ host.to_owned() }"#
+)]
 fn cached_dns_lookup(host: String) -> Option<IpAddr> {
     dns_lookup::lookup_host(&host)
         .map(|ips| {
