@@ -1557,3 +1557,449 @@ fn geocode_countryinfonow_formatstr_pretty_json() {
 }"######;
     assert_eq!(got, expected);
 }
+
+#[test]
+#[serial]
+fn geocode_iplookup() {
+    let wrk = Workdir::new("geocode_iplookup");
+    wrk.create(
+        "data.csv",
+        vec![
+            svec!["IP"],
+            svec!["8.8.8.8"],        // Google DNS
+            svec!["1.1.1.1"],        // Cloudflare DNS
+            svec!["208.67.222.222"], // OpenDNS
+            svec!["This is not an IP and it will not be geocoded"],
+            svec!["192.168.1.1"],        // Private IP
+            svec!["127.0.0.1"],          // Localhost
+            svec!["invalid-ip-address"], // Invalid IP
+        ],
+    );
+    let mut cmd = wrk.command("geocode");
+    cmd.arg("iplookup").arg("IP").arg("data.csv");
+
+    wrk.assert_success(&mut cmd);
+
+    let got: Vec<Vec<String>> = wrk.read_stdout(&mut cmd);
+    let expected = vec![
+        svec!["IP"],
+        svec!["8.8.8.8"],
+        svec!["1.1.1.1"],
+        svec!["San Francisco, California US"],
+        svec!["This is not an IP and it will not be geocoded"],
+        svec!["192.168.1.1"],        // Private IP returns as-is
+        svec!["127.0.0.1"],          // Localhost returns as-is
+        svec!["invalid-ip-address"], // Invalid IP returns as-is
+    ];
+    assert_eq!(got, expected);
+}
+
+#[test]
+#[serial]
+fn geocode_iplookup_formatstr() {
+    let wrk = Workdir::new("geocode_iplookup_formatstr");
+    wrk.create(
+        "data.csv",
+        vec![
+            svec!["IP"],
+            svec!["3.3.3.3"], // Amazon
+            svec!["This is not an IP and it will not be geocoded"],
+            svec!["192.168.1.1"], // Private IP
+        ],
+    );
+    let mut cmd = wrk.command("geocode");
+    cmd.arg("iplookup")
+        .arg("IP")
+        .args(["--formatstr", "%city-state-country"])
+        .arg("data.csv");
+
+    wrk.assert_success(&mut cmd);
+
+    let got: Vec<Vec<String>> = wrk.read_stdout(&mut cmd);
+    let expected = vec![
+        svec!["IP"],
+        svec!["Ashburn, Virginia US"],
+        svec!["This is not an IP and it will not be geocoded"],
+        svec!["192.168.1.1"], // Private IP returns as-is
+    ];
+    assert_eq!(got, expected);
+}
+
+#[test]
+#[serial]
+fn geocode_iplookup_formatstr_dynfmt() {
+    let wrk = Workdir::new("geocode_iplookup_formatstr_dynfmt");
+    wrk.create(
+        "data.csv",
+        vec![
+            svec!["IP"],
+            svec!["3.3.3.3"], // Amazon
+            svec!["This is not an IP and it will not be geocoded"],
+            svec!["192.168.1.1"], // Private IP
+        ],
+    );
+    let mut cmd = wrk.command("geocode");
+    cmd.arg("iplookup")
+        .arg("IP")
+        .args([
+            "--formatstr",
+            "City: {name}, State: {admin1}, Country: {country} - {timezone}",
+        ])
+        .arg("data.csv");
+
+    wrk.assert_success(&mut cmd);
+
+    let got: Vec<Vec<String>> = wrk.read_stdout(&mut cmd);
+    let expected = vec![
+        svec!["IP"],
+        svec!["City: Ashburn, State: Virginia, Country: US - America/New_York"],
+        svec!["This is not an IP and it will not be geocoded"],
+        svec!["192.168.1.1"], // Private IP returns as-is
+    ];
+    assert_eq!(got, expected);
+}
+
+#[test]
+#[serial]
+fn geocode_iplookup_formatstr_json() {
+    let wrk = Workdir::new("geocode_iplookup_formatstr_json");
+    wrk.create(
+        "data.csv",
+        vec![
+            svec!["IP"],
+            svec!["3.3.3.3"], // Amazon
+            svec!["This is not an IP and it will not be geocoded"],
+            svec!["192.168.1.1"], // Private IP
+        ],
+    );
+    let mut cmd = wrk.command("geocode");
+    cmd.arg("iplookup")
+        .arg("IP")
+        .args(["--formatstr", "%json"])
+        .arg("data.csv");
+
+    wrk.assert_success(&mut cmd);
+
+    let got: Vec<Vec<String>> = wrk.read_stdout(&mut cmd);
+    // The JSON output will contain the full city record, so we just check that it contains expected
+    // fields
+    assert!(got[1][0].contains("\"cityrecord\""));
+    assert!(got[1][0].contains("\"countryrecord\""));
+    assert!(got[1][0].contains("\"us_fips_codes\""));
+    assert_eq!(got[2][0], "This is not an IP and it will not be geocoded");
+    assert_eq!(got[3][0], "192.168.1.1");
+}
+
+#[test]
+#[serial]
+fn geocode_iplookup_formatstr_pretty_json() {
+    let wrk = Workdir::new("geocode_iplookup_formatstr_pretty_json");
+    wrk.create(
+        "data.csv",
+        vec![
+            svec!["IP"],
+            svec!["3.3.3.3"], // Amazon
+            svec!["This is not an IP and it will not be geocoded"],
+            svec!["192.168.1.1"], // Private IP
+        ],
+    );
+    let mut cmd = wrk.command("geocode");
+    cmd.arg("iplookup")
+        .arg("IP")
+        .args(["--formatstr", "%pretty-json"])
+        .arg("data.csv");
+
+    wrk.assert_success(&mut cmd);
+
+    let got: Vec<Vec<String>> = wrk.read_stdout(&mut cmd);
+    // The pretty JSON output will contain the full city record with proper formatting
+    assert!(got[1][0].contains("\n  \"cityrecord\""));
+    assert!(got[1][0].contains("\n  \"countryrecord\""));
+    assert_eq!(got[2][0], "This is not an IP and it will not be geocoded");
+    assert_eq!(got[3][0], "192.168.1.1");
+}
+
+#[test]
+#[serial]
+fn geocode_iplookup_formatstr_cityrecord() {
+    let wrk = Workdir::new("geocode_iplookup_formatstr_cityrecord");
+    wrk.create(
+        "data.csv",
+        vec![
+            svec!["IP"],
+            svec!["3.3.3.3"], // Amazon
+            svec!["This is not an IP and it will not be geocoded"],
+            svec!["192.168.1.1"], // Private IP
+        ],
+    );
+    let mut cmd = wrk.command("geocode");
+    cmd.arg("iplookup")
+        .arg("IP")
+        .args(["--formatstr", "%cityrecord"])
+        .arg("data.csv");
+
+    wrk.assert_success(&mut cmd);
+
+    let got: Vec<Vec<String>> = wrk.read_stdout(&mut cmd);
+    // The cityrecord output will contain the full ArchivedCitiesRecord debug format
+    assert!(got[1][0].contains("ArchivedCitiesRecord"));
+    assert!(got[1][0].contains("name: \"Ashburn\""));
+    assert!(got[1][0].contains("latitude:"));
+    assert!(got[1][0].contains("longitude:"));
+    assert_eq!(got[2][0], "This is not an IP and it will not be geocoded");
+    assert_eq!(got[3][0], "192.168.1.1");
+}
+
+#[test]
+#[serial]
+fn geocode_iplookup_dyncols_fmt() {
+    let wrk = Workdir::new("geocode_iplookup_dyncols_fmt");
+    wrk.create(
+        "data.csv",
+        vec![
+            svec!["IP"],
+            svec!["3.3.3.3"], // Amazon
+            svec!["This is not an IP and it will not be geocoded"],
+            svec!["192.168.1.1"], // Private IP
+        ],
+    );
+    let mut cmd = wrk.command("geocode");
+    cmd.arg("iplookup")
+        .arg("IP")
+        .args([
+            "-f",
+            "%dyncols: {city_col:name}, {state_col:admin1}, {country_col:country}, \
+             {tz_col:timezone}",
+        ])
+        .arg("data.csv");
+
+    wrk.assert_success(&mut cmd);
+
+    let got: Vec<Vec<String>> = wrk.read_stdout(&mut cmd);
+    let expected = vec![
+        svec!["IP", "city_col", "state_col", "country_col", "tz_col"],
+        svec!["3.3.3.3", "Ashburn", "Virginia", "US", "America/New_York"],
+        svec![
+            "This is not an IP and it will not be geocoded",
+            "",
+            "",
+            "",
+            ""
+        ],
+        svec!["192.168.1.1", "", "", "", ""],
+    ];
+    assert_eq!(got, expected);
+}
+
+#[test]
+#[serial]
+fn geocode_iplookup_invalid_result() {
+    let wrk = Workdir::new("geocode_iplookup_invalid_result");
+    wrk.create(
+        "data.csv",
+        vec![
+            svec!["IP"],
+            svec!["3.3.3.3"], // Amazon
+            svec!["This is not an IP and it will not be geocoded"],
+            svec!["192.168.1.1"],        // Private IP
+            svec!["invalid-ip-address"], // Invalid IP
+        ],
+    );
+    let mut cmd = wrk.command("geocode");
+    cmd.arg("iplookup")
+        .arg("IP")
+        .args(["--invalid-result", "<NO_LOCATION>"])
+        .arg("data.csv");
+
+    wrk.assert_success(&mut cmd);
+
+    let got: Vec<Vec<String>> = wrk.read_stdout(&mut cmd);
+    let expected = vec![
+        svec!["IP"],
+        svec!["Ashburn, Virginia US"],
+        svec!["<NO_LOCATION>"],
+        svec!["192.168.1.1"],
+        svec!["<NO_LOCATION>"],
+    ];
+    assert_eq!(got, expected);
+}
+
+#[test]
+#[serial]
+fn geocode_iplookupnow() {
+    let wrk = Workdir::new("geocode_iplookupnow");
+    let mut cmd = wrk.command("geocode");
+    cmd.arg("iplookupnow").arg("3.3.3.3");
+
+    wrk.assert_success(&mut cmd);
+
+    let got: Vec<Vec<String>> = wrk.read_stdout(&mut cmd);
+    let expected = vec![
+        svec!["Location"],
+        svec!["Ashburn, Virginia US: 39.04372, -77.48749"],
+    ];
+    assert_eq!(got, expected);
+}
+
+#[test]
+#[serial]
+fn geocode_iplookupnow_url() {
+    let wrk = Workdir::new("geocode_iplookupnow_url");
+    let mut cmd = wrk.command("geocode");
+    cmd.arg("iplookupnow").arg("https://nytimes.com");
+
+    wrk.assert_success(&mut cmd);
+
+    let got: Vec<Vec<String>> = wrk.read_stdout(&mut cmd);
+    let expected = vec![
+        svec!["Location"],
+        svec!["San Francisco, California US: 37.77493, -122.41942"],
+    ];
+    assert_eq!(got, expected);
+}
+
+#[test]
+#[serial]
+fn geocode_iplookupnow_formatstr() {
+    let wrk = Workdir::new("geocode_iplookupnow_formatstr");
+    let mut cmd = wrk.command("geocode");
+    cmd.arg("iplookupnow")
+        .arg("3.3.3.3")
+        .args(["--formatstr", "%city-state-country"]);
+
+    wrk.assert_success(&mut cmd);
+
+    let got: Vec<Vec<String>> = wrk.read_stdout(&mut cmd);
+    let expected = vec![svec!["Location"], svec!["Ashburn, Virginia US"]];
+    assert_eq!(got, expected);
+}
+
+#[test]
+#[serial]
+fn geocode_iplookupnow_formatstr_dynfmt() {
+    let wrk = Workdir::new("geocode_iplookupnow_formatstr_dynfmt");
+    let mut cmd = wrk.command("geocode");
+    cmd.arg("iplookupnow").arg("3.3.3.3").args([
+        "--formatstr",
+        "City: {name}, State: {admin1}, Country: {country} - {timezone}",
+    ]);
+
+    wrk.assert_success(&mut cmd);
+
+    let got: Vec<Vec<String>> = wrk.read_stdout(&mut cmd);
+    let expected = vec![
+        svec!["Location"],
+        svec!["City: Ashburn, State: Virginia, Country: US - America/New_York"],
+    ];
+    assert_eq!(got, expected);
+}
+
+#[test]
+#[serial]
+fn geocode_iplookupnow_formatstr_json() {
+    let wrk = Workdir::new("geocode_iplookupnow_formatstr_json");
+    let mut cmd = wrk.command("geocode");
+    cmd.arg("iplookupnow")
+        .arg("3.3.3.3")
+        .args(["--formatstr", "%json"]);
+
+    wrk.assert_success(&mut cmd);
+
+    let got: String = wrk.stdout(&mut cmd);
+    // The JSON output will contain the full city record
+    assert!(got.contains("\"cityrecord\""));
+    assert!(got.contains("\"countryrecord\""));
+    assert!(got.contains("\"us_fips_codes\""));
+}
+
+#[test]
+#[serial]
+fn geocode_iplookupnow_formatstr_pretty_json() {
+    let wrk = Workdir::new("geocode_iplookupnow_formatstr_pretty_json");
+    let mut cmd = wrk.command("geocode");
+    cmd.arg("iplookupnow")
+        .arg("3.3.3.3")
+        .args(["--formatstr", "%pretty-json"]);
+
+    wrk.assert_success(&mut cmd);
+
+    let got: String = wrk.stdout(&mut cmd);
+    // The pretty JSON output will contain the full city record with proper formatting
+    assert!(got.contains("\n  \"cityrecord\""));
+    assert!(got.contains("\n  \"countryrecord\""));
+}
+
+#[test]
+#[serial]
+fn geocode_iplookupnow_formatstr_cityrecord() {
+    let wrk = Workdir::new("geocode_iplookupnow_formatstr_cityrecord");
+    let mut cmd = wrk.command("geocode");
+    cmd.arg("iplookupnow")
+        .arg("3.3.3.3")
+        .args(["--formatstr", "%cityrecord"]);
+
+    wrk.assert_success(&mut cmd);
+
+    let got: String = wrk.stdout(&mut cmd);
+    // The cityrecord output will contain the full ArchivedCitiesRecord debug format
+    assert!(got.contains("ArchivedCitiesRecord"));
+    assert!(got.contains("Ashburn"));
+    assert!(got.contains("latitude:"));
+    assert!(got.contains("longitude:"));
+}
+
+#[test]
+#[serial]
+fn geocode_iplookupnow_private_ip() {
+    let wrk = Workdir::new("geocode_iplookupnow_private_ip");
+    let mut cmd = wrk.command("geocode");
+    cmd.arg("iplookupnow").arg("192.168.1.1");
+
+    wrk.assert_success(&mut cmd);
+
+    let got: String = wrk.stdout(&mut cmd);
+    // Private IP should return the IP address as-is
+    assert!(got.contains("192.168.1.1"));
+}
+
+#[test]
+#[serial]
+fn geocode_iplookupnow_localhost() {
+    let wrk = Workdir::new("geocode_iplookupnow_localhost");
+    let mut cmd = wrk.command("geocode");
+    cmd.arg("iplookupnow").arg("127.0.0.1");
+
+    wrk.assert_success(&mut cmd);
+
+    let got: String = wrk.stdout(&mut cmd);
+    // Localhost should return the IP address as-is
+    assert!(got.contains("127.0.0.1"));
+}
+
+#[test]
+#[serial]
+fn geocode_iplookupnow_invalid_ip() {
+    let wrk = Workdir::new("geocode_iplookupnow_invalid_ip");
+    let mut cmd = wrk.command("geocode");
+    cmd.arg("iplookupnow").arg("invalid-ip-address");
+
+    wrk.assert_success(&mut cmd);
+
+    let got: String = wrk.stdout(&mut cmd);
+    // Invalid IP should return the input as-is
+    assert!(got.contains("invalid-ip-address"));
+}
+
+#[test]
+#[serial]
+fn geocode_iplookupnow_invalid_url() {
+    let wrk = Workdir::new("geocode_iplookupnow_invalid_url");
+    let mut cmd = wrk.command("geocode");
+    cmd.arg("iplookupnow").arg("not-a-valid-url");
+
+    wrk.assert_success(&mut cmd);
+
+    let got: String = wrk.stdout(&mut cmd);
+    // Invalid URL should return the input as-is
+    assert!(got.contains("not-a-valid-url"));
+}
