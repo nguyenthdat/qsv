@@ -42,7 +42,7 @@
 arg_pat="$1"
 
 # the version of this script
-bm_version=6.6.2
+bm_version=6.7.0
 
 # CONFIGURABLE VARIABLES ---------------------------------------
 # change as needed to reflect your environment/workloads
@@ -385,32 +385,63 @@ if [ ! -r communityboards.csv ]; then
   echo ""
 fi
 
-if [ ! -r searchset_patterns_unicode.txt ]; then
-  echo "> Preparing benchmark support data..."
-  # create an index so benchmark data preparation commands can run faster
+echo "> Preparing benchmark support data..."
+# create an index so benchmark data preparation commands can run faster
+if [ ! -f "$data.idx" ]; then
   "$qsv_benchmarker_bin" index "$data"
+fi
+
+if [ ! -r data_to_exclude.csv ]; then
   echo "   data_to_exclude.csv..."
   "$qsv_benchmarker_bin" sample --seed 42 1000 "$data" -o data_to_exclude.csv
+fi
+
+if [ ! -r data_unsorted.csv ]; then
   echo "   data_unsorted.csv..."
   "$qsv_benchmarker_bin" sort --seed 42 --random --faster "$data" -o data_unsorted.csv
+fi
+
+if [ ! -r data_sorted.csv ]; then
   echo "   data_sorted.csv..."
   "$qsv_benchmarker_bin" sort "$data" -o data_sorted.csv
+fi
+
+if [ ! -r benchmark_data.xlsx ]; then
   echo "   benchmark_data.xlsx..."
   "$qsv_benchmarker_bin" to xlsx benchmark_data.xlsx "$data"
+fi
+
+if [ ! -r benchmark_data.jsonl ]; then
   echo "   benchmark_data.jsonl..."
   "$qsv_benchmarker_bin" tojsonl "$data" --output benchmark_data.jsonl
+fi
+
+if [ ! -r benchmark_data.json ]; then
   echo "   benchmark_data.json..."
   "$qsv_benchmarker_bin" sqlp --format json "$data" -q 'select * from _t_1' --infer-len 127000 --rnull-values 'N/A' --output benchmark_data.json
+fi
+
+if [ ! -r benchmark_data.csv.schema.json ]; then
   echo "   benchmark_data.schema.json..."
   "$qsv_benchmarker_bin" schema "$data" --stdout >benchmark_data.csv.schema.json
+fi
+
+if [ ! -r benchmark_data.snappy ]; then
   echo "   benchmark_data.snappy..."
   "$qsv_benchmarker_bin" snappy compress "$data" --output benchmark_data.snappy
+fi
+
+if [ ! -r searchset_patterns.txt ]; then
   echo "   searchset_patterns.txt..."
   printf "homeless\npark\nNoise\n" >searchset_patterns.txt
+fi
+
+if [ ! -r searchset_patterns_unicode.txt ]; then
   echo "   searchset_patterns_unicode.txt..."
   printf "homeless\n💩\nNoise\n" >searchset_patterns_unicode.txt
-  echo ""
 fi
+
+echo ""
 
 schema=benchmark_data.csv.schema.json
 dynenum_schema=benchmark_data-dynenum.csv.schema.json
