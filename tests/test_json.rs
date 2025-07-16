@@ -375,3 +375,20 @@ fn json_empty_keys() {
 
     wrk.assert_err(&mut cmd);
 }
+
+#[test]
+#[serial]
+fn json_2843_default_select() {
+    let wrk = Workdir::new("json_2843_default_select");
+    let test_file = wrk.load_test_file("2843-test.json");
+
+    let mut cmd = wrk.command("json");
+    cmd.arg(test_file);
+
+    wrk.assert_success(&mut cmd);
+
+    let got: String = wrk.stdout(&mut cmd);
+    let expected = wrk.load_test_resource("2843-test.csv");
+
+    assert_eq!(got.trim(), expected.trim());
+}
