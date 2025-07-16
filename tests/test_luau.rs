@@ -1838,7 +1838,7 @@ fn luau_map_require_luadate() {
     let mut cmd = wrk.command("luau");
     cmd.arg("map")
         .arg("days_added")
-        .arg(r#"local date = require "date";local t_date = date(date_col):adddays(tonumber(number)); return tostring(t_date:fmt("${iso}"))"#)
+        .arg(r#"local date = require "./date";local t_date = date(date_col):adddays(tonumber(number)); return tostring(t_date:fmt("${iso}"))"#)
         .arg("data.csv");
 
     let got: Vec<Vec<String>> = wrk.read_stdout(&mut cmd);
@@ -1884,7 +1884,7 @@ return mintest"#;
     let mut cmd = wrk.command("luau");
     cmd.arg("map")
         .arg("min")
-        .arg(r#"local mintest = require "mintest";local t_min = mintest.mymin(number1,number2); return t_min"#)
+        .arg(r#"local mintest = require "./mintest";local t_min = mintest.mymin(number1,number2); return t_min"#)
         .arg("data.csv");
 
     let got: Vec<Vec<String>> = wrk.read_stdout(&mut cmd);
