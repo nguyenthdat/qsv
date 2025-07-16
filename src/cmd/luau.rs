@@ -115,7 +115,7 @@ Luau's standard library is relatively minimal (https://luau-lang.org/library).
 That's why qsv bundles & preloads LuaDate v2.2.1 as date manipulation is a common task.
 See https://tieske.github.io/date/ on how to use the LuaDate library.
 
-Additional libraries can be loaded from the LUAU_PATH using luau's "require" function.
+Additional libraries can be loaded using Luau's "require" function.
 See https://github.com/LewisJEllis/awesome-lua for a list of other libraries.
 
 With the judicious use of "require", the BEGIN script & special variables, one can
@@ -200,10 +200,6 @@ Luau options:
                           Takes precedence over an embedded END script.
                           If <script> begins with "file:" or ends with ".luau/.lua",
                           it's interpreted as a filepath from which to load the script.
-  --luau-path <pattern>   The LUAU_PATH pattern to use from which the scripts 
-                          can "require" lua/luau library files from.
-                          See https://www.lua.org/pil/8.1.html
-                          [default: ?;?.luau;?.lua]
   --max-errors <count>    The maximum number of errors to tolerate before aborting.
                           Set to zero to disable error limit.
                           [default: 10]
@@ -276,7 +272,6 @@ struct Args {
     flag_remap:       bool,
     flag_begin:       Option<String>,
     flag_end:         Option<String>,
-    flag_luau_path:   String,
     flag_output:      Option<String>,
     flag_no_headers:  bool,
     flag_delimiter:   Option<Delimiter>,
@@ -311,6 +306,9 @@ static QSV_V_INDEX: &str = "_INDEX";
 static SCRIPT_FILE_PREFIX: &str = "file:";
 static LUA_EXTENSION: &str = "lua";
 static LUAU_EXTENSION: &str = "luau";
+
+const REQUIRE_DATE: &str = "require \"./date\"";
+
 // there are 3 stages: 1-BEGIN, 2-MAIN, 3-END
 #[derive(Copy, Clone, Debug, PartialEq)]
 enum Stage {
@@ -505,9 +503,9 @@ pub fn run(argv: &[&str]) -> CliResult<()> {
     debug!("END script: {end_script:?}");
 
     // check if 'require "./date"' was used in the scripts.
-    let require_date_used = main_script.contains("require \"./date\"")
-        || begin_script.contains("require \"./date\"")
-        || end_script.contains("require \"./date\"");
+    let require_date_used = main_script.contains(REQUIRE_DATE)
+        || begin_script.contains(REQUIRE_DATE)
+        || end_script.contains(REQUIRE_DATE);
 
     let mut luadate_path: Option<PathBuf> = None;
     // 'require "./date"' was used in the scripts, so we need to prepare luadate library
