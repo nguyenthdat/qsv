@@ -1,6 +1,6 @@
 static USAGE: &str = r#"
 Create multiple new computed columns, filter rows or compute aggregations by 
-executing a Luau 0.663 script for every row (SEQUENTIAL MODE) or for
+executing a Luau 0.682 script for every row (SEQUENTIAL MODE) or for
 specified rows (RANDOM ACCESS MODE) of a CSV file.
 
 Luau is not just another qsv command. It is qsv's Domain-Specific Language (DSL)
@@ -244,11 +244,9 @@ Common options:
 use std::{
     cell::RefCell,
     collections::HashMap,
-    env,
-    fmt::Write as _,
-    fs, io,
+    env, fs, io,
     io::Write,
-    path::Path,
+    path::{Path, PathBuf},
     sync::atomic::{AtomicBool, AtomicI8, AtomicU16, Ordering},
 };
 
@@ -506,49 +504,19 @@ pub fn run(argv: &[&str]) -> CliResult<()> {
         index_file_used || end_script.contains(QSV_V_INDEX) || end_script.contains(QSV_V_LASTROW);
     debug!("END script: {end_script:?}");
 
-    // check if "require" was used in the scripts. If so, we need to setup LUAU_PATH;
-    // we check for '= require "' using a robust regex pattern.
-    // \u0022 is the unicode codepoint for a double quote.
-    let requires_re = regex::Regex::new(r"(?mi)=[[:blank:]]*require[[:blank:]]+\u0022").unwrap();
-    let require_used = requires_re.is_match(&main_script)
-        || requires_re.is_match(&begin_script)
-        || requires_re.is_match(&end_script);
+    // check if 'require "./date"' was used in the scripts.
+    let require_date_used = main_script.contains("require \"./date\"")
+        || begin_script.contains("require \"./date\"")
+        || end_script.contains("require \"./date\"");
 
-    // if require_used, create a temporary directory and copy date.lua there.
-    // we do this outside the "require_used" setup below as the tempdir
-    // needs to persist until the end of the program.
-    let temp_dir = if require_used {
-        match tempfile::tempdir() {
-            Ok(temp_dir) => {
-                let temp_dir_path = temp_dir.keep();
-                Some(temp_dir_path)
-            },
-            Err(e) => {
-                return fail_clierror!(
-                    "Cannot create temporary directory to copy luadate library to: {e}"
-                );
-            },
-        }
-    } else {
-        None
-    };
-
-    // "require " was used in the scripts, so we need to prepare luadate library and setup LUAU_PATH
-    if require_used {
-        // prepare luadate so users can just use 'date = require "date"' in their scripts
+    let mut luadate_path: Option<PathBuf> = None;
+    // 'require "./date"' was used in the scripts, so we need to prepare luadate library
+    // and write it to the current directory.
+    if require_date_used {
+        // Prepare luadate so users can just use 'date = require "./date"' in their scripts
         let luadate_library = include_bytes!("../../resources/luau/vendor/luadate/date.lua");
-        // safety: safe to unwrap as we just created the tempdir above
-        let tdir_path = temp_dir.clone().unwrap();
-        let luadate_path = tdir_path.join("date.lua");
-        fs::write(luadate_path.clone(), luadate_library)?;
-
-        // set LUAU_PATH to include the luadate library
-        let mut luau_path = args.flag_luau_path.clone();
-        // safety: safe to unwrap as we're just using it to append to luau_path
-        write!(luau_path, ";{}", luadate_path.as_os_str().to_string_lossy()).unwrap();
-        // safety: we are in single-threaded code.
-        unsafe { env::set_var("LUAU_PATH", luau_path.clone()) };
-        info!(r#"set LUAU_PATH to "{luau_path}""#);
+        luadate_path = Some(std::env::current_dir()?.join("date.lua"));
+        fs::write(luadate_path.clone().unwrap(), luadate_library)?;
     }
 
     // -------- setup Luau environment --------
@@ -633,9 +601,9 @@ pub fn run(argv: &[&str]) -> CliResult<()> {
         )?;
     }
 
-    if let Some(temp_dir) = temp_dir {
-        // delete the tempdir
-        fs::remove_dir_all(temp_dir)?;
+    if require_date_used {
+        // delete the luadate library
+        fs::remove_file(luadate_path.unwrap())?;
     }
 
     Ok(())
@@ -2254,6 +2222,7 @@ fn setup_helpers(
             "_qsv_cumsum".to_string()
         };
         // Convert input value to number, defaulting to 0.0 if conversion fails
+        #[allow(clippy::cast_precision_loss)]
         let num = match value {
             Value::Number(n) => n,
             Value::Integer(i) => i as f64,
@@ -2294,6 +2263,7 @@ fn setup_helpers(
             "_qsv_cumprod".to_string()
         };
 
+        #[allow(clippy::cast_precision_loss)]
         let num = match value {
             Value::Number(n) => n,
             Value::Integer(i) => i as f64,
@@ -2333,6 +2303,7 @@ fn setup_helpers(
             "_qsv_cummax".to_string()
         };
 
+        #[allow(clippy::cast_precision_loss)]
         let num = match value {
             Value::Number(n) => n,
             Value::Integer(i) => i as f64,
@@ -2369,6 +2340,7 @@ fn setup_helpers(
             "_qsv_cummin".to_string()
         };
 
+        #[allow(clippy::cast_precision_loss)]
         let num = match value {
             Value::Number(n) => n,
             Value::Integer(i) => i as f64,
@@ -2549,6 +2521,7 @@ fn setup_helpers(
             Option<String>,
         )| {
             // Get the current value from the column
+            #[allow(clippy::cast_precision_loss)]
             let curr_value = match value {
                 Value::Number(n) => n,
                 Value::Integer(i) => i as f64,
@@ -2564,6 +2537,7 @@ fn setup_helpers(
                 prev
             } else {
                 // Get initial value from optional argument or default to the first column value
+                #[allow(clippy::cast_precision_loss)]
                 let init_value = match init {
                     Some(init) => match init {
                         mlua::Value::Number(n) => n,
@@ -2582,6 +2556,7 @@ fn setup_helpers(
             };
 
             // Call the accumulator function
+            #[allow(clippy::cast_precision_loss)]
             let result = match func.call::<mlua::Value>((prev_acc, curr_value)) {
                 Ok(mlua::Value::Number(n)) => n,
                 Ok(mlua::Value::Integer(i)) => i as f64,
@@ -2622,6 +2597,7 @@ fn setup_helpers(
                 format!("_qsv_diff_{periods}")
             };
 
+            #[allow(clippy::cast_precision_loss)]
             let num = match value {
                 Value::Number(n) => n,
                 Value::Integer(i) => i as f64,
