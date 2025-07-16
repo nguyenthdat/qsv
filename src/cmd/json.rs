@@ -314,7 +314,7 @@ pub fn run(argv: &[&str]) -> CliResult<()> {
         } else {
             // Otherwise, just use the headers as they appear in the CSV
             SelectColumns::parse(&actual_headers.join(","))
-                .map_err(|e| CliError::Other(format!("Failed to parse select columns : {e}")))?
+                .map_err(|e| CliError::Other(format!("Failed to parse select columns: {e}")))?
         }
     };
 
