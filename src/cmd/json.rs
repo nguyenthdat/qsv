@@ -88,6 +88,7 @@ json options:
                            See 'qsv select --help' for the full syntax.
                            Note however that <cols> NEED to be a comma-delimited list
                            of column NAMES and NOT column INDICES.
+                           [default: 1- ]
 
 Common options:
     -h, --help             Display this message
@@ -297,18 +298,25 @@ pub fn run(argv: &[&str]) -> CliResult<()> {
         .collect();
 
     // If --select is not specified, reorder the actual headers to match the first dict's key order
-    let sel_cols = args.flag_select.unwrap_or_else(|| {
+    let sel_cols = if let Some(select_cols) = args.flag_select {
+        select_cols
+    } else {
         // If all expected headers exist, use the original order
         if first_dict_headers
             .iter()
             .all(|&h| actual_headers.contains(&h.to_string()))
         {
-            SelectColumns::parse(&first_dict_headers.join(",")).unwrap()
+            SelectColumns::parse(&first_dict_headers.join(",")).map_err(|e| {
+                CliError::Other(format!(
+                    "Failed to parse select columns in order of the first JSON dict: {e}"
+                ))
+            })?
         } else {
             // Otherwise, just use the headers as they appear in the CSV
-            SelectColumns::parse(&actual_headers.join(",")).unwrap()
+            SelectColumns::parse(&actual_headers.join(","))
+                .map_err(|e| CliError::Other(format!("Failed to parse select columns: {e}")))?
         }
-    });
+    };
 
     // and write the selected columns to the final CSV file
     let sel = sel_rconfig.select(sel_cols).selection(byteheaders)?;
