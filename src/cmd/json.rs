@@ -12,6 +12,7 @@ Objects with duplicate keys are not recommended as only one key and its values m
 
 If your JSON data is not in the expected format and/or is nested or complex, try using
 the --jaq option to pass a jq-like filter before parsing with the above constraints.
+Learn more about jaqhere: https://github.com/01mf02/jaq
 
 As an example, say we have the following JSON data in a file fruits.json:
 
@@ -58,8 +59,7 @@ For example you may copy the JSON data above to your clipboard then run:
 
 qsv clipboard | qsv json
 
-When JSON data is nested or complex, try using the --jaq option and provide a filter value.
-The --jaq option uses jaq (like jq). You may learn more here: https://github.com/01mf02/jaq
+Again, when JSON data is nested or complex, try using the --jaq option and provide a filter value.
 
 For example we have a .json file with a "data" key and the value being the same array as before:
 
@@ -70,6 +70,11 @@ For example we have a .json file with a "data" key and the value being the same 
 We may run the following to select the JSON file and convert the nested array to CSV:
 
 qsv prompt -F json | qsv json --jaq .data
+
+IMPORTANT: The first JSON object is used to determine the columns and the order of the columns
+in the output CSV. If following JSON objects have different keys, the output CSV will have
+the keys of the first JSON object. Therefore, ensure that the first JSON object has all the
+keys that you want to use in the output CSV.
 
 For more examples, see https://github.com/dathere/qsv/blob/master/tests/test_json.rs.
 
