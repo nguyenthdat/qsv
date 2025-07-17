@@ -31,7 +31,7 @@ As an example, say we have the following JSON data in a file fruits.json:
 
 To convert it to CSV format run:
 
-qsv json fruits.json
+  qsv json fruits.json
 
 And the following is printed to the terminal:
 
@@ -39,14 +39,60 @@ fruit,price,calories
 apple,2.5,95
 banana,3.0,105
 
-The order of the columns in the CSV file will be the same as the order of the keys in the first JSON object.
-The order of the rows in the CSV file will be the same as the order of the objects in the JSON array.
+IMPORTANT: 
+  The order of the columns in the CSV file will be the same as the order of the keys in the first JSON object.
+  The order of the rows in the CSV file will be the same as the order of the objects in the JSON array.
+
+  Additional keys not present in the first JSON object will be appended as additional columns in the
+  output CSV in the order they appear.
+
+For example, say we have the following JSON data in a file fruits2.json:
+
+[
+    {
+        "fruit": "apple",
+        "cost": 1.75,
+        "price": 2.50,
+        "calories": 95
+    },
+    {
+        "fruit": "mangosteen",
+        "price": 5.00,
+        "calories": 56
+    },
+    {
+        "fruit": "starapple",
+        "rating": 9,
+        "price": 4.50,
+        "calories": 95,
+    },
+    {
+        "fruit": "banana",
+        "price": 3.00,
+        "calories": 105
+    }
+]
+
+If we run the following command:
+
+  qsv json fruits2.json | qsv table
+
+The output CSV will have the following columns:
+
+fruit       cost  price  calories  rating
+apple       1.75  2.5    95        
+mangosteen        5.0    56        
+starapple         4.5    95        9
+banana            3.0    105       
+
+Note that the "rating" column is added as an additional column in the output CSV,
+though it appears as the 2nd column in the third JSON object for "starapple".
 
 If you want to select/reorder/drop columns in the output CSV, use the --select option, for example:
 
-qsv json fruits.json --select price,fruit
+  qsv json fruits.json --select price,fruit
 
-And the following is printed to the terminal:
+The following is printed to the terminal:
 
 price,fruit
 2.5,apple
@@ -70,11 +116,6 @@ For example we have a .json file with a "data" key and the value being the same 
 We may run the following to select the JSON file and convert the nested array to CSV:
 
 qsv prompt -F json | qsv json --jaq .data
-
-IMPORTANT: The first JSON object is used to determine the columns and the order of the columns
-in the output CSV. If following JSON objects have different keys, the output CSV will have
-the keys of the first JSON object. Therefore, ensure that the first JSON object has all the
-keys that you want to use in the output CSV.
 
 For more examples, see https://github.com/dathere/qsv/blob/master/tests/test_json.rs.
 
