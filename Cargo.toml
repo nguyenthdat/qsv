@@ -88,7 +88,7 @@ cached = { version = "0.55", features = [
     "disk_store",
     "redis_ahash",
 ], optional = true }
-calamine = { version = "0.28", features = ["dates"] }
+calamine = { version = "0.29", features = ["dates"] }
 censor = { version = "0.3", optional = true }
 chrono = { version = "0.4", default-features = false }
 chrono-tz = "0.10"
@@ -317,9 +317,6 @@ csv-index = { git = "https://github.com/dathere/rust-csv", branch = "qsv-optimiz
 # use our patched fork of cached; though our PR of hashbrown to 0.15 has been merged,
 # our redis PR is still pending
 cached = { git = "https://github.com/jqnatividad/cached", branch = "bump-redis-to-0.32-hashbrown-to-0.15" }
-
-# we also now co-maintain calamine, but there are still unreleased fixes
-calamine = { git = "https://github.com/tafia/calamine", rev = "839e84c" }
 
 # use our patched fork of csvlens to add natural sort until our PR is merged
 csvlens = { git = "https://github.com/jqnatividad/csvlens", branch = "133-natural-sort" }
