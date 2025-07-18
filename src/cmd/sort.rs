@@ -16,7 +16,10 @@ sort options:
                             See 'qsv select --help' for the format details.
     -N, --numeric           Compare according to string numerical value
     --natural               Compare strings using natural sort order
-                            (treats numbers within strings as actual numbers)
+                            (treats numbers within strings as actual numbers, e.g.
+                            "data1.txt", "data2.txt", "data10.txt", as opposed to
+                            "data1.txt", "data10.txt", "data2.txt" when sorting
+                            lexicographically)
                             https://en.wikipedia.org/wiki/Natural_sort_order
     -R, --reverse           Reverse order
     -i, --ignore-case       Compare strings disregarding case
