@@ -196,7 +196,7 @@ Validate options:
                                less than 50000 rows. [default: 50000]
     --fancy-regex              Use the fancy regex engine for validation.
                                The fancy engine supports advanced regex features
-                               such as lookaround and backreferences, but is not as 
+                               such as lookaround and backreferences, but is not as
                                performant as the default regex engine which guarantees
                                linear-time matching, prevents DoS attacks, and is more
                                efficient for simple patterns.
