@@ -194,6 +194,12 @@ Validate options:
                                Set to 0 to load all rows in one batch.
                                Set to 1 to force batch optimization even for files with
                                less than 50000 rows. [default: 50000]
+    --fancy-regex              Use the fancy regex engine for validation.
+                               The fancy engine supports advanced regex features
+                               such as lookaround and backreferences, but is not as 
+                               performant as the default regex engine which guarantees
+                               linear-time matching, prevents DoS attacks, and is more
+                               efficient for simple patterns.
     --timeout <seconds>        Timeout for downloading json-schemas on URLs and for
                                'dynamicEnum' lookups on URLs. [default: 30]
     --cache-dir <dir>          The directory to use for caching downloaded dynamicEnum resources.
@@ -244,7 +250,7 @@ use indicatif::HumanCount;
 #[cfg(any(feature = "feature_capable", feature = "lite"))]
 use indicatif::{ProgressBar, ProgressDrawTarget};
 use jsonschema::{
-    Keyword, ValidationError, Validator,
+    Keyword, PatternOptions, ValidationError, Validator,
     output::BasicOutput,
     paths::{LazyLocation, Location},
 };
@@ -319,6 +325,7 @@ struct Args {
     flag_quiet:                bool,
     arg_input:                 Option<String>,
     arg_json_schema:           Option<String>,
+    flag_fancy_regex:          bool,
     flag_timeout:              u16,
     flag_cache_dir:            String,
     flag_ckan_api:             String,
@@ -1381,6 +1388,10 @@ Alternatively, transcode your data to UTF-8 first using `iconv` or `recode`."#
 
                         if has_unique_combined {
                             validator_options = validator_options.with_keyword("uniqueCombinedWith", unique_combined_with_validator_factory);
+                        }
+
+                        if args.flag_fancy_regex {
+                            validator_options = validator_options.with_pattern_options(PatternOptions::fancy_regex().backtrack_limit(10_000));
                         }
 
                         match validator_options.build(&json) {
