@@ -194,12 +194,25 @@ Validate options:
                                Set to 0 to load all rows in one batch.
                                Set to 1 to force batch optimization even for files with
                                less than 50000 rows. [default: 50000]
-    --fancy-regex              Use the fancy regex engine for validation.
-                               The fancy engine supports advanced regex features
-                               such as lookaround and backreferences, but is not as
-                               performant as the default regex engine which guarantees
-                               linear-time matching, prevents DoS attacks, and is more
-                               efficient for simple patterns.
+
+                               FANCY REGEX OPTIONS:
+    --fancy-regex              Use the fancy regex engine instead of the default regex engine
+                               for validation.
+                               The fancy engine supports advanced regex features such as
+                               lookaround and backreferences, but is not as performant as
+                               the default regex engine which guarantees linear-time matching,
+                               prevents DoS attacks, and is more efficient for simple patterns.
+    --backtrack-limit <limit>  Set the approximate number of backtracking steps allowed.
+                               This is only used when --fancy-regex is set.
+                               [default: 1000000]
+
+                               OPTIONS FOR BOTH REGEX ENGINES:
+    --size-limit <mb>          Set the approximate size limit, in megabytes, of a compiled regex.
+                               [default: 50]
+    --dfa-size-limit <mb>      Set the approximate capacity, in megabytes, of the cache of transitions
+                               used by the engine's lazy Discrete Finite Automata.
+                               [default: 10]
+    
     --timeout <seconds>        Timeout for downloading json-schemas on URLs and for
                                'dynamicEnum' lookups on URLs. [default: 30]
     --cache-dir <dir>          The directory to use for caching downloaded dynamicEnum resources.
@@ -326,6 +339,9 @@ struct Args {
     arg_input:                 Option<String>,
     arg_json_schema:           Option<String>,
     flag_fancy_regex:          bool,
+    flag_backtrack_limit:      usize,
+    flag_size_limit:           usize,
+    flag_dfa_size_limit:       usize,
     flag_timeout:              u16,
     flag_cache_dir:            String,
     flag_ckan_api:             String,
@@ -1391,7 +1407,16 @@ Alternatively, transcode your data to UTF-8 first using `iconv` or `recode`."#
                         }
 
                         if args.flag_fancy_regex {
-                            validator_options = validator_options.with_pattern_options(PatternOptions::fancy_regex().backtrack_limit(10_000));
+                            let fancy_regex_options = PatternOptions::fancy_regex()
+                                .backtrack_limit(args.flag_backtrack_limit)
+                                .size_limit(args.flag_size_limit * (1 << 20))
+                                .dfa_size_limit(args.flag_dfa_size_limit * (1 << 20));
+                            validator_options = validator_options.with_pattern_options(fancy_regex_options);
+                        } else {
+                            let regex_options = PatternOptions::regex()
+                                .size_limit(args.flag_size_limit * (1 << 20))
+                                .dfa_size_limit(args.flag_dfa_size_limit * (1 << 20));
+                            validator_options = validator_options.with_pattern_options(regex_options);
                         }
 
                         match validator_options.build(&json) {
