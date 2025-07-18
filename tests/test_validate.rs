@@ -1569,3 +1569,83 @@ fn validate_invalid_json_schema_file() {
     let got = wrk.output_stderr(&mut cmd);
     assert_eq!(got, "Invalid JSON Schema.\n");
 }
+
+#[test]
+fn validate_with_fancy_regex() {
+    let wrk = Workdir::new("validate_with_fancy_regex").flexible(true);
+
+    // Create test data with passwords that need to meet specific criteria
+    wrk.create(
+        "data.csv",
+        vec![
+            svec!["username", "password"],
+            svec!["user1", "Password123!"], // Valid: has uppercase, lowercase, digit, special char
+            svec!["user2", "password123"],  // Invalid: no uppercase, no special char
+            svec!["user3", "PASSWORD123!"], // Invalid: no lowercase
+            svec!["user4", "Password!"],    // Invalid: no digit
+            svec!["user5", "Pass123"],      // Invalid: no special char
+        ],
+    );
+
+    // Create schema with a regex pattern that requires fancy regex support
+    // This regex uses look-ahead assertions (?=...) to ensure password contains:
+    // - at least one uppercase letter
+    // - at least one lowercase letter
+    // - at least one digit
+    // - at least one special character
+    wrk.create_from_string(
+        "schema.json",
+        r#"{
+            "$schema": "https://json-schema.org/draft/2020-12/schema",
+            "type": "object",
+            "properties": {
+                "username": { "type": "string" },
+                "password": { 
+                    "type": "string",
+                    "pattern": "^(?=.*[A-Z])(?=.*[a-z])(?=.*\\d)(?=.*[!@#$%^&*()_+\\-=\\[\\]{};':\"\\\\|,.<>\\/?]).{8,}$"
+                }
+            }
+        }"#,
+    );
+
+    // Run validate command WITHOUT fancy-regex flag (should fail)
+    let mut cmd = wrk.command("validate");
+    cmd.arg("data.csv").arg("schema.json");
+
+    // This should fail because the regex pattern uses look-ahead assertions
+    // which are not supported by the default regex engine
+    wrk.assert_err(&mut cmd);
+
+    // Run validate command WITH fancy-regex flag (should work)
+    let mut cmd_fancy = wrk.command("validate");
+    cmd_fancy
+        .arg("data.csv")
+        .arg("schema.json")
+        .arg("--fancy-regex");
+    wrk.output(&mut cmd_fancy);
+
+    wrk.assert_err(&mut cmd_fancy);
+
+    // Check validation-errors.tsv - should show 4 invalid passwords
+    let validation_errors: String = wrk.from_str(&wrk.path("data.csv.validation-errors.tsv"));
+
+    // The error messages should indicate pattern validation failures
+    assert!(validation_errors.contains("password"));
+    // Check for the specific error message format used by jsonschema
+    assert!(validation_errors.contains("does not match"));
+
+    // Check valid records - should only contain the valid password
+    let valid_records: Vec<Vec<String>> = wrk.read_csv("data.csv.valid");
+    let expected_valid = vec![svec!["user1", "Password123!"]];
+    assert_eq!(valid_records, expected_valid);
+
+    // Check invalid records - should contain the 4 invalid passwords
+    let invalid_records: Vec<Vec<String>> = wrk.read_csv("data.csv.invalid");
+    let expected_invalid = vec![
+        svec!["user2", "password123"],
+        svec!["user3", "PASSWORD123!"],
+        svec!["user4", "Password!"],
+        svec!["user5", "Pass123"],
+    ];
+    assert_eq!(invalid_records, expected_invalid);
+}
