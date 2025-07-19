@@ -321,13 +321,15 @@ To customize shell completions, see the [Shell Completion](contrib/completions/R
 
 ## Regular Expression Syntax
 
-The `--select` option and several commands (`apply`, `applydp`, `datefmt`, `exclude`, `fetchpost`, `replace`, `schema`, `search`, `searchset`, `select`, `sqlp` & `stats`) allow the user to specify regular expressions. We use the [`regex`](https://docs.rs/regex) crate to parse, compile and execute these expressions. [^4]
+The `--select` option and several commands (`apply`, `applydp`, `datefmt`, `exclude`, `fetchpost`, `replace`, `schema`, `search`, `searchset`, `select`, `sqlp`, `stats` & `validate`) allow the user to specify regular expressions. We use the [`regex`](https://docs.rs/regex) crate to parse, compile and execute these expressions. [^4]
 
 [^4]: This is the same regex engine used by [`ripgrep`](https://github.com/BurntSushi/ripgrep#ripgrep-rg) - the [blazingly fast grep replacement](https://blog.burntsushi.net/ripgrep/) that powers Visual Studio's [magical](https://lab.cccb.org/en/arthur-c-clarke-any-sufficiently-advanced-technology-is-indistinguishable-from-magic/) ["Find in Files"](https://github.com/microsoft/vscode-ripgrep) feature.
 
 Its syntax can be found [here](https://docs.rs/regex/latest/regex/#syntax) and *"is similar to other regex engines, but it lacks several features that are not known how to implement efficiently. This includes, but is not limited to, look-around and backreferences. In exchange, all regex searches in this crate have worst case O(m * n) time complexity, where m is proportional to the size of the regex and n is proportional to the size of the string being searched."*
 
 If you want to test your regular expressions, [regex101](https://regex101.com) supports the syntax used by the `regex` crate. Just select the "Rust" flavor.
+
+> NOTE: The `validate` command in JSON Schema Validation mode, can support "fancy" regex expressions with look-around and backreferences using the `--fancy-regex` option.
 
 ## File formats
 
