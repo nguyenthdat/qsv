@@ -446,6 +446,7 @@ const OTHER_ENV_VARS: &[&str] = &["all_proxy", "no_proxy", "http_proxy", "https_
 pub fn show_env_vars() {
     let mut env_var_set = false;
     for (n, v) in env::vars_os() {
+        // safety: we know that the env::vars_os() will not fail
         let env_var = n.into_string().unwrap();
         #[cfg(feature = "mimalloc")]
         if env_var.starts_with("QSV_")
@@ -839,6 +840,7 @@ pub fn condense(val: Cow<[u8]>, n: Option<usize>) -> Cow<[u8]> {
 }
 
 pub fn idx_path(csv_path: &Path) -> PathBuf {
+    // safety: we know the path has a filename
     let mut p = csv_path
         .to_path_buf()
         .into_os_string()
@@ -1435,6 +1437,7 @@ impl ColumnNameParser {
             if self.is_end_of_field() {
                 break;
             }
+            // safety: we know that the cur() will not be None as we checked above
             name.push(self.cur().unwrap());
             self.bump();
         }
@@ -1555,8 +1558,9 @@ pub fn load_dotenv() -> CliResult<()> {
         // in the same directory as the executable
         let qsv_binary_path = std::env::current_exe()?;
 
-        let qsv_dir = qsv_binary_path.parent().unwrap();
+        let qsv_dir = qsv_binary_path.parent().ok_or("No parent directory")?;
 
+        // safety: we know that the file_stem() will not be None as we checked above
         let qsv_binary_filestem = qsv_binary_path
             .file_stem()
             .unwrap()
@@ -1646,6 +1650,7 @@ Consider renaming the file or using a different input."#,
     // Proceed with decompression since we've validated the file
     let mut snappy_file = std::fs::File::open(path.clone())?;
     let mut snappy_reader = snap::read::FrameDecoder::new(&mut snappy_file);
+    // safety: we know that the file_stem() will not be None as we opened the file above
     let file_stem = Path::new(&path).file_stem().unwrap().to_str().unwrap();
     let decompressed_filepath = tmpdir
         .path()
@@ -1967,6 +1972,7 @@ pub fn process_input(
             log::info!("Extracting files from zip archive: {}", path.display());
 
             // Create a subdirectory in the temp directory for this zip file
+            // safety: we know the path has a filename
             let zip_filename = path
                 .file_name()
                 .unwrap()
@@ -2272,6 +2278,8 @@ pub fn get_stats_records(
         || env_mode == "none"
         || args.arg_input.is_none()
         || args.arg_input.as_ref() == Some(&"-".to_string())
+        // safety: we know that by this point, args.arg_input is not None as
+        // the earlier is_none() check would have short-circuited already
         || get_special_format(Path::new(args.arg_input.as_ref().unwrap())) != SpecialFormat::Unknown
     {
         // if stdin or StatsMode::None,
@@ -2279,13 +2287,14 @@ pub fn get_stats_records(
         return Ok((ByteRecord::new(), Vec::new(), HashMap::new()));
     }
 
-    let canonical_input_path = Path::new(args.arg_input.as_ref().unwrap()).canonicalize()?;
+    let input_path = args.arg_input.as_ref().ok_or("No input provided")?;
+    let canonical_input_path = Path::new(input_path).canonicalize()?;
     let statsdata_path = canonical_input_path.with_extension("stats.csv.data.jsonl");
 
     let stats_data_current = if statsdata_path.exists() {
         let statsdata_metadata = std::fs::metadata(&statsdata_path)?;
 
-        let input_metadata = std::fs::metadata(args.arg_input.as_ref().unwrap())?;
+        let input_metadata = std::fs::metadata(input_path)?;
 
         let statsdata_mtime = FileTime::from_last_modification_time(&statsdata_metadata);
         let input_mtime = FileTime::from_last_modification_time(&input_metadata);
@@ -2312,7 +2321,7 @@ pub fn get_stats_records(
     }
 
     // get the headers from the input file
-    let mut rdr = csv::Reader::from_path(args.arg_input.as_ref().ok_or("No input provided")?)?;
+    let mut rdr = csv::Reader::from_path(input_path)?;
     let csv_fields = rdr.byte_headers()?.clone();
     drop(rdr);
 
@@ -2333,7 +2342,10 @@ pub fn get_stats_records(
             s_slice = curr_line.as_bytes().to_vec();
             if curr_line.starts_with(DATASET_STATS_PREFIX) {
                 // Parse dataset stats record
-                let v: serde_json::Value = simd_json::serde::from_slice(&mut s_slice).unwrap();
+                let v: serde_json::Value =
+                    simd_json::serde::from_slice(&mut s_slice).map_err(|e| {
+                        CliError::Other(format!("Failed to parse dataset stats JSON: {e}"))
+                    })?;
                 let field = &v["field"];
                 let value = v["qsv__value"].clone();
 
@@ -2389,10 +2401,8 @@ pub fn get_stats_records(
             flag_dataset_stats:    true,
         };
 
-        let tempfile = tempfile::Builder::new()
-            .suffix(".stats.csv")
-            .tempfile()
-            .unwrap();
+        let tempfile = tempfile::Builder::new().suffix(".stats.csv").tempfile()?;
+        // safety: we just created a tempfile, which is guaranteed to have a path
         let tempfile_path = tempfile.path().to_str().unwrap().to_string();
 
         let statsdatajson_path = &canonical_input_path.with_extension("stats.csv.data.jsonl");
@@ -2465,7 +2475,7 @@ pub fn get_stats_records(
 
         let stats_args_vec: Vec<&str> = stats_args_str.split('\t').collect();
 
-        let qsv_bin = std::env::current_exe().unwrap();
+        let qsv_bin = std::env::current_exe()?;
         let mut stats_cmd = std::process::Command::new(qsv_bin);
         if requested_mode == StatsMode::Outliers {
             // set the max length for antimodes
@@ -2513,7 +2523,10 @@ pub fn get_stats_records(
             s_slice = curr_line.as_bytes().to_vec();
             if curr_line.starts_with(DATASET_STATS_PREFIX) {
                 // Parse dataset stats record
-                let v: serde_json::Value = simd_json::serde::from_slice(&mut s_slice).unwrap();
+                let v: serde_json::Value =
+                    simd_json::serde::from_slice(&mut s_slice).map_err(|e| {
+                        CliError::Other(format!("Failed to parse dataset stats JSONL: {e}"))
+                    })?;
                 let field = &v["field"];
                 let value = v["qsv__value"].clone();
 
@@ -2592,6 +2605,7 @@ pub fn csv_to_jsonl(
                             } else {
                                 serde_json::Value::Number(
                                     serde_json::Number::from_f64(0.0).unwrap_or_else(|| {
+                                        // safety: we know that 0.0 is a valid f64
                                         serde_json::Number::from_f64(0.0).unwrap()
                                     }),
                                 )
@@ -2600,6 +2614,7 @@ pub fn csv_to_jsonl(
                             // serde_json::Value::String(val.to_owned())
                             serde_json::Value::Number(
                                 serde_json::Number::from_f64(0.0)
+                                    // safety: we know that 0.0 is a valid f64
                                     .unwrap_or_else(|| serde_json::Number::from_f64(0.0).unwrap()),
                             )
                         }
@@ -2919,6 +2934,8 @@ pub fn convert_special_format(
     };
 
     // Get or initialize temp directory that persists until program exit
+    // safety: we know that the tempfile::TempDir::new() will not ordinarily fail
+    // otherwise, we have a bigger problem
     let temp_dir =
         crate::config::TEMP_FILE_DIR.get_or_init(|| tempfile::TempDir::new().unwrap().keep());
 
@@ -2989,6 +3006,7 @@ pub fn infer_polars_schema(
     let (csv_fields, csv_stats, _) = get_stats_records(&schema_args, StatsMode::PolarsSchema)?;
     let mut schema = polars::prelude::Schema::with_capacity(csv_stats.len());
     for (idx, stat) in csv_stats.iter().enumerate() {
+        // safety: we know that the get(idx) will not be None as we are using an iterator
         schema.insert(
             polars::prelude::PlSmallStr::from_str(
                 simdutf8::basic::from_utf8(csv_fields.get(idx).unwrap()).unwrap(),
@@ -2999,6 +3017,7 @@ pub fn infer_polars_schema(
                 match datatype.as_str() {
                     "String" => polars::datatypes::DataType::String,
                     "Integer" => {
+                        // safety: integer types are guaranteed to have a min and max
                         let min = stat.min.as_ref().unwrap();
                         let max = stat.max.as_ref().unwrap();
 
@@ -3032,6 +3051,7 @@ pub fn infer_polars_schema(
                         }
                     },
                     "Float" => {
+                        // safety: float types are guaranteed to have a min and max
                         let min = stat.min.as_ref().unwrap();
                         let max = stat.max.as_ref().unwrap();
                         let precision = stat.max_precision.unwrap_or(0);
