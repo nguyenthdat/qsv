@@ -1624,7 +1624,11 @@ fn validate_with_fancy_regex() {
         .arg("--fancy-regex");
     wrk.output(&mut cmd_fancy);
 
+    // we still get an error here as the test data is invalid,
+    // not because of the regex engine
     wrk.assert_err(&mut cmd_fancy);
+    let got = wrk.output_stderr(&mut cmd_fancy);
+    assert_eq!(got, "4 out of 5 records invalid.\n");
 
     // Check validation-errors.tsv - should show 4 invalid passwords
     let validation_errors: String = wrk.from_str(&wrk.path("data.csv.validation-errors.tsv"));
