@@ -1644,7 +1644,7 @@ impl Stats {
     #[allow(clippy::inline_always)]
     #[inline(always)]
     fn add(&mut self, sample: &[u8], infer_dates: bool, infer_boolean: bool, prefer_dmy: bool) {
-        let (sample_type, timestamp_val) =
+        let (sample_type, timestamp_val, float_val) =
             FieldType::from_sample(infer_dates, prefer_dmy, sample, self.typ);
         self.typ.merge(sample_type);
 
@@ -1681,79 +1681,73 @@ impl Stats {
             v.add(sample.to_vec());
         }
 
-        // Handle null counting - most samples are NOT null
-        if sample_type == TNull {
-            self.nullcount += 1;
-        }
-
-        // Process by type - organize by frequency (String most common, then numeric, then dates)
-        match t {
-            TString => {
+        if t == TString {
+            if let Some(v) = self.online_len.as_mut() {
+                v.add(&sample.len());
                 // ASCII check: once false, it stays false, so check the flag first
                 if self.is_ascii {
                     self.is_ascii = sample.is_ascii();
                 }
-                if let Some(v) = self.online_len.as_mut() {
-                    v.add(&sample.len());
-                }
-            },
-            TFloat | TInteger => {
-                // Handle null case first (short-circuit if null)
-                if sample_type == TNull {
-                    if self.which.include_nulls
-                        && let Some(v) = self.online.as_mut()
-                    {
-                        v.add_null();
-                    }
-                } else {
-                    // Common case: valid numeric samples
-                    // safety: we know the sample is a valid f64, so we can use unwrap_unchecked
-                    let n = unsafe { fast_float2::parse(sample).unwrap_unchecked() };
-                    if let Some(v) = self.unsorted_stats.as_mut() {
-                        v.add(n);
-                    }
-                    if let Some(v) = self.online.as_mut() {
-                        v.add(&n);
-                    }
+            }
+            if sample_type == TNull {
+                self.nullcount += 1;
+            }
+            return; // Early return for strings
+        }
 
-                    // Float precision calculation (only for floats, not integers)
-                    if t == TFloat {
-                        let mut ryu_buffer = ryu::Buffer::new();
-                        // safety: we know that n is a valid f64
-                        // so there will always be a fraction part, even if it's 0
-                        let fractpart = unsafe {
-                            ryu_buffer
-                                .format_finite(n)
-                                .split('.')
-                                .next_back()
-                                .unwrap_unchecked()
-                        };
-                        self.max_precision = std::cmp::max(
-                            self.max_precision,
-                            (if *fractpart == *"0" {
-                                0
-                            } else {
-                                fractpart.len()
-                            }) as u16,
-                        );
-                    }
+        // Handle null counting - most samples are NOT null
+        if sample_type == TNull {
+            self.nullcount += 1;
+            if self.which.include_nulls {
+                if let Some(v) = self.online.as_mut() {
+                    v.add_null();
+                }
+            }
+            return; // Early return for nulls
+        }
+
+        // Process by type
+        match t {
+            TInteger => {
+                if let Some(v) = self.unsorted_stats.as_mut() {
+                    v.add(float_val);
+                }
+                if let Some(v) = self.online.as_mut() {
+                    v.add(&float_val);
                 }
             },
-            TNull => {
-                if self.which.include_nulls {
-                    // safety: we know that online is always Some()
-                    unsafe { self.online.as_mut().unwrap_unchecked().add_null() };
+            TFloat => {
+                // safety: we know the sample is a valid f64, so we can use unwrap_unchecked
+                // let n = unsafe { fast_float2::parse(sample).unwrap_unchecked() };
+                if let Some(v) = self.unsorted_stats.as_mut() {
+                    v.add(float_val);
                 }
+                if let Some(v) = self.online.as_mut() {
+                    v.add(&float_val);
+                }
+
+                let mut ryu_buffer = ryu::Buffer::new();
+                // safety: we know that float_val is a valid f64
+                // so there will always be a fraction part, even if it's 0
+                let fractpart = unsafe {
+                    ryu_buffer
+                        .format_finite(float_val)
+                        .split('.')
+                        .next_back()
+                        .unwrap_unchecked()
+                };
+                self.max_precision = std::cmp::max(
+                    self.max_precision,
+                    (if *fractpart == *"0" {
+                        0
+                    } else {
+                        fractpart.len()
+                    }) as u16,
+                );
             },
             TDateTime | TDate => {
                 // Less common case: date/datetime processing
-                if sample_type == TNull {
-                    if self.which.include_nulls {
-                        // safety: we know that online is always Some()
-                        unsafe { self.online.as_mut().unwrap_unchecked().add_null() };
-                    }
-                // if timestamp_val != 0, then we successfully inferred a date from the sample
-                } else if timestamp_val != 0 {
+                if timestamp_val != 0 {
                     // calculate date statistics by adding date samples as timestamps to
                     // millisecond precision.
                     #[allow(clippy::cast_precision_loss)]
@@ -1766,6 +1760,7 @@ impl Stats {
                     }
                 }
             },
+            _ => {},
         }
     }
 
@@ -2397,6 +2392,7 @@ impl FieldType {
     /// returns the inferred type and if infer_dates is true,
     /// the date in ms since the epoch if the type is a date or datetime
     /// otherwise, 0
+    /// it also returns the float value if the sample is a number
     #[allow(clippy::inline_always)]
     #[inline(always)]
     pub fn from_sample(
@@ -2404,36 +2400,41 @@ impl FieldType {
         prefer_dmy: bool,
         sample: &[u8],
         current_type: FieldType,
-    ) -> (FieldType, i64) {
+    ) -> (FieldType, i64, f64) {
         // faster than sample.len() == 0 or sample.is_empty() per microbenchmarks
         if b"" == sample {
-            return (FieldType::TNull, 0);
+            return (FieldType::TNull, 0, 0.0);
         }
 
         // no need to do type checking if current_type is already a String
         if current_type == FieldType::TString {
-            return (FieldType::TString, 0);
+            return (FieldType::TString, 0, 0.0);
         }
 
-        if let Ok(samp_int) = atoi_simd::parse::<i64>(sample) {
-            // Check for integer, with leading zero check for strings like zip codes
-            // safety: we know sample is not null as we checked earlier
-            if samp_int == 0 || unsafe { *sample.get_unchecked(0) != b'0' } {
-                return (FieldType::TInteger, 0);
+        if current_type != FieldType::TFloat {
+            if let Ok(samp_int) = atoi_simd::parse::<i64>(sample) {
+                // Check for integer, with leading zero check for strings like zip codes
+                // safety: we know sample is not null as we checked earlier
+                if samp_int == 0 || unsafe { *sample.get_unchecked(0) != b'0' } {
+                    // note that we still return samp_int as f64 even if it's an integer
+                    // as the qsv-stats crate expects a float value for integer fields
+                    #[allow(clippy::cast_precision_loss)]
+                    return (FieldType::TInteger, 0, samp_int as f64);
+                }
+                // If starts with '0' and a valid integer != 0, it's a string with a leading zero
+                return (FieldType::TString, 0, 0.0);
             }
-            // If starts with '0' and a valid integer != 0, it's a string with a leading zero
-            return (FieldType::TString, 0);
         }
 
         // Check for float
         // we use fast_float2 as it doesn't need to validate the sample as UTF-8 first
-        if fast_float2::parse::<f64, &[u8]>(sample).is_ok() {
-            return (FieldType::TFloat, 0);
+        if let Ok(float_sample) = fast_float2::parse::<f64, &[u8]>(sample) {
+            return (FieldType::TFloat, 0, float_sample);
         }
 
         // Only attempt UTF-8 validation and date parsing if infer_dates is true
         if !infer_dates {
-            return (FieldType::TString, 0);
+            return (FieldType::TString, 0, 0.0);
         }
 
         // Check if valid UTF-8 first, return early if not
@@ -2443,19 +2444,19 @@ impl FieldType {
                 let ts_val = parsed_date.timestamp_millis();
                 return if ts_val % MS_IN_DAY_INT == 0 {
                     // if the date is a whole number of days, return as a date
-                    (FieldType::TDate, ts_val)
+                    (FieldType::TDate, ts_val, 0.0)
                 } else {
                     // otherwise, return as a datetime
-                    (FieldType::TDateTime, ts_val)
+                    (FieldType::TDateTime, ts_val, 0.0)
                 };
             }
         } else {
             // If not valid UTF-8, it's a binary string, return as TString
-            return (FieldType::TString, 0);
+            return (FieldType::TString, 0, 0.0);
         }
 
         // Default to TString if none of the above conditions are met
-        (FieldType::TString, 0)
+        (FieldType::TString, 0, 0.0)
     }
 }
 
