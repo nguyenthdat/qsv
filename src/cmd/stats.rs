@@ -1644,7 +1644,7 @@ impl Stats {
     #[allow(clippy::inline_always)]
     #[inline(always)]
     fn add(&mut self, sample: &[u8], infer_dates: bool, infer_boolean: bool, prefer_dmy: bool) {
-        let (sample_type, timestamp_val, float_val) =
+        let (sample_type, int_val, float_val) =
             FieldType::from_sample(infer_dates, prefer_dmy, sample, self.typ);
         self.typ.merge(sample_type);
 
@@ -1667,13 +1667,7 @@ impl Stats {
 
         // MinMax is almost always enabled
         if let Some(v) = self.minmax.as_mut() {
-            // Common case: most samples are not dates (timestamp_val == 0)
-            if timestamp_val == 0 {
-                v.add(t, sample);
-            } else {
-                // Less common: date samples
-                v.add(t, itoa::Buffer::new().format(timestamp_val).as_bytes());
-            }
+            v.add_with_parsed(t, sample, float_val, int_val);
         }
 
         // Modes/cardinality less common but still frequent
@@ -1747,11 +1741,11 @@ impl Stats {
             },
             TDateTime | TDate => {
                 // Less common case: date/datetime processing
-                if timestamp_val != 0 {
+                if int_val != 0 {
                     // calculate date statistics by adding date samples as timestamps to
                     // millisecond precision.
                     #[allow(clippy::cast_precision_loss)]
-                    let n = timestamp_val as f64;
+                    let n = int_val as f64;
                     if let Some(v) = self.unsorted_stats.as_mut() {
                         v.add(n);
                     }
@@ -2411,6 +2405,7 @@ impl FieldType {
             return (FieldType::TString, 0, 0.0);
         }
 
+        // an int can be a float, but once we've seen a float, we can't go back to an in
         if current_type != FieldType::TFloat {
             if let Ok(samp_int) = atoi_simd::parse::<i64>(sample) {
                 // Check for integer, with leading zero check for strings like zip codes
@@ -2419,7 +2414,7 @@ impl FieldType {
                     // note that we still return samp_int as f64 even if it's an integer
                     // as the qsv-stats crate expects a float value for integer fields
                     #[allow(clippy::cast_precision_loss)]
-                    return (FieldType::TInteger, 0, samp_int as f64);
+                    return (FieldType::TInteger, samp_int, samp_int as f64);
                 }
                 // If starts with '0' and a valid integer != 0, it's a string with a leading zero
                 return (FieldType::TString, 0, 0.0);
@@ -2617,38 +2612,35 @@ struct TypedMinMax {
 }
 
 impl TypedMinMax {
+    /// Add a sample with pre-parsed values to avoid redundant parsing
     #[inline]
-    fn add(&mut self, typ: FieldType, sample: &[u8]) {
+    fn add_with_parsed(&mut self, typ: FieldType, sample: &[u8], float_val: f64, int_val: i64) {
         let sample_len = sample.len();
         if sample_len == 0 {
             self.str_len.add(0);
             return;
         }
-        // safety: we can use unwrap_unchecked below since we know the data type of the sample
+
         match typ {
             TString => {
                 self.str_len.add(sample_len);
                 self.strings.add(sample.to_vec());
             },
             TFloat => {
-                let n = unsafe { fast_float2::parse::<f64, &[u8]>(sample).unwrap_unchecked() };
-
-                self.floats.add(n);
-                self.integers.add(n as i64);
+                self.floats.add(float_val);
             },
             TInteger => {
-                let n = unsafe { atoi_simd::parse::<i64>(sample).unwrap_unchecked() };
-                self.integers.add(n);
-                #[allow(clippy::cast_precision_loss)]
-                self.floats.add(n as f64);
+                self.integers.add(int_val);
+                self.floats.add(float_val);
             },
             TNull => {},
             // it must be a TDate or TDateTime
             // we use "_" here instead of "TDate | TDateTime" for the match to avoid
             // the overhead of matching on the OR value, however minor
             _ => {
-                let n = unsafe { atoi_simd::parse::<i64>(sample).unwrap_unchecked() };
-                self.dates.add(n);
+                if int_val != 0 {
+                    self.dates.add(int_val);
+                }
             },
         }
     }
