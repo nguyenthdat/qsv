@@ -757,9 +757,9 @@ dependencies = [
 
 [[package]]
 name = "async-process"
-version = "2.3.1"
+version = "2.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "cde3f4e40e6021d7acffc90095cbd6dc54cb593903d1de5832f435eb274b85dc"
+checksum = "65daa13722ad51e6ab1a1b9c01299142bc75135b337923cfa10e79bbbd669f00"
 dependencies = [
  "async-channel",
  "async-io",
@@ -771,7 +771,6 @@ dependencies = [
  "event-listener",
  "futures-lite",
  "rustix 1.0.8",
- "tracing",
 ]
 
 [[package]]
@@ -2197,12 +2196,12 @@ dependencies = [
 [[package]]
 name = "dns-lookup"
 version = "2.0.4"
-source = "git+https://github.com/keeperofdakeys/dns-lookup?rev=7745e71#7745e71a61053aab366cfd90c36b1c97f98b1b5c"
+source = "git+https://github.com/keeperofdakeys/dns-lookup?rev=aa13809#aa1380981aa2407cd2a946e9980eb52a9417e9eb"
 dependencies = [
  "cfg-if",
  "libc",
  "socket2 0.5.10",
- "windows-sys 0.52.0",
+ "windows-sys 0.59.0",
 ]
 
 [[package]]
