@@ -112,7 +112,7 @@ dns-lookup = { version = "2", optional = true }
 directories = "6.0"
 dotenvy = "0.15"
 dunce = "1"
-dynfmt2 = { version = "0.2", default-features = false, features = ["curly"] }
+dynfmt2 = { version = "0.3", default-features = false, features = ["curly"] }
 eudex = { version = "0.1", optional = true }
 ext-sort = { version = "0.1", default-features = false }
 fast-float2 = "0.2"
