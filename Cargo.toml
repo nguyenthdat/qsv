@@ -439,6 +439,7 @@ nightly = [
     "polars/simd",
     "pyo3/nightly",
     "rand/nightly",
+    "rand/simd_support",
     "simd-json/hints",
 ]
 
