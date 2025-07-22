@@ -1662,14 +1662,11 @@ impl Stats {
         // Process the frequently used Option-based statistics first
         // These are commonly enabled, so check them in order of likelihood
 
+        // microbenchmarks show 'b"" != sample' is faster than 'sample.is_empty()'
         if b"" != sample {
-            // safety: we know that sum is always Some()
-            unsafe {
-                self.sum
-                    .as_mut()
-                    .unwrap_unchecked()
-                    .add_with_parsed(t, sample, float_val, int_val)
-            };
+            if let Some(v) = self.sum.as_mut() {
+                v.add_with_parsed(t, sample, float_val, int_val);
+            }
         }
 
         // MinMax is almost always enabled
@@ -2529,18 +2526,18 @@ impl TypedSum {
     fn add_with_parsed(&mut self, typ: FieldType, sample: &[u8], float_val: f64, int_val: i64) {
         #[allow(clippy::cast_precision_loss)]
         match typ {
-            TFloat => {
-                if let Some(ref mut f) = self.float {
-                    *f += float_val;
-                } else {
-                    self.float = Some((self.integer as f64) + float_val);
-                }
-            },
             TInteger => {
                 if let Some(ref mut float) = self.float {
                     *float += float_val;
                 } else {
                     self.integer = self.integer.saturating_add(int_val);
+                }
+            },
+            TFloat => {
+                if let Some(ref mut f) = self.float {
+                    *f += float_val;
+                } else {
+                    self.float = Some((self.integer as f64) + float_val);
                 }
             },
             TString => {
@@ -2619,11 +2616,11 @@ impl TypedMinMax {
                 self.str_len.add(sample_len);
                 self.strings.add(sample.to_vec());
             },
-            TFloat => {
-                self.floats.add(float_val);
-            },
             TInteger => {
                 self.integers.add(int_val);
+                self.floats.add(float_val);
+            },
+            TFloat => {
                 self.floats.add(float_val);
             },
             TNull => {},
