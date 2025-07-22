@@ -1177,7 +1177,7 @@ fn get_cached_response(
             .set_refresh(diskcache_config.ttl_refresh)
             .build()
             .expect("error building diskcache");
-        log::info!("Disk cache created - dir: {cache_dir} - ttl: {ttl_secs}",
+        log::info!("Disk cache created - dir: {cache_dir} - ttl: {ttl_secs:?}",
             ttl_secs = diskcache_config.ttl_secs);
         diskcache.remove_expired_entries().expect("error removing expired diskcache entries");
         diskcache
@@ -1231,7 +1231,7 @@ fn get_diskcache_response(
             .set_connection_pool_max_size(redis_config.max_pool_size)
             .build()
             .expect("error building redis cache");
-        log::info!("Redis cache created - conn_str: {conn_str} - refresh: {ttl_refresh} - ttl: {ttl_secs} - pool_size: {pool_size}",
+        log::info!("Redis cache created - conn_str: {conn_str} - refresh: {ttl_refresh} - ttl: {ttl_secs:?} - pool_size: {pool_size}",
             conn_str = redis_config.conn_str,
             ttl_refresh = redis_config.ttl_refresh,
             ttl_secs = redis_config.ttl_secs,
