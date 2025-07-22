@@ -232,7 +232,13 @@ Common options:
                                Not valid for stdin.
 "#;
 
-use std::{fs, num::NonZeroU32, sync::OnceLock, thread, time::{self, Duration}};
+use std::{
+    fs,
+    num::NonZeroU32,
+    sync::OnceLock,
+    thread,
+    time::{self, Duration},
+};
 
 use cached::{
     Cached, IOCached, RedisCache, Return, SizedCache,
