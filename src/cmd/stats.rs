@@ -1599,6 +1599,54 @@ fn timestamp_ms_to_rfc3339(timestamp: i64, typ: FieldType) -> String {
     date_val
 }
 
+#[cfg(feature = "fast-precision")]
+#[allow(clippy::inline_always)]
+#[inline(always)]
+fn calculate_float_precision(f: f64) -> u16 {
+    const EXPONENT_MASK: u64 = 0x7FF;
+    const EXPONENT_BIAS: i32 = 1023;
+    const MANTISSA_MASK: u64 = 0xFFFFFFFFFFFFF;
+
+    // faster precision estimate calculation using bit manipulation
+    let bits = f.to_bits();
+    let exponent = ((bits >> 52) & EXPONENT_MASK) as i32 - EXPONENT_BIAS;
+    let mantissa = bits & MANTISSA_MASK;
+
+    if exponent < 0 {
+        // For very small numbers, precision is approximately -exponent
+        (-exponent).min(15) as u16
+    } else {
+        // For normal numbers, estimate precision based on mantissa
+        let significant_digits = if mantissa == 0 {
+            53 // Exact powers of 2 have full precision
+        } else {
+            53 - mantissa.leading_zeros() as u32
+        };
+        significant_digits
+            .saturating_sub(exponent as u32)
+            .max(0)
+            .min(15) as u16
+    }
+}
+
+#[cfg(not(feature = "fast-precision"))]
+#[allow(clippy::inline_always)]
+#[inline(always)]
+fn calculate_float_precision(f: f64) -> u16 {
+    // Use the slower, allocating, string-based method for precision calculation
+    // safety: we know that f is a valid f64
+    // so there will always be a fraction part, even if it's 0
+    let fractpart_len = unsafe {
+        ryu::Buffer::new()
+            .format_finite(f)
+            .split('.')
+            .next_back()
+            .unwrap_unchecked()
+            .len()
+    };
+    fractpart_len as u16
+}
+
 impl Stats {
     fn new(which: WhichStats) -> Stats {
         let (mut sum, mut minmax, mut online, mut online_len, mut modes, mut unsorted_stats) =
@@ -1723,17 +1771,13 @@ impl Stats {
                     v.add(&float_val);
                 }
 
-                // safety: we know that float_val is a valid f64
-                // so there will always be a fraction part, even if it's 0
-                let fractpart_len = unsafe {
-                    ryu::Buffer::new()
-                        .format_finite(float_val)
-                        .split('.')
-                        .next_back()
-                        .unwrap_unchecked()
-                        .len()
+                // precision calculation
+                let precision = if float_val == 0.0 {
+                    0
+                } else {
+                    calculate_float_precision(float_val)
                 };
-                self.max_precision = std::cmp::max(self.max_precision, fractpart_len as u16);
+                self.max_precision = std::cmp::max(self.max_precision, precision);
             },
             TDateTime | TDate => {
                 // Less common case: date/datetime processing
