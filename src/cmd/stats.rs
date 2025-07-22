@@ -1662,7 +1662,7 @@ impl Stats {
         // Process the frequently used Option-based statistics first
         // These are commonly enabled, so check them in order of likelihood
 
-        // microbenchmarks show 'b"" != sample' is faster than 'sample.is_empty()'
+        // microbenchmarks show 'b"" != sample' is faster than '!sample.is_empty()'
         if b"" != sample {
             if let Some(v) = self.sum.as_mut() {
                 v.add_with_parsed(t, sample, float_val, int_val);
@@ -1724,24 +1724,17 @@ impl Stats {
                     v.add(&float_val);
                 }
 
-                let mut ryu_buffer = ryu::Buffer::new();
                 // safety: we know that float_val is a valid f64
                 // so there will always be a fraction part, even if it's 0
-                let fractpart = unsafe {
-                    ryu_buffer
+                let fractpart_len = unsafe {
+                    ryu::Buffer::new()
                         .format_finite(float_val)
                         .split('.')
                         .next_back()
                         .unwrap_unchecked()
+                        .len()
                 };
-                self.max_precision = std::cmp::max(
-                    self.max_precision,
-                    (if *fractpart == *"0" {
-                        0
-                    } else {
-                        fractpart.len()
-                    }) as u16,
-                );
+                self.max_precision = std::cmp::max(self.max_precision, fractpart_len as u16);
             },
             TDateTime | TDate => {
                 // Less common case: date/datetime processing
