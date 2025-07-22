@@ -1606,7 +1606,7 @@ fn calculate_float_precision(f: f64) -> u16 {
     // faster precision estimate calculation using bit manipulation
     let bits = f.to_bits();
     let exponent = ((bits >> 52) & 0x7FF) as i32 - 1023;
-    let mantissa = bits & 0xFFFFFFFFFFFFF;
+    let mantissa = bits & MANTISSA_MASK;
 
     if exponent < 0 {
         // For very small numbers, precision is approximately -exponent
