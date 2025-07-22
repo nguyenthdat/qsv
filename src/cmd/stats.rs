@@ -1603,6 +1603,10 @@ fn timestamp_ms_to_rfc3339(timestamp: i64, typ: FieldType) -> String {
 #[allow(clippy::inline_always)]
 #[inline(always)]
 fn calculate_float_precision(f: f64) -> u16 {
+    const EXPONENT_MASK: u64 = 0x7FF;
+    const EXPONENT_BIAS: i32 = 1023;
+    const MANTISSA_MASK: u64 = 0xFFFFFFFFFFFFF;
+
     // faster precision estimate calculation using bit manipulation
     let bits = f.to_bits();
     let exponent = ((bits >> 52) & EXPONENT_MASK) as i32 - EXPONENT_BIAS;
@@ -1618,7 +1622,10 @@ fn calculate_float_precision(f: f64) -> u16 {
         } else {
             53 - mantissa.leading_zeros() as u32
         };
-        significant_digits.saturating_sub(exponent as u32).max(0).min(15) as u16
+        significant_digits
+            .saturating_sub(exponent as u32)
+            .max(0)
+            .min(15) as u16
     }
 }
 
