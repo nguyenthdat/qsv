@@ -1605,7 +1605,7 @@ fn timestamp_ms_to_rfc3339(timestamp: i64, typ: FieldType) -> String {
 fn calculate_float_precision(f: f64) -> u16 {
     // faster precision estimate calculation using bit manipulation
     let bits = f.to_bits();
-    let exponent = ((bits >> 52) & 0x7FF) as i32 - 1023;
+    let exponent = ((bits >> 52) & EXPONENT_MASK) as i32 - EXPONENT_BIAS;
     let mantissa = bits & MANTISSA_MASK;
 
     if exponent < 0 {
