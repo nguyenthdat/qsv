@@ -1716,7 +1716,6 @@ impl Stats {
             },
             TFloat => {
                 // safety: we know the sample is a valid f64, so we can use unwrap_unchecked
-                // let n = unsafe { fast_float2::parse(sample).unwrap_unchecked() };
                 if let Some(v) = self.unsorted_stats.as_mut() {
                     v.add(float_val);
                 }
