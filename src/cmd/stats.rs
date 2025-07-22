@@ -1613,7 +1613,11 @@ fn calculate_float_precision(f: f64) -> u16 {
         (-exponent).min(15) as u16
     } else {
         // For normal numbers, estimate precision based on mantissa
-        let significant_digits = 53 - mantissa.leading_zeros() as u32;
+        let significant_digits = if mantissa == 0 {
+            53 // Exact powers of 2 have full precision
+        } else {
+            53 - mantissa.leading_zeros() as u32
+        };
         (significant_digits - exponent as u32).max(0).min(15) as u16
     }
 }
