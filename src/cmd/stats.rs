@@ -1662,8 +1662,15 @@ impl Stats {
         // Process the frequently used Option-based statistics first
         // These are commonly enabled, so check them in order of likelihood
 
-        // safety: we know that sum is always Some()
-        unsafe { self.sum.as_mut().unwrap_unchecked().add(t, sample) };
+        if b"" != sample {
+            // safety: we know that sum is always Some()
+            unsafe {
+                self.sum
+                    .as_mut()
+                    .unwrap_unchecked()
+                    .add_with_parsed(t, sample, float_val, int_val)
+            };
+        }
 
         // MinMax is almost always enabled
         if let Some(v) = self.minmax.as_mut() {
@@ -2519,35 +2526,21 @@ struct TypedSum {
 impl TypedSum {
     #[allow(clippy::inline_always)]
     #[inline(always)]
-    fn add(&mut self, typ: FieldType, sample: &[u8]) {
-        if b"" == sample {
-            return;
-        }
+    fn add_with_parsed(&mut self, typ: FieldType, sample: &[u8], float_val: f64, int_val: i64) {
         #[allow(clippy::cast_precision_loss)]
         match typ {
             TFloat => {
-                if let Ok(float_sample) = fast_float2::parse::<f64, &[u8]>(sample) {
-                    if let Some(ref mut f) = self.float {
-                        *f += float_sample;
-                    } else {
-                        self.float = Some((self.integer as f64) + float_sample);
-                    }
+                if let Some(ref mut f) = self.float {
+                    *f += float_val;
+                } else {
+                    self.float = Some((self.integer as f64) + float_val);
                 }
             },
             TInteger => {
                 if let Some(ref mut float) = self.float {
-                    // safety: we know that the sample is a valid f64
-                    unsafe {
-                        *float += fast_float2::parse::<f64, &[u8]>(sample).unwrap_unchecked();
-                    };
+                    *float += float_val;
                 } else {
-                    // so we don't panic on overflow/underflow, use saturating_add
-                    unsafe {
-                        self.integer = self
-                            .integer
-                            // safety: we know that the sample is a valid i64
-                            .saturating_add(atoi_simd::parse::<i64>(sample).unwrap_unchecked());
-                    };
+                    self.integer = self.integer.saturating_add(int_val);
                 }
             },
             TString => {
