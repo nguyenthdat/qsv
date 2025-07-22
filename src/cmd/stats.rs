@@ -1618,7 +1618,7 @@ fn calculate_float_precision(f: f64) -> u16 {
         } else {
             53 - mantissa.leading_zeros() as u32
         };
-        (significant_digits - exponent as u32).max(0).min(15) as u16
+        significant_digits.saturating_sub(exponent as u32).max(0).min(15) as u16
     }
 }
 
