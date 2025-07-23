@@ -438,7 +438,6 @@ nightly = [
     "rand/simd_support",
     "simd-json/hints",
 ]
-fast-precision = []
 
 [package.metadata.deb]
 maintainer           = "Konstantin Sivakov <konstantin@datHere.com>"
