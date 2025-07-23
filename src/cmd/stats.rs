@@ -1715,7 +1715,6 @@ impl Stats {
                 }
             },
             TFloat => {
-                // safety: we know the sample is a valid f64, so we can use unwrap_unchecked
                 if let Some(v) = self.unsorted_stats.as_mut() {
                     v.add(float_val);
                 }
@@ -1724,6 +1723,8 @@ impl Stats {
                 }
 
                 // precision calculation
+                // note that we are referring to number of decimal places,
+                // not the number of significant digits
                 let precision = if float_val == 0.0 {
                     0
                 } else {
@@ -1741,7 +1742,7 @@ impl Stats {
                 self.max_precision = std::cmp::max(self.max_precision, precision);
             },
             TDateTime | TDate => {
-                // Less common case: date/datetime processing
+                // int_val is a timestamp in milliseconds
                 if int_val != 0 {
                     // calculate date statistics by adding date samples as timestamps to
                     // millisecond precision.
