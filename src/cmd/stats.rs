@@ -1246,16 +1246,17 @@ impl Args {
         for i in 0..nchunks {
             let (send, args, sel) = (send.clone(), self.clone(), sel.clone());
             pool.execute(move || {
-                // safety: indexed() & seek() are safe as we know we have an index file
-                // if indexed() or seek() does return an Err, you have a bigger problem
-                // as the index file was modified WHILE stats is running and you actually
-                // NEED to abort if that happens, however unlikely
+                // safety: indexed() is safe as we know we have an index file
+                // and we know it will return an Ok
                 let mut idx = unsafe {
                     args.rconfig()
                         .indexed()
                         .unwrap_unchecked()
                         .unwrap_unchecked()
                 };
+                // safety: seek() is safe as we know we have an index file
+                // we do an expect() here so that it triggers a human-panic
+                // with some actionable infoif the index is corrupted
                 idx.seek((i * chunk_size) as u64)
                     .expect("File seek failed.");
                 let it = idx.byte_records().take(chunk_size);
