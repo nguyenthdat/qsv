@@ -1743,7 +1743,7 @@ impl Stats {
                 self.max_precision = std::cmp::max(self.max_precision, precision);
             },
             TDateTime | TDate => {
-                // int_val is a unix timestamp in milliseconds to milliseconds precision
+                // int_val is a unix timestamp to millisecond precision
                 if int_val != 0 {
                     // calculate date statistics by adding date samples as unix timestamps
                     // by doing so, we can do date statistics
