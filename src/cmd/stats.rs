@@ -1743,18 +1743,15 @@ impl Stats {
                 self.max_precision = std::cmp::max(self.max_precision, precision);
             },
             TDateTime | TDate => {
-                // int_val is a unix timestamp to millisecond precision
-                if int_val != 0 {
-                    // calculate date statistics by adding date samples as unix timestamps
-                    // by doing so, we can do date statistics
-                    #[allow(clippy::cast_precision_loss)]
-                    let n = int_val as f64;
-                    if let Some(v) = self.unsorted_stats.as_mut() {
-                        v.add(n);
-                    }
-                    if let Some(v) = self.online.as_mut() {
-                        v.add(&n);
-                    }
+                // calculate date statistics by adding date samples as unix timestamps
+                // to the millisecond precision.
+                #[allow(clippy::cast_precision_loss)]
+                let timestamp = int_val as f64;
+                if let Some(v) = self.unsorted_stats.as_mut() {
+                    v.add(timestamp);
+                }
+                if let Some(v) = self.online.as_mut() {
+                    v.add(&timestamp);
                 }
             },
             _ => {},
