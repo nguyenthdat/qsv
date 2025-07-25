@@ -291,7 +291,7 @@ actix-web = { version = "4.11", default-features = false, features = [
     "compress-gzip",
 ] }
 assert-json-diff = "2.0"
-criterion = "0.6"
+criterion = "0.7"
 newline-converter = "0.3"
 
 # disable similar-asserts until it upgrades its console dependency
