@@ -229,6 +229,43 @@ stats_tests!(stats_infer_int, "type", &["1"], "Integer");
 stats_tests!(stats_infer_float, "type", &["1.2"], "Float");
 stats_tests!(stats_infer_null, "type", &[""], "NULL");
 stats_tests!(stats_infer_date, "type", &["1968-06-27"], "Date");
+stats_tests!(stats_infer_date_unix_epoch, "type", &["1970-01-01"], "Date");
+stats_tests!(
+    stats_infer_date_unix_epoch_2,
+    "type",
+    &["1970-01-01 00:00:00"],
+    "Date"
+);
+stats_tests!(
+    stats_infer_date_unix_epoch_3,
+    "type",
+    &["1970-01-01 00:00:00 UTC"],
+    "Date"
+);
+stats_tests!(
+    stats_infer_date_unix_epoch_4,
+    "type",
+    &["1970-01-01 00:00:00.000 UTC"],
+    "Date"
+);
+stats_tests!(
+    stats_infer_date_unix_epoch_5,
+    "type",
+    &["1970-01-01 00:00:00.000000 UTC"],
+    "Date"
+);
+stats_tests!(
+    stats_infer_date_unix_epoch_6,
+    "type",
+    &["1970-01-01 00:00:00.000000000 UTC"],
+    "Date"
+);
+stats_tests!(
+    stats_infer_date_unix_epoch_7,
+    "type",
+    &["1970-01-01 00:00:01 UTC"],
+    "DateTime"
+);
 stats_no_infer_dates_tests!(stats_infer_nodate, "type", &["1968-06-27"], "String");
 stats_tests!(
     stats_infer_datetime,
