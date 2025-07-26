@@ -1705,14 +1705,14 @@ impl Stats {
             return; // Early return for nulls
         }
 
-        // Process by type
+        // Process other types - from most to least frequent
         match t {
             TInteger => {
                 if let Some(v) = self.unsorted_stats.as_mut() {
                     v.add(float_val);
                 }
                 if let Some(v) = self.online.as_mut() {
-                    v.add(&float_val);
+                    v.add_f64(float_val);
                 }
             },
             TFloat => {
@@ -1720,7 +1720,7 @@ impl Stats {
                     v.add(float_val);
                 }
                 if let Some(v) = self.online.as_mut() {
-                    v.add(&float_val);
+                    v.add_f64(float_val);
                 }
 
                 // precision calculation
@@ -1751,7 +1751,7 @@ impl Stats {
                     v.add(timestamp);
                 }
                 if let Some(v) = self.online.as_mut() {
-                    v.add(&timestamp);
+                    v.add_f64(timestamp);
                 }
             },
             _ => {},
