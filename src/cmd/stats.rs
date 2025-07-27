@@ -1364,7 +1364,7 @@ impl Args {
                 include_nulls:   self.flag_nulls,
                 sum:             !self.flag_typesonly || self.flag_infer_boolean,
                 range:           !self.flag_typesonly || self.flag_infer_boolean,
-                dist:            !self.flag_typesonly,
+                dist:            !self.flag_typesonly || self.flag_infer_boolean,
                 cardinality:     self.flag_everything || self.flag_cardinality,
                 median:          !self.flag_everything && self.flag_median && !self.flag_quartiles,
                 mad:             self.flag_everything || self.flag_mad,
@@ -1665,15 +1665,22 @@ impl Stats {
 
         // microbenchmarks show 'b"" != sample' is faster than '!sample.is_empty()'
         if b"" != sample {
-            if let Some(v) = self.sum.as_mut() {
-                v.add_with_parsed(t, sample, float_val, int_val);
+            // safety: sum is always enabled and if check above ensures there is a sample to add
+            unsafe {
+                self.sum
+                    .as_mut()
+                    .unwrap_unchecked()
+                    .add_with_parsed(t, sample, float_val, int_val);
             }
         }
 
-        // MinMax is almost always enabled
-        if let Some(v) = self.minmax.as_mut() {
-            v.add_with_parsed(t, sample, float_val, int_val);
-        }
+        // safety: MinMax always enabled
+        unsafe {
+            self.minmax
+                .as_mut()
+                .unwrap_unchecked()
+                .add_with_parsed(t, sample, float_val, int_val);
+        };
 
         // Modes/cardinality less common but still frequent
         if let Some(v) = self.modes.as_mut() {
@@ -1681,12 +1688,16 @@ impl Stats {
         }
 
         if t == TString {
-            if let Some(v) = self.online_len.as_mut() {
-                v.add(&sample.len());
-                // ASCII check: once false, it stays false, so check the flag first
-                if self.is_ascii {
-                    self.is_ascii = sample.is_ascii();
-                }
+            // safety: online_len is always enabled when t == TString
+            unsafe {
+                self.online_len
+                    .as_mut()
+                    .unwrap_unchecked()
+                    .add(&sample.len());
+            }
+            // ASCII check: once false, it stays false, so check the flag first
+            if self.is_ascii {
+                self.is_ascii = sample.is_ascii();
             }
             if sample_type == TNull {
                 self.nullcount += 1;
@@ -1698,8 +1709,9 @@ impl Stats {
         if sample_type == TNull {
             self.nullcount += 1;
             if self.which.include_nulls {
-                if let Some(v) = self.online.as_mut() {
-                    v.add_null();
+                // safety: online is always enabled
+                unsafe {
+                    self.online.as_mut().unwrap_unchecked().add_null();
                 }
             }
             return; // Early return for nulls
@@ -1711,16 +1723,18 @@ impl Stats {
                 if let Some(v) = self.unsorted_stats.as_mut() {
                     v.add(float_val);
                 }
-                if let Some(v) = self.online.as_mut() {
-                    v.add_f64(float_val);
+                // safety: online is always enabled
+                unsafe {
+                    self.online.as_mut().unwrap_unchecked().add_f64(float_val);
                 }
             },
             TFloat => {
                 if let Some(v) = self.unsorted_stats.as_mut() {
                     v.add(float_val);
                 }
-                if let Some(v) = self.online.as_mut() {
-                    v.add_f64(float_val);
+                // safety: online is always enabled
+                unsafe {
+                    self.online.as_mut().unwrap_unchecked().add_f64(float_val);
                 }
 
                 // precision calculation
@@ -1750,8 +1764,9 @@ impl Stats {
                 if let Some(v) = self.unsorted_stats.as_mut() {
                     v.add(timestamp);
                 }
-                if let Some(v) = self.online.as_mut() {
-                    v.add_f64(timestamp);
+                // safety: online is always enabled
+                unsafe {
+                    self.online.as_mut().unwrap_unchecked().add_f64(timestamp);
                 }
             },
             _ => {},
