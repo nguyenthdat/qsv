@@ -453,6 +453,8 @@ Luau is recommended over Python for complex data-wrangling tasks as it is faster
 
 See [Luau vs Python](docs/INTERPRETERS.md) for more info.
 
+Another "interpreter" included with qsv is [MiniJinja](https://docs.rs/minijinja/latest/minijinja/), which is used in the `template` and `fetchpost` commands.
+
 ## Memory Management
 qsv supports three memory allocators - mimalloc (default), jemalloc and the standard allocator.<br>See [Memory Allocator](docs/PERFORMANCE.md#memory-allocator) for more info.
 
