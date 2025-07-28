@@ -115,6 +115,7 @@ dunce = "1"
 dynfmt2 = { version = "0.3", default-features = false, features = ["curly"] }
 eudex = { version = "0.1", optional = true }
 ext-sort = { version = "0.1", default-features = false }
+fancy-regex = "0.15"
 fast-float2 = "0.2"
 flate2 = { version = "1", optional = true }
 foldhash = "0.1"
@@ -322,6 +323,9 @@ csvs_convert = { git = "https://github.com/jqnatividad/csvs_convert", branch = "
 
 # use unreleased upstream fixes for dns-lookup
 dns-lookup = { git = "https://github.com/keeperofdakeys/dns-lookup", rev = "aa13809" }
+
+# use unreleased upstream fix that gets rid of unmaintained derivative crate
+fancy-regex = { git = "https://github.com/fancy-regex/fancy-regex", rev = "db14c31"}
 
 # use our patched fork of grex to bump dependencies and Unicode tables from 15 to 16 until our PR is merged
 grex = { git = "https://github.com/jqnatividad/grex", branch = "bumped-dependencies-202502" }
