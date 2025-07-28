@@ -584,12 +584,51 @@ pub const DEFAULT_STATS_SEPARATOR: &str = "|";
 
 static BOOLEAN_PATTERNS: OnceLock<Vec<BooleanPattern>> = OnceLock::new();
 #[derive(Clone, Debug)]
+/// Represents a pattern for boolean value inference in CSV data.
+///
+/// This struct defines patterns that can be used to identify boolean values in CSV columns.
+/// It supports both exact matches and prefix matching with wildcards for flexible boolean
+/// detection during CSV statistics computation.
+///
+/// # Fields
+///
+/// * `true_pattern` - The pattern that identifies `true` values (case-insensitive)
+/// * `false_pattern` - The pattern that identifies `false` values (case-insensitive)
+///
+/// # Pattern Matching
+///
+/// Patterns support two types of matching:
+/// * **Exact match**: The value must exactly match the pattern (case-insensitive)
+/// * **Prefix match**: If the pattern ends with `*`, it matches any value that starts with the
+///   prefix (e.g., `"yes*"` matches `"yes"`, `"yes please"`, `"YES"`, etc.)
 struct BooleanPattern {
     true_pattern:  String,
     false_pattern: String,
 }
 
 impl BooleanPattern {
+    /// Checks if a value matches the boolean pattern.
+    ///
+    /// This method determines whether a given string value matches either the true or false
+    /// pattern defined in this `BooleanPattern`. The matching is case-insensitive and supports
+    /// both exact matches and prefix matching with wildcards.
+    ///
+    /// # Arguments
+    ///
+    /// * `value` - The string value to check against the boolean patterns
+    ///
+    /// # Returns
+    ///
+    /// * `Some(true)` - If the value matches the true pattern
+    /// * `Some(false)` - If the value matches the false pattern
+    /// * `None` - If the value doesn't match either pattern
+    ///
+    /// # Matching Logic
+    ///
+    /// 1. **Exact match**: The value is compared directly to both patterns (case-insensitive)
+    /// 2. **Prefix match**: If a pattern ends with `*`, the value is checked if it starts with the
+    ///    prefix (excluding the `*` character)
+    /// 3. **Priority**: Exact matches are checked before prefix matches for better performance
     fn matches(&self, value: &str) -> Option<bool> {
         let value_lower = value.to_lowercase();
 
@@ -619,6 +658,31 @@ impl BooleanPattern {
     }
 }
 
+/// Parses a comma-separated string of boolean patterns into a vector of `BooleanPattern` structs.
+///
+/// This function takes a string containing boolean pattern pairs and converts them into
+/// `BooleanPattern` objects that can be used for boolean value inference in CSV data.
+///
+/// # Arguments
+///
+/// * `boolean_patterns` - A comma-separated string of pattern pairs in the format `"true:false"`
+///
+/// # Format
+///
+/// The input string should contain pattern pairs separated by commas, where each pair
+/// consists of a true pattern and false pattern separated by a colon:
+/// `"true_pattern1:false_pattern1,true_pattern2:false_pattern2"`
+///
+/// # Returns
+///
+/// * `Ok(Vec<BooleanPattern>)` - Vector of parsed boolean patterns
+/// * `Err(CliError)` - If the format is invalid or patterns are empty
+///
+/// # Errors
+///
+/// * Returns an error if any pattern pair is missing the colon separator
+/// * Returns an error if either the true or false pattern is empty
+/// * Returns an error if no patterns are provided
 fn parse_boolean_patterns(boolean_patterns: &str) -> CliResult<Vec<BooleanPattern>> {
     let mut patterns = Vec::new();
     for pair in boolean_patterns.split(',') {
@@ -641,6 +705,49 @@ fn parse_boolean_patterns(boolean_patterns: &str) -> CliResult<Vec<BooleanPatter
     Ok(patterns)
 }
 
+/// Main entry point for the stats command.
+///
+/// This function orchestrates the entire CSV statistics computation process, including
+/// argument parsing, configuration setup, data processing, and output generation.
+/// It handles both sequential and parallel processing approaches based on the dataset size
+/// and available system resources.
+///
+/// # Arguments
+///
+/// * `argv` - Command line arguments as string slices
+///
+/// # Returns
+///
+/// * `Ok(())` - Successfully completed statistics computation
+/// * `Err(CliError)` - If there's an error during processing
+///
+/// # Process Overview
+///
+/// 1. **Argument Parsing**: Parses command line arguments and validates configuration
+/// 2. **Boolean Inference Setup**: Configures boolean pattern matching if enabled
+/// 3. **Environment Variables**: Checks for QSV_PREFER_DMY environment variable
+/// 4. **Output Configuration**: Determines output format and compression settings
+/// 5. **Statistics Computation**: Processes CSV data using sequential or parallel approach
+/// 6. **Cache Management**: Handles statistics caching and cache invalidation
+/// 7. **Output Generation**: Writes results to stdout or specified output file
+/// 8. **Cleanup**: Removes temporary files and handles cleanup operations
+///
+/// # Features
+///
+/// * **Type Inference**: Automatically detects data types (numeric, string, date, boolean)
+/// * **Date Inference**: Configurable date pattern recognition
+/// * **Boolean Inference**: Pattern-based boolean value detection
+/// * **Parallel Processing**: Multi-threaded computation for large datasets
+/// * **Caching**: Intelligent caching of computed statistics
+/// * **Multiple Output Formats**: CSV, JSON, and compressed formats
+/// * **Comprehensive Statistics**: Mean, median, quartiles, mode, cardinality, etc.
+///
+/// # Error Handling
+///
+/// * Validates input file existence and format
+/// * Handles CSV parsing errors gracefully
+/// * Manages temporary file creation and cleanup
+/// * Provides detailed error messages for configuration issues
 pub fn run(argv: &[&str]) -> CliResult<()> {
     let mut args: Args = util::get_args(USAGE, argv)?;
     if args.flag_typesonly {
@@ -1211,6 +1318,43 @@ pub fn run(argv: &[&str]) -> CliResult<()> {
 }
 
 impl Args {
+    /// Computes statistics for CSV data using a single-threaded sequential approach.
+    ///
+    /// This function processes the entire CSV file in a single thread, reading all records
+    /// sequentially and computing statistics for each column. It's suitable for smaller datasets
+    /// or when parallel processing overhead would be counterproductive.
+    ///
+    /// # Arguments
+    ///
+    /// * `whitelist` - A comma-separated list of column names for date inference, or "all" for all
+    ///   columns
+    ///
+    /// # Returns
+    ///
+    /// * `Ok((csv::ByteRecord, Vec<Stats>))` - A tuple containing the CSV headers and computed
+    ///   statistics
+    /// * `Err(CliError)` - If there's an error reading the CSV or computing statistics
+    ///
+    /// # Process Flow
+    ///
+    /// 1. **Setup**: Creates a CSV reader with the configured settings
+    /// 2. **Headers**: Reads and processes the CSV headers, applying column selection
+    /// 3. **Date Inference**: Initializes date inference flags based on the whitelist
+    /// 4. **Computation**: Processes all records sequentially to compute statistics
+    /// 5. **Return**: Returns headers and computed statistics
+    ///
+    /// # Performance Characteristics
+    ///
+    /// * **Memory**: Processes records one at a time, keeping memory usage low
+    /// * **CPU**: Single-threaded, no parallelization overhead
+    /// * **I/O**: Sequential file reading, good for streaming data
+    /// * **Best for**: Small to medium datasets, when simplicity is preferred
+    ///
+    /// # Error Handling
+    ///
+    /// * CSV parsing errors are propagated as `CliError`
+    /// * Date inference initialization errors are handled
+    /// * File I/O errors are wrapped in appropriate error types
     fn sequential_stats(&self, whitelist: &str) -> CliResult<(csv::ByteRecord, Vec<Stats>)> {
         let mut rdr = self.rconfig().reader()?;
         let (headers, sel) = self.sel_headers(&mut rdr)?;
@@ -1221,6 +1365,60 @@ impl Args {
         Ok((headers, stats))
     }
 
+    /// Computes statistics for CSV data using a multi-threaded parallel approach.
+    ///
+    /// This function processes the CSV file using multiple threads, dividing the work into
+    /// chunks and processing each chunk in parallel. It requires an index file to enable
+    /// random access to CSV records. For optimal performance on large datasets.
+    ///
+    /// # Arguments
+    ///
+    /// * `whitelist` - A comma-separated list of column names for date inference, or "all" for all
+    ///   columns
+    /// * `idx_count` - The number of records in the CSV file (from the index)
+    ///
+    /// # Returns
+    ///
+    /// * `Ok((csv::ByteRecord, Vec<Stats>))` - A tuple containing the CSV headers and computed
+    ///   statistics
+    /// * `Err(CliError)` - If there's an error reading the CSV or computing statistics
+    ///
+    /// # Process Flow
+    ///
+    /// 1. **Validation**: Falls back to sequential processing if `idx_count` is 0
+    /// 2. **Setup**: Creates a CSV reader and processes headers
+    /// 3. **Date Inference**: Initializes date inference flags based on the whitelist
+    /// 4. **Parallelization**: Divides work into chunks based on available jobs
+    /// 5. **Thread Pool**: Creates worker threads to process chunks concurrently
+    /// 6. **Indexed Access**: Uses CSV index for random access to record chunks
+    /// 7. **Merging**: Combines results from all threads using the `Commute` trait
+    /// 8. **Return**: Returns headers and merged statistics
+    ///
+    /// # Performance Characteristics
+    ///
+    /// * **Memory**: Higher memory usage due to parallel processing
+    /// * **CPU**: Multi-threaded, utilizes all available CPU cores
+    /// * **I/O**: Random access via index, may have higher I/O overhead
+    /// * **Best for**: Large datasets, when CPU utilization is important
+    ///
+    /// # Threading Details
+    ///
+    /// * Uses `ThreadPool` with number of jobs from `self.flag_jobs`
+    /// * Chunk size is calculated based on total records and number of jobs
+    /// * Each thread processes a contiguous chunk of records
+    /// * Results are merged using the `merge_all` function
+    ///
+    /// # Safety Considerations
+    ///
+    /// * Requires a valid CSV index file for random access
+    /// * Uses unsafe code for performance-critical operations
+    /// * Thread safety is ensured through channel-based communication
+    /// * Index seeking operations are wrapped in expect() for better error messages
+    ///
+    /// # Fallback Behavior
+    ///
+    /// * Automatically falls back to `sequential_stats` when `idx_count` is 0
+    /// * This handles edge cases where parallel processing isn't beneficial
     fn parallel_stats(
         &self,
         whitelist: &str,
@@ -1270,6 +1468,40 @@ impl Args {
         Ok((headers, merge_all(recv.iter()).unwrap_or_default()))
     }
 
+    /// Converts a vector of `Stats` objects into CSV records for output.
+    ///
+    /// This function processes all computed statistics in parallel, converting each `Stats`
+    /// object into a `csv::StringRecord` that can be written to the output file. The
+    /// conversion is done using a thread pool for better performance on large datasets.
+    ///
+    /// # Arguments
+    ///
+    /// * `stats` - Vector of computed statistics for each column
+    /// * `visualize_ws` - Whether to visualize whitespace characters in string outputs
+    ///
+    /// # Returns
+    ///
+    /// A vector of `csv::StringRecord` objects, one for each column's statistics
+    ///
+    /// # Process
+    ///
+    /// 1. **Setup**: Pre-allocates vectors and creates thread pool
+    /// 2. **Parallel Processing**: Each `Stats` object is converted to a record in parallel
+    /// 3. **Channel Communication**: Uses bounded channels for thread-safe communication
+    /// 4. **Collection**: Gathers all converted records into the final vector
+    ///
+    /// # Performance
+    ///
+    /// * Uses thread pool with number of jobs from `self.flag_jobs`
+    /// * Each `Stats` object is processed in its own thread
+    /// * Bounded channels prevent memory explosion
+    /// * Pre-allocated vectors reduce memory allocations
+    ///
+    /// # Safety
+    ///
+    /// * Uses unsafe code for performance-critical operations
+    /// * Channel communication is thread-safe
+    /// * Bounds checking is avoided where safe
     fn stats_to_records(&self, stats: Vec<Stats>, visualize_ws: bool) -> Vec<csv::StringRecord> {
         let round_places = self.flag_round;
         let infer_boolean = self.flag_infer_boolean;
@@ -1299,6 +1531,43 @@ impl Args {
         records
     }
 
+    /// Computes statistics for CSV data from an iterator of records.
+    ///
+    /// This function processes CSV records from an iterator and computes comprehensive
+    /// statistics for each column. It's the core computation engine used by both
+    /// sequential and parallel processing approaches.
+    ///
+    /// # Arguments
+    ///
+    /// * `sel` - Column selection configuration
+    /// * `it` - Iterator over CSV records (ByteRecord results)
+    ///
+    /// # Returns
+    ///
+    /// A vector of `Stats` objects, one for each selected column
+    ///
+    /// # Process
+    ///
+    /// 1. **Initialization**: Creates `Stats` objects for each selected column
+    /// 2. **Record Processing**: Iterates through all CSV records
+    /// 3. **Field Processing**: For each record, processes selected fields
+    /// 4. **Statistics Accumulation**: Updates statistics for each field
+    /// 5. **Type Inference**: Automatically detects data types during processing
+    ///
+    /// # Performance Optimizations
+    ///
+    /// * **Inline**: Function is marked as `#[inline]` for performance
+    /// * **Unsafe Operations**: Uses unsafe code for bounds checking avoidance
+    /// * **Memory Reuse**: Reuses ByteRecord objects to reduce allocations
+    /// * **Hot Loop Optimization**: Critical path is optimized for speed
+    /// * **Register Usage**: Frequently accessed variables are kept in registers
+    ///
+    /// # Safety Considerations
+    ///
+    /// * Uses unsafe code for performance-critical operations
+    /// * Assumes `INFER_DATE_FLAGS` is properly initialized
+    /// * Bounds checking is avoided where safe
+    /// * Iterator errors are handled gracefully
     #[inline]
     fn compute<I>(&self, sel: &Selection, it: I) -> Vec<Stats>
     where
@@ -1338,6 +1607,33 @@ impl Args {
         stats
     }
 
+    /// Reads and processes CSV headers with column selection.
+    ///
+    /// This function reads the CSV headers from the reader and applies column selection
+    /// based on the configuration. It returns both the selected headers and the selection
+    /// object for use in subsequent processing.
+    ///
+    /// # Arguments
+    ///
+    /// * `rdr` - CSV reader with the input data
+    ///
+    /// # Returns
+    ///
+    /// * `Ok((csv::ByteRecord, Selection))` - Tuple containing selected headers and selection
+    ///   object
+    /// * `Err(CliError)` - If there's an error reading headers or applying selection
+    ///
+    /// # Process
+    ///
+    /// 1. **Header Reading**: Reads byte headers from the CSV reader
+    /// 2. **Selection Creation**: Creates a selection object based on configuration
+    /// 3. **Header Filtering**: Applies the selection to filter headers
+    /// 4. **Return**: Returns both selected headers and selection object
+    ///
+    /// # Performance
+    ///
+    /// * **Inline**: Function is marked as `#[inline]` for performance
+    /// * **Minimal Allocations**: Reuses existing data structures where possible
     #[inline]
     fn sel_headers<R: io::Read>(
         &self,
@@ -1348,6 +1644,27 @@ impl Args {
         Ok((sel.select(&headers).collect(), sel))
     }
 
+    /// Creates a CSV reader configuration based on the current arguments.
+    ///
+    /// This function builds a `Config` object for CSV reading that incorporates
+    /// all the relevant settings from the command line arguments, including
+    /// input file, delimiter, header settings, and column selection.
+    ///
+    /// # Returns
+    ///
+    /// A `Config` object configured for CSV reading with current settings
+    ///
+    /// # Configuration Options
+    ///
+    /// * **Input File**: Uses `self.arg_input` as the data source
+    /// * **Delimiter**: Applies the configured delimiter from `self.flag_delimiter`
+    /// * **Headers**: Sets header behavior based on `self.flag_no_headers`
+    /// * **Column Selection**: Applies column selection from `self.flag_select`
+    ///
+    /// # Performance
+    ///
+    /// * **Inline**: Function is marked as `#[inline]` for performance
+    /// * **Minimal Overhead**: Creates configuration without unnecessary allocations
     #[inline]
     fn rconfig(&self) -> Config {
         Config::new(self.arg_input.as_ref())
@@ -1356,6 +1673,37 @@ impl Args {
             .select(self.flag_select.clone())
     }
 
+    /// Creates a vector of `Stats` objects for statistics computation.
+    ///
+    /// This function initializes a vector of `Stats` objects, one for each column
+    /// that will be processed. Each `Stats` object is configured with the appropriate
+    /// `WhichStats` settings based on the command line arguments.
+    ///
+    /// # Arguments
+    ///
+    /// * `record_len` - Number of columns to create statistics for
+    ///
+    /// # Returns
+    ///
+    /// A vector of initialized `Stats` objects
+    ///
+    /// # Configuration
+    ///
+    /// Each `Stats` object is configured with `WhichStats` settings:
+    /// * **Nulls**: Enabled based on `self.flag_nulls`
+    /// * **Sum/Range/Distribution**: Enabled unless `typesonly` is set
+    /// * **Cardinality**: Enabled for `everything` or `cardinality` flags
+    /// * **Median**: Enabled for `median` flag (unless `quartiles` is set)
+    /// * **MAD**: Enabled for `everything` or `mad` flags
+    /// * **Quartiles**: Enabled for `everything` or `quartiles` flags
+    /// * **Mode**: Enabled for `everything` or `mode` flags
+    /// * **Percentiles**: Enabled for `percentiles` flag
+    ///
+    /// # Performance
+    ///
+    /// * **Inline**: Function is marked as `#[inline]` for performance
+    /// * **Pre-allocated**: Uses `Vec::with_capacity` for efficient allocation
+    /// * **Bulk Initialization**: Uses `repeat_n` for efficient object creation
     #[inline]
     fn new_stats(&self, record_len: usize) -> Vec<Stats> {
         let mut stats: Vec<Stats> = Vec::with_capacity(record_len);
@@ -1465,7 +1813,27 @@ impl Args {
     }
 }
 
-/// returns the path to the stats file
+/// Determines the path for the statistics output file.
+///
+/// This function constructs the appropriate file path for the statistics output
+/// based on the input file path and whether the input is from stdin. It handles
+/// both regular file inputs and stdin input cases.
+///
+/// # Arguments
+///
+/// * `stats_csv_path` - The path to the input CSV file
+/// * `stdin_flag` - Whether the input is from stdin
+///
+/// # Returns
+///
+/// * `Ok(PathBuf)` - The path where statistics should be written
+/// * `Err(io::Error)` - If the path construction fails
+///
+/// # Behavior
+///
+/// * **Regular Files**: Creates a `.stats.csv` file in the same directory as the input
+/// * **Stdin Input**: Creates a `stdin.stats.csv` file in the current directory
+/// * **Path Validation**: Validates that the input path has a parent directory and filename
 fn stats_path(stats_csv_path: &Path, stdin_flag: bool) -> io::Result<PathBuf> {
     let parent = stats_csv_path
         .parent()
@@ -1483,6 +1851,29 @@ fn stats_path(stats_csv_path: &Path, stdin_flag: bool) -> io::Result<PathBuf> {
     Ok(parent.join(new_fname))
 }
 
+/// Initializes date inference flags for CSV column headers.
+///
+/// This function sets up a global static `INFER_DATE_FLAGS` that determines which columns
+/// should have date inference enabled during CSV processing. The flags are used to optimize
+/// date parsing by only attempting to parse dates for columns that are likely to contain
+/// date data.
+///
+/// # Arguments
+///
+/// * `infer_dates` - Whether date inference should be enabled at all
+/// * `headers` - The CSV headers as a ByteRecord containing column names
+/// * `flag_whitelist` - A comma-separated list of column name patterns to enable date inference
+///   for. Use "all" (case-insensitive) to enable date inference for all columns.
+///
+/// # Returns
+///
+/// * `Ok(())` - Successfully initialized the date inference flags
+/// * `Err(String)` - Error message if initialization failed
+///
+/// # Global State
+///
+/// This function modifies the global static `INFER_DATE_FLAGS` which is used throughout
+/// the stats computation to determine which columns should attempt date parsing.
 fn init_date_inference(
     infer_dates: bool,
     headers: &csv::ByteRecord,
@@ -1586,6 +1977,26 @@ struct Stats {
     minmax: Option<TypedMinMax>, // 432 bytes - largest field, accessed less frequently
 }
 
+/// Converts a timestamp in milliseconds to RFC3339 format.
+///
+/// This function converts a Unix timestamp (in milliseconds) to a human-readable
+/// RFC3339 formatted string. It handles both date and datetime types, returning
+/// only the date component for date types.
+///
+/// # Arguments
+///
+/// * `timestamp` - Unix timestamp in milliseconds
+/// * `typ` - The field type (TDate or TDateTime)
+///
+/// # Returns
+///
+/// A string in RFC3339 format (e.g., "2023-01-15T10:30:00Z" or "2023-01-15")
+///
+/// # Behavior
+///
+/// * **TDate**: Returns only the date component (YYYY-MM-DD)
+/// * **TDateTime**: Returns full RFC3339 format with time and timezone
+/// * **Invalid Timestamps**: Returns default RFC3339 format for invalid timestamps
 #[inline]
 fn timestamp_ms_to_rfc3339(timestamp: i64, typ: FieldType) -> String {
     let date_val = chrono::DateTime::from_timestamp_millis(timestamp)
@@ -1601,6 +2012,34 @@ fn timestamp_ms_to_rfc3339(timestamp: i64, typ: FieldType) -> String {
 }
 
 impl Stats {
+    /// Creates a new `Stats` object with the specified configuration.
+    ///
+    /// This function initializes a `Stats` object with all fields set to their default
+    /// values and optional components created based on the `WhichStats` configuration.
+    /// The object is optimized for performance with cache-line aligned fields.
+    ///
+    /// # Arguments
+    ///
+    /// * `which` - Configuration specifying which statistics to compute
+    ///
+    /// # Returns
+    ///
+    /// A new `Stats` object ready for statistics computation
+    ///
+    /// # Initialization Details
+    ///
+    /// * **Default Values**: All basic fields are initialized to sensible defaults
+    /// * **Optional Components**: Creates `TypedSum`, `TypedMinMax`, `OnlineStats`, etc. based on
+    ///   configuration
+    /// * **Memory Pre-allocation**: Pre-allocates memory for unsorted statistics based on record
+    ///   count
+    /// * **Cache Optimization**: Fields are organized for optimal cache line usage
+    ///
+    /// # Performance
+    ///
+    /// * **Efficient Allocation**: Only allocates memory for enabled statistics
+    /// * **Cache-Friendly**: Field layout optimized for CPU cache lines
+    /// * **Pre-allocation**: Uses record count to pre-allocate appropriate memory sizes
     fn new(which: WhichStats) -> Stats {
         let (mut sum, mut minmax, mut online, mut online_len, mut modes, mut unsorted_stats) =
             (None, None, None, None, None, None);
@@ -1642,6 +2081,49 @@ impl Stats {
         }
     }
 
+    /// Adds a sample value to the statistics computation.
+    ///
+    /// This is the core method for accumulating statistics. It processes a single
+    /// field value, updates type inference, and accumulates all relevant statistics
+    /// based on the current configuration. This method is called for every field
+    /// in every record during CSV processing.
+    ///
+    /// # Arguments
+    ///
+    /// * `sample` - The field value as bytes to process
+    /// * `infer_dates` - Whether to attempt date inference for this field
+    /// * `infer_boolean` - Whether to attempt boolean inference for this field
+    /// * `prefer_dmy` - Whether to prefer day/month/year date format over month/day/year
+    ///
+    /// # Process
+    ///
+    /// 1. **Type Inference**: Updates the field type based on the sample
+    /// 2. **Early Return**: Skips computation if only type inference is needed
+    /// 3. **Statistics Accumulation**: Updates all enabled statistics
+    /// 4. **Performance Optimization**: Uses unsafe code for hot path operations
+    ///
+    /// # Statistics Updated
+    ///
+    /// * **Type Information**: Field type, ASCII flag, max precision
+    /// * **Counters**: Null count, string length sum
+    /// * **Sum Statistics**: Numeric sums for different types
+    /// * **Min/Max**: Range and extreme value tracking
+    /// * **Online Statistics**: Mean, variance, standard deviation
+    /// * **Mode Statistics**: Mode and cardinality tracking
+    /// * **Unsorted Statistics**: Data for median, quartiles, percentiles
+    ///
+    /// # Performance
+    ///
+    /// * **Always Inline**: Marked as `#[inline(always)]` for maximum performance
+    /// * **Hot Path Optimization**: Critical path is highly optimized
+    /// * **Unsafe Operations**: Uses unsafe code for bounds checking avoidance
+    /// * **Conditional Computation**: Only computes enabled statistics
+    ///
+    /// # Safety
+    ///
+    /// * Uses unsafe code for performance-critical operations
+    /// * Assumes valid UTF-8 input for string operations
+    /// * Bounds checking is avoided where safe
     #[allow(clippy::inline_always)]
     #[inline(always)]
     fn add(&mut self, sample: &[u8], infer_dates: bool, infer_boolean: bool, prefer_dmy: bool) {
@@ -1773,6 +2255,58 @@ impl Stats {
         }
     }
 
+    /// Converts the collected statistics into a CSV record for output.
+    ///
+    /// This function formats all the computed statistics for a single column into a
+    /// `csv::StringRecord` that can be written to the output CSV file. The function
+    /// handles different data types (numeric, string, date, boolean) and applies
+    /// appropriate formatting based on the configuration flags.
+    ///
+    /// # Arguments
+    ///
+    /// * `round_places` - Number of decimal places to round numeric values to
+    /// * `infer_boolean` - Whether to attempt boolean type inference for columns with cardinality 2
+    /// * `visualize_ws` - Whether to visualize whitespace characters in string outputs
+    /// * `dataset_stats` - Whether to include dataset-level statistics (adds empty field for
+    ///   qsv__value)
+    ///
+    /// # Returns
+    ///
+    /// A `csv::StringRecord` containing all the computed statistics for this column,
+    /// formatted according to the specified parameters.
+    ///
+    /// # Statistics Included
+    ///
+    /// The function includes the following statistics (when enabled via `which` flags):
+    ///
+    /// * **Type information**: Data type, ASCII flag for strings
+    /// * **Basic statistics**: Sum, min, max, range, sort order
+    /// * **String statistics**: Length min/max/sum/avg/stddev/variance/coefficient of variation
+    /// * **Numeric statistics**: Mean, standard error, geometric mean, harmonic mean, stddev,
+    ///   variance, CV
+    /// * **Distribution**: Null count, max precision, sparsity
+    /// * **Robust statistics**: Median, MAD (Median Absolute Deviation)
+    /// * **Quartiles**: Q1, Q2 (median), Q3, IQR, inner/outer fences, skewness
+    /// * **Mode statistics**: Mode(s), mode count, mode occurrences, antimode(s), antimode count,
+    ///   antimode occurrences
+    /// * **Cardinality**: Unique value count, uniqueness ratio
+    /// * **Percentiles**: Custom percentile values (when specified)
+    ///
+    /// # Type-Specific Behavior
+    ///
+    /// * **Numeric types**: All numeric statistics are computed and formatted with rounding
+    /// * **String types**: Only string-relevant statistics (length, cardinality, mode) are computed
+    /// * **Date/DateTime types**: Statistics are converted to RFC3339 format or days for
+    ///   readability
+    /// * **Boolean inference**: When enabled, columns with cardinality 2 are checked against
+    ///   boolean patterns
+    /// * **Null types**: Only basic type information is included
+    ///
+    /// # Performance Notes
+    ///
+    /// The function is optimized for performance with pre-allocated vectors and efficient
+    /// string formatting. It reuses computed values (like median from quartiles) to avoid
+    /// redundant calculations.
     #[allow(clippy::wrong_self_convention)]
     pub fn to_record(
         &mut self,
@@ -2420,7 +2954,7 @@ impl FieldType {
             return (FieldType::TString, 0, 0.0);
         }
 
-        // an int can be a float, but once we've seen a float, we can't go back to an in
+        // an int can be a float, but once we've seen a float, we can't go back to an int
         if current_type != FieldType::TFloat {
             if let Ok(samp_int) = atoi_simd::parse::<i64>(sample) {
                 // Check for integer, with leading zero check for strings like zip codes
