@@ -80,9 +80,9 @@ Example queries:
   $ qsv sqlp data.csv data2.csv "select data.c2 <=> data2.c2 from data join data2 on data.c1 = data2.c1"
 
   # support ^@ ("starts with"), and ~~ (like) ,~~* (ilike),!~~ (not like),!~~* (not ilike) operators
-  $  qsv sqlp data.csv "select * from data WHERE col1 ^@ 'foo'"
-  $  qsv sqlp data.csv "select c1 ^@ 'a' AS c1_starts_with_a from data"
-  $  qsv sqlp data.csv "select c1 ~~* '%B' AS c1_ends_with_b_caseinsensitive from data"
+  $ qsv sqlp data.csv "select * from data WHERE col1 ^@ 'foo'"
+  $ qsv sqlp data.csv "select c1 ^@ 'a' AS c1_starts_with_a from data"
+  $ qsv sqlp data.csv "select c1 ~~* '%B' AS c1_ends_with_b_caseinsensitive from data"
 
   # support SELECT * ILIKE wildcard syntax
   # select all columns from customers where the column contains 'a' followed by an 'e'
