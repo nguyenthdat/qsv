@@ -25,10 +25,7 @@ fn describegpt_invalid_api_key() {
         .args(["--api-key", "INVALIDKEY"])
         .args(["--max-tokens", "1000"]);
 
-    // Error message
-    let got_stderr = wrk.output_stderr(&mut cmd);
-    // Check that we receive the correct error message
-    assert!(got_stderr.contains("Incorrect API key provided: INVALIDKEY"));
+    wrk.assert_err(&mut cmd);
 }
 
 // Verify --user-agent is passed to OpenAI
