@@ -90,7 +90,7 @@ Example queries:
   # if customers.csv has columns LastName, FirstName, Address, City, State, Zip
   # this query will return all columns for all rows except the columns that don't
   # contain 'a' followed by an 'e' - i.e. except City and Zip
-  $  qsv sqlp customers.csv "SELECT * ILIKE '%a%e%' FROM customers ORDER BY LastName, FirstName"
+  $ qsv sqlp customers.csv "SELECT * ILIKE '%a%e%' FROM customers ORDER BY LastName, FirstName"
 
   # regex operators: "~" (contains pattern, case-sensitive); "~*" (contains pattern, case-insensitive)
   #   "!~" (does not contain pattern, case-sensitive); "!~*" (does not contain pattern, case-insensitive)
