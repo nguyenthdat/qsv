@@ -42,12 +42,12 @@ Set the --disk-cache-dir option and the environment variables QSV_DISKCACHE_TTL_
 QSV_DISKCACHE_TTL_REFRESH to change default DiskCache settings.
 
 Redis Cache:
-Another persistent, inter-session cache option is a Redis cache enabled with the --redis flag. 
+Another persistent, inter-session cache option is a Redis cache enabled with the --redis flag.
 By default, it will connect to a local Redis instance at redis://127.0.0.1:6379/2,
 with a cache expiry Time-to-Live (TTL) of 2,419,200 seconds (28 days),
 and cache hits NOT refreshing the TTL of cached values.
 
-Set the environment variables QSV_FP_REDIS_CONNSTR, QSV_REDIS_TTL_SECONDS and 
+Set the environment variables QSV_FP_REDIS_CONNSTR, QSV_REDIS_TTL_SECONDS and
 QSV_REDIS_TTL_REFRESH to change default Redis settings.
 
 Note that the default values are the same as the fetch command, except fetchpost creates the
@@ -91,14 +91,14 @@ data.csv
 
 Given the data.csv above, fetch the JSON response.
 
-  $ qsv fetchpost URL zipcode,country data.csv 
+  $ qsv fetchpost URL zipcode,country data.csv
 
 Note the output will be a JSONL file - with a minified JSON response per line, not a CSV file.
 
 Now, if we want to generate a CSV file with a parsed response - getting only the "form" property,
 we use the new-column and jaq options.
 
-$ qsv fetchpost URL zipcode,country --new-column form --jaq '."form"' data.csv > data_with_response.csv
+  $ qsv fetchpost URL zipcode,country --new-column form --jaq '."form"' data.csv > data_with_response.csv
 
 data_with_response.csv
   URL,zipcode,country,form
@@ -124,7 +124,7 @@ The --http-header option allows you to append arbitrary key value pairs (a valid
 separated by a colon) to the HTTP header (to authenticate against an API, pass custom header fields, etc.).
 Note that you can pass as many key-value pairs by using --http-header option repeatedly. For example:
 
-$ qsv fetchpost https://httpbin.org/post col1-col3 data.csv -H "X-Api-Key:TEST_KEY" -H "X-Api-Secret:ABC123XYZ"
+  $ qsv fetchpost https://httpbin.org/post col1-col3 data.csv -H "X-Api-Key:TEST_KEY" -H "X-Api-Secret:ABC123XYZ"
 
 For more extensive examples, see https://github.com/dathere/qsv/blob/master/tests/test_fetch.rs.
 
@@ -136,7 +136,7 @@ Fetchpost arguments:
     <url-column>               Name of the column with the URL.
                                Otherwise, if the argument starts with `http`, the URL to use.
     <column-list>              Comma-delimited list of columns to insert into the HTTP Post body.
-                               Uses `qsv select` syntax - i.e. Columns can be referenced by index or 
+                               Uses `qsv select` syntax - i.e. Columns can be referenced by index or
                                by name if there is a header row (duplicate column names can be disambiguated
                                with more indexing). Column ranges can also be specified. Finally, columns
                                can be selected using regular expressions.
@@ -147,7 +147,7 @@ Fetchpost options:
                                payload in the HTTP Post body. You can also use --payload-tpl to render
                                a non-JSON payload, but --content-type will have to be set manually.
                                If a rendered JSON is invalid, `fetchpost` will abort and return an error.
-    --content-type <arg>       Overrides automatic content types for `<column-list>` 
+    --content-type <arg>       Overrides automatic content types for `<column-list>`
                                (`application/x-www-form-urlencoded`) and `--payload-tpl` (`application/json`).
                                Typical alternative values are `multipart/form-data` and `text/plain`.
                                It is the responsibility of the user to format the payload accordingly
@@ -178,7 +178,7 @@ Fetchpost options:
     --timeout <seconds>        Timeout for each URL request.
                                [default: 30 ]
     -H, --http-header <k:v>    Append custom header(s) to the HTTP header. Pass multiple key-value pairs
-                               by adding this option multiple times, once for each pair. The key and value 
+                               by adding this option multiple times, once for each pair. The key and value
                                should be separated by a colon.
     --compress                 Compress the HTTP request body using gzip. Note that most servers do not support
                                compressed request bodies unless they are specifically configured to do so. This
@@ -197,9 +197,9 @@ Fetchpost options:
                                Try to follow the syntax here -
                                https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/User-Agent
     --report <d|s>             Creates a report of the fetchpost job. The report has the same name as the
-                               input file with the ".fetchpost-report" suffix. 
+                               input file with the ".fetchpost-report" suffix.
                                There are two kinds of report - d for "detailed" & s for "short". The detailed
-                               report has the same columns as the input CSV with seven additional columns - 
+                               report has the same columns as the input CSV with seven additional columns -
                                qsv_fetchp_url, qsv_fetchp_form, qsv_fetchp_status, qsv_fetchp_cache_hit,
                                qsv_fetchp_retries, qsv_fetchp_elapsed_ms & qsv_fetchp_response.
                                The short report only has the seven columns without the "qsv_fetchp_" prefix.
@@ -225,9 +225,9 @@ Fetchpost options:
                                [default: ~/.qsv/cache/fetchpost]
 
     --redis-cache              Use Redis to cache responses. It connects to "redis://127.0.0.1:6379/2"
-                               with a connection pool size of 20, with a TTL of 28 days, and a cache hit 
+                               with a connection pool size of 20, with a TTL of 28 days, and a cache hit
                                NOT renewing an entry's TTL.
-                               Adjust the QSV_FP_REDIS_CONNSTR, QSV_REDIS_MAX_POOL_SIZE, QSV_REDIS_TTL_SECONDS & 
+                               Adjust the QSV_FP_REDIS_CONNSTR, QSV_REDIS_MAX_POOL_SIZE, QSV_REDIS_TTL_SECONDS &
                                QSV_REDIS_TTL_REFRESH respectively to change Redis settings.
 
     --cache-error              Cache error responses even if a request fails. If an identical URL is requested,

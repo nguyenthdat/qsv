@@ -33,39 +33,39 @@ slice options:
     --invert               slice all records EXCEPT those in the specified range.
 
 Examples:
-    # Slice from the 3rd record to the end
-    qsv slice --start 2 data.csv
+  # Slice from the 3rd record to the end
+  $ qsv slice --start 2 data.csv
 
-    # Slice the first three records
-    qsv slice --start 0 --end 2 data.csv
-    qsv slice --len 3 data.csv
-    qsv slice -l 3 data.csv
+  # Slice the first three records
+  $ qsv slice --start 0 --end 2 data.csv
+  $ qsv slice --len 3 data.csv
+  $ qsv slice -l 3 data.csv
 
-    # Slice the last record
-    qsv slice -s -1 data.csv
+  # Slice the last record
+  $ qsv slice -s -1 data.csv
 
-    # Slice the last 10 records
-    qsv slice -s -10 data.csv
+  # Slice the last 10 records
+  $ qsv slice -s -10 data.csv
 
-    # Get everything except the last 10 records
-    qsv slice -s -10 --invert data.csv
+  # Get everything except the last 10 records
+  $ qsv slice -s -10 --invert data.csv
 
-    # Slice the first three records of the last 10 records
-    qsv slice -s -10 -l 3 data.csv
+  # Slice the first three records of the last 10 records
+  $ qsv slice -s -10 -l 3 data.csv
 
-    # Slice the second record
-    qsv slice --index 1 data.csv
-    qsv slice -i 1 data.csv
+  # Slice the second record
+  $ qsv slice --index 1 data.csv
+  $ qsv slice -i 1 data.csv
 
-    # Slice from the second record, two records
-    qsv slice -s 1 --len 2 data.csv
+  # Slice from the second record, two records
+  $ qsv slice -s 1 --len 2 data.csv
 
-    # Slice records 10 to 20 as JSON   
-    qsv slice -s 9 -e 19 --json data.csv
-    qsv slice -s 9 -l 10 --json data.csv
+  # Slice records 10 to 20 as JSON
+  $ qsv slice -s 9 -e 19 --json data.csv
+  $ qsv slice -s 9 -l 10 --json data.csv
 
-    # Slice records 1 to 9 and 21 to the end as JSON
-    qsv slice -s 9 -l 10 --invert --json data.csv
+  # Slice records 1 to 9 and 21 to the end as JSON
+  $ qsv slice -s 9 -l 10 --invert --json data.csv
 
 Common options:
     -h, --help             Display this message

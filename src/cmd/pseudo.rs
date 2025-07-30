@@ -14,7 +14,7 @@ EXAMPLE:
 Pseudonymise the value of the "Name" column by replacing it with an
 incremental identifier starting at 1000 and incrementing by 5:
 
-    $ qsv pseudo Name --start 1000 --increment 5 --fmtstr "ID-{}" data.csv
+  $ qsv pseudo Name --start 1000 --increment 5 --fmtstr "ID-{}" data.csv
 
 If run on the following CSV data:
 

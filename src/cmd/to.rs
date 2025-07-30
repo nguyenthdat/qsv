@@ -69,7 +69,7 @@ Load all files in dir1 to sqlite database `test.db`
 
 Load files listed in the 'mydata.infile-list' to sqlite database `test.db`
 
-    $ qsv to sqlite test.db mydata.infile-list
+  $ qsv to sqlite test.db mydata.infile-list
 
 Drop tables if they exist before loading.
 
@@ -103,11 +103,11 @@ filename without the extension. Note the `output.xlsx` will be overwritten if it
 
 Load all files in dir1 into xlsx file.
 
-    $ qsv to xlsx output.xlsx dir1
+  $ qsv to xlsx output.xlsx dir1
 
 Load files listed in the 'ourdata.infile-list' into xlsx file.
 
-    $ qsv to xlsx output.xlsx ourdata.infile-list
+  $ qsv to xlsx output.xlsx ourdata.infile-list
 
 ODS
 ===
@@ -123,11 +123,11 @@ filename without the extension. Note the `output.ods` will be overwritten if it 
 
 Load all files in dir1 into ODS file.
 
-    $ qsv to ods output.ods dir1
+  $ qsv to ods output.ods dir1
 
 Load files listed in the 'ourdata.infile-list' into ODS file.
 
-    $ qsv to ods output.ods ourdata.infile-list
+  $ qsv to ods output.ods ourdata.infile-list
 
 PARQUET
 =======
@@ -142,20 +142,20 @@ Examples:
 
 Convert `file1.csv` and `file2.csv' into `mydir/file1.parquet` and `mydir/file2.parquet` files.
 
-    $ qsv to parquet mydir file1.csv file2.csv
+  $ qsv to parquet mydir file1.csv file2.csv
 
 Convert from stdin.
 
-    $ qsv to parquet --pipe mydir -
+  $ qsv to parquet --pipe mydir -
 
 Convert all files in dir1 into parquet files in myparquetdir.
 
-    $ qsv to parquet myparquetdir dir1
+  $ qsv to parquet myparquetdir dir1
 
 Convert files listed in the 'data.infile-list' into parquet files in myparquetdir.
-    
-        $ qsv to parquet myparquetdir data.infile-list
-        
+
+  $ qsv to parquet myparquetdir data.infile-list
+
 DATA PACKAGE
 ============
 Generate a datapackage, which contains stats and information about what is in the CSV files.
@@ -176,7 +176,7 @@ Generate a `datapackage.json` file from all the files in dir1
 
 Generate a `datapackage.json` file from all the files listed in the 'data.infile-list'
 
-    $ qsv to datapackage datapackage.json data.infile-list
+  $ qsv to datapackage datapackage.json data.infile-list
 
 For all other conversions you can output the datapackage created by specifying `--print-package`.
 
@@ -208,7 +208,7 @@ To options:
     -A --all-strings       Convert all fields to strings.
     -j, --jobs <arg>       The number of jobs to run in parallel.
                            When not set, the number of jobs is set to the number of CPUs detected.
-                           
+
 Common options:
     -h, --help             Display this message
     -d, --delimiter <arg>  The field delimiter for reading CSV data.

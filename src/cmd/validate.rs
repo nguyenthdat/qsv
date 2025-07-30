@@ -22,13 +22,13 @@ It uses the JSON Schema Validation Specification (draft 2020-12) to validate the
 It validates the structure of the file, as well as the data types and domain/range of the fields.
 See https://json-schema.org/draft/2020-12/json-schema-validation.html
 
-qsv supports a custom format - `currency`. This format will only accept a valid currency, defined as: 
+qsv supports a custom format - `currency`. This format will only accept a valid currency, defined as:
 
  1. ISO Currency Symbol (optional): This is the ISO 4217 three-character code or currency symbol
     (e.g. USD, EUR, JPY, $, €, ¥, etc.)
  2. Amount: This is the numerical value of the currency. More than 2 decimal places are allowed.
  3. Formats: Valid currency formats include:
-      Standard: $1,000.00 or USD1000.00  
+      Standard: $1,000.00 or USD1000.00
       Negative amounts: ($100.00) or -$100.00
       Different styles: 1.000,00 (used in some countries for euros)
 
@@ -58,7 +58,7 @@ The "dynamicEnum" value has the form:
   // on other qsv binary variants, dynamicEnum has expanded caching functionality
   dynamicEnum = "[cache_name;cache_age]|URI|colname" where cache_name and cache_age are optional
 
-    // use data.csv from current working directory; cache it as data with a default 
+    // use data.csv from current working directory; cache it as data with a default
     // cache age of 3600 seconds i.e. the cached data.csv expires after 1 hour
     dynamicEnum = "data.csv"
 
@@ -105,7 +105,7 @@ which columns had duplicate combinations (named columns first, then indexed colu
 records will be written to the .invalid file, while valid records will be written to the .valid file.
 
 `uniqueCombinedWith` complements the standard `uniqueItems` keyword, which can only validate
-uniqueness across a single column. 
+uniqueness across a single column.
 
 -------------------------------------------------------
 
@@ -115,14 +115,14 @@ files that have the same structure.
 
 Be sure to select a "training" CSV file that is representative of the data you want to validate
 when creating a schema. The data types, domain/range and regular expressions inferred from the
-reference CSV file should be appropriate for the data you want to validate. 
+reference CSV file should be appropriate for the data you want to validate.
 
 Typically, after creating a schema, you should edit it to fine-tune each field's inferred
 validation rules.
 
 For example, if we created a JSON schema file called "reference.schema.json" using the `schema` command.
 And want to validate "mydata.csv" which we know has validation errors, the output files from running
-`qsv validate mydata.csv reference.schema.json` are: 
+`qsv validate mydata.csv reference.schema.json` are:
 
   * mydata.csv.valid
   * mydata.csv.invalid
@@ -212,7 +212,7 @@ Validate options:
     --dfa-size-limit <mb>      Set the approximate capacity, in megabytes, of the cache of transitions
                                used by the engine's lazy Discrete Finite Automata.
                                [default: 10]
-    
+
     --timeout <seconds>        Timeout for downloading json-schemas on URLs and for
                                'dynamicEnum' lookups on URLs. [default: 30]
     --cache-dir <dir>          The directory to use for caching downloaded dynamicEnum resources.

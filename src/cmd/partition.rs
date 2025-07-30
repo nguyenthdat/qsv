@@ -11,7 +11,7 @@ EXAMPLE:
 
 Partition nyc311.csv file into separate files based on the value of the
 "Borough" column in the current directory:
-    $ qsv partition Borough . --filename "nyc311-{}.csv" nyc311.csv
+  $ qsv partition Borough . --filename "nyc311-{}.csv" nyc311.csv
 
 will create the following files, each containing the data for each borough:
     nyc311-Bronx.csv

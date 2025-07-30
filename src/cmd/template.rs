@@ -6,14 +6,14 @@ This command processes each row of the CSV file, making the column values availa
 Each row is rendered using the template. Column headers become variable names, with non-alphanumeric
 characters converted to underscore (_).
 
-Templates use Jinja2 syntax (https://jinja.palletsprojects.com/en/stable/templates/) 
+Templates use Jinja2 syntax (https://jinja.palletsprojects.com/en/stable/templates/)
 and can access an extensive library of built-in filters/functions, with additional ones
 from minijinja_contrib https://docs.rs/minijinja-contrib/latest/minijinja_contrib/.
 Additional qsv custom filters are also documented at the end of this file.
 
 If the <outdir> argument is specified, it will create a file for each row in <outdir>, with
 the filename rendered using --outfilename option.
-Otherwise, ALL the rendered rows will be sent to STDOUT or the designated --output. 
+Otherwise, ALL the rendered rows will be sent to STDOUT or the designated --output.
 
 Example:
 data.csv:
@@ -49,7 +49,7 @@ template.tpl
     {% endif %}
     Status: {% if active|to_bool %}Active{% else %}Inactive{% endif %}
 
-qsv template --template-file template.tpl data.csv
+  $ qsv template --template-file template.tpl data.csv
 
 For more examples, see https://github.com/dathere/qsv/blob/master/tests/test_template.rs.
 For a relatively complex MiniJinja template, see https://github.com/dathere/qsv/blob/master/scripts/template.tpl
@@ -78,7 +78,7 @@ template options:
                                 The JSON properties can be accessed in templates using the "qsv_g"
                                 namespace (e.g. {{qsv_g.school_name}}, {{qsv_g.year}}).
                                 This allows sharing common values across all template renders.
-    --outfilename <str>         MiniJinja template string to use to create the filename of the output 
+    --outfilename <str>         MiniJinja template string to use to create the filename of the output
                                 files to write to <outdir>. If set to just QSV_ROWNO, the filestem
                                 is set to the current rowno of the record, padded with leading
                                 zeroes, with the ".txt" extension (e.g. 001.txt, 002.txt, etc.)

@@ -20,7 +20,7 @@ applied in order:
 Operations support multi-column transformations. Just make sure the
 number of transformed columns with the --rename option is the same. e.g.:
 
-$ qsv applydp operations trim,upper col1,col2,col3 -r newcol1,newcol2,newcol3 file.csv
+  $ qsv applydp operations trim,upper col1,col2,col3 -r newcol1,newcol2,newcol3 file.csv
 
 It has 18 supported operations:
 
@@ -57,14 +57,14 @@ Trim, then transform to uppercase the surname field and rename the column upperc
 
   $ qsv applydp operations trim,upper surname -r uppercase_clean_surname file.csv
 
-Trim, then transform to uppercase the surname field and 
+Trim, then transform to uppercase the surname field and
 save it to a new column named uppercase_clean_surname.
 
   $ qsv applydp operations trim,upper surname -c uppercase_clean_surname file.csv
 
-Trim, squeeze, then transform to uppercase in place ALL fields that end with "_name" 
-  
-    $ qsv applydp operations trim,squeeze,upper \_name$\ file.csv
+Trim, squeeze, then transform to uppercase in place ALL fields that end with "_name"
+
+  $ qsv applydp operations trim,squeeze,upper \_name$\ file.csv
 
 Trim, then transform to uppercase the firstname and surname fields and
 rename the columns ufirstname and usurname.
@@ -90,24 +90,24 @@ Non-empty cells are not modified. See the `fill` command for more complex empty 
 Examples:
 Replace empty cells in file.csv Measurement column with 'None'.
 
-$ qsv applydp emptyreplace Measurement --replacement None file.csv
+  $ qsv applydp emptyreplace Measurement --replacement None file.csv
 
 Replace empty cells in file.csv Measurement column with 'Unknown Measurement'.
 
-$ qsv applydp emptyreplace Measurement --replacement 'Unknown Measurement' file.csv
+  $ qsv applydp emptyreplace Measurement --replacement 'Unknown Measurement' file.csv
 
 Replace empty cells in file.csv M1,M2 and M3 columns with 'None'.
 
-$ qsv applydp emptyreplace M1,M2,M3 --replacement None file.csv
+  $ qsv applydp emptyreplace M1,M2,M3 --replacement None file.csv
 
 Replace all empty cells in file.csv for columns that start with 'Measurement' with 'None'.
 
-$ qsv applydp emptyreplace '/^Measurement/' --replacement None file.csv
+  $ qsv applydp emptyreplace '/^Measurement/' --replacement None file.csv
 
 Replace all empty cells in file.csv for columns that start with 'observation'
 case insensitive with 'None'.
 
-$ qsv applydp emptyreplace --replacement None '/(?i)^observation/' file.csv
+  $ qsv applydp emptyreplace --replacement None '/(?i)^observation/' file.csv
 
 DYNFMT
 Dynamically constructs a new column from other columns using the <--formatstr> template.
