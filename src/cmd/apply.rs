@@ -17,7 +17,7 @@ applied in order:
 
   trim => Trim the cell
   trim,upper => Trim the cell, then transform to uppercase
-  lower,simdln => Lowercase the cell, then compute the normalized 
+  lower,simdln => Lowercase the cell, then compute the normalized
       Damerau-Levenshtein similarity to --comparand
 
 Operations support multi-column transformations. Just make sure the
@@ -26,7 +26,7 @@ number of transformed columns with the --rename option is the same. e.g.:
 # trim and fold to uppercase the col1,col2 and col3 columns and rename them
 # to newcol1,newcol2 and newcol3
 
- $ qsv apply operations trim,upper col1,col2,col3 -r newcol1,newcol2,newcol3 file.csv
+  $ qsv apply operations trim,upper col1,col2,col3 -r newcol1,newcol2,newcol3 file.csv
 
 It has 40 supported operations:
 
@@ -69,7 +69,7 @@ It has 40 supported operations:
       indiancomma (place a comma every two digits, except the last three digits).
       The decimal separator can be specified with --replacement (default: '.')
   * currencytonum: Gets the numeric value of a currency. Supports currency symbols
-      (e.g. $,¥,£,€,֏,₱,₽,₪,₩,ƒ,฿,₫) and strings (e.g. USD, EUR, RMB, JPY, etc.). 
+      (e.g. $,¥,£,€,֏,₱,₽,₪,₩,ƒ,฿,₫) and strings (e.g. USD, EUR, RMB, JPY, etc.).
       Recognizes point, comma and space separators. Is "permissive" by default, meaning it
       will allow no or non-ISO currency symbols. To enforce strict parsing, which will require
       a valid ISO currency symbol, set the --formatstr to "strict".
@@ -153,24 +153,24 @@ Non-empty cells are not modified. See the `fill` command for more complex empty 
 Examples:
 Replace empty cells in file.csv Measurement column with 'None'.
 
-$ qsv apply emptyreplace Measurement --replacement None file.csv
+  $ qsv apply emptyreplace Measurement --replacement None file.csv
 
 Replace empty cells in file.csv Measurement column with 'Unknown Measurement'.
 
-$ qsv apply emptyreplace Measurement --replacement 'Unknown Measurement' file.csv
+  $ qsv apply emptyreplace Measurement --replacement 'Unknown Measurement' file.csv
 
 Replace empty cells in file.csv M1,M2 and M3 columns with 'None'.
 
-$ qsv apply emptyreplace M1,M2,M3 --replacement None file.csv
+  $ qsv apply emptyreplace M1,M2,M3 --replacement None file.csv
 
 Replace all empty cells in file.csv for columns that start with 'Measurement' with 'None'.
 
-$ qsv apply emptyreplace '/^Measurement/' --replacement None file.csv
+  $ qsv apply emptyreplace '/^Measurement/' --replacement None file.csv
 
 Replace all empty cells in file.csv for columns that start with 'observation'
 case insensitive with 'None'.
 
-$ qsv apply emptyreplace --replacement None '/(?i)^observation/' file.csv
+  $ qsv apply emptyreplace --replacement None '/(?i)^observation/' file.csv
 
 DYNFMT
 Dynamically constructs a new column from other columns using the <--formatstr> template.
@@ -199,32 +199,32 @@ For a complete list of supported units, constants, operators and functions, see 
 
 Examples:
 Do simple arithmetic:
-$ qsv apply calcconv --formatstr '{col1} + {col2} * {col3}' --new-column result file.csv
+  $ qsv apply calcconv --formatstr '{col1} + {col2} * {col3}' --new-column result file.csv
 
 With support for operators like % and ^:
-$ qsv apply calcconv --formatstr '{col1} % 3' --new-column remainder file.csv
+  $ qsv apply calcconv --formatstr '{col1} % 3' --new-column remainder file.csv
 
 Convert from one unit to another:
-$ qsv apply calcconv --formatstr '{col1}mb in gigabytes' -c gb file.csv
-$ qsv apply calcconv --formatstr '{col1} Fahrenheit in Celsius" -c metric_temperature file.csv
+  $ qsv apply calcconv --formatstr '{col1}mb in gigabytes' -c gb file.csv
+  $ qsv apply calcconv --formatstr '{col1} Fahrenheit in Celsius" -c metric_temperature file.csv
 
 Mix units and conversions are automatically done for you:
-$ qsv apply calcconv --formatstr '{col1}km + {col2}mi in meters' -c meters file.csv
+  $ qsv apply calcconv --formatstr '{col1}km + {col2}mi in meters' -c meters file.csv
 
 You can append the inferred unit at the end of the result by ending the expression with '<UNIT>':
-$ qsv apply calcconv --formatstr '({col1} + {col2})km to light years <UNIT>' -c light_years file.csv
+  $ qsv apply calcconv --formatstr '({col1} + {col2})km to light years <UNIT>' -c light_years file.csv
 
 You can even do complex temporal unit conversions:
-$ qsv apply calcconv --formatstr '{col1}m/s + {col2}mi/h in kilometers per h' -c kms_per_h file.csv
+  $ qsv apply calcconv --formatstr '{col1}m/s + {col2}mi/h in kilometers per h' -c kms_per_h file.csv
 
 Use math functions - see https://docs.rs/cpc/latest/cpc/enum.FunctionIdentifier.html for list of functions:
-$ qsv apply calcconv --formatstr 'round(sqrt{col1}^4)! liters' -c liters file.csv
+  $ qsv apply calcconv --formatstr 'round(sqrt{col1}^4)! liters' -c liters file.csv
 
 Use percentages:
-$ qsv apply calcconv --formatstr '10% of abs(sin(pi)) horsepower to watts' -c watts file.csv
+  $ qsv apply calcconv --formatstr '10% of abs(sin(pi)) horsepower to watts' -c watts file.csv
 
 And use very large numbers:
-$ qsv apply calcconv --formatstr '{col1} Billion Trillion * {col2} quadrillion vigintillion' -c num_atoms file.csv 
+  $ qsv apply calcconv --formatstr '{col1} Billion Trillion * {col2} quadrillion vigintillion' -c num_atoms file.csv
 
 For more extensive examples, see https://github.com/dathere/qsv/blob/master/tests/test_apply.rs.
 
@@ -257,7 +257,7 @@ apply arguments:
     CALCONV subcommand:
         --formatstr=<string>        The calculation/conversion expression to use.
         --new-column=<name>         Put the calculated/converted values in a new column.
-        
+
     <input>                     The input file to read from. If not specified, reads from stdin.
 
 apply options:
@@ -283,7 +283,7 @@ apply options:
 
                                   thousands
                                     The thousands separator policy to use. The available policies are:
-                                    comma, dot, space, underscore, hexfour (place a space every four 
+                                    comma, dot, space, underscore, hexfour (place a space every four
                                     hex digits) and indiancomma (place a comma every two digits,
                                     except the last three digits). (default: comma)
 

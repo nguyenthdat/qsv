@@ -5,71 +5,71 @@ The first non-empty row of a sheet is assumed to be the header row.
 Examples:
 
 Export the first sheet of an Excel file to a CSV file:
-    qsv excel input.xlsx > output.csv
-    qsv excel input.xlsx --output output.csv
+  $ qsv excel input.xlsx > output.csv
+  $ qsv excel input.xlsx --output output.csv
 
 Export the first sheet of an ODS file to a CSV file:
-    qsv excel input.ods > output.csv
-    qsv excel input.ods -o output.csv
+  $ qsv excel input.ods > output.csv
+  $ qsv excel input.ods -o output.csv
 
 Export the first sheet of an Excel file to a CSV file with different delimiters:
-    # semicolon
-    qsv excel input.xlsx -d ";" > output.csv
-    # tab
-    qsv excel input.xlsx -d "\t" > output.tsv
+  # semicolon
+  $ qsv excel input.xlsx -d ";" > output.csv
+  # tab
+  $ qsv excel input.xlsx -d "\t" > output.tsv
 
 Export a sheet by name (case-insensitive):
-    qsv excel --sheet "Sheet 3" input.xlsx
+  $ qsv excel --sheet "Sheet 3" input.xlsx
 
 Export a sheet by index:
-    # this exports the 3nd sheet (0-based index)
-    qsv excel -s 2 input.xlsx
+  # this exports the 3nd sheet (0-based index)
+  $ qsv excel -s 2 input.xlsx
 
 Export the last sheet (negative index)):
-    qsv excel -s -1 input.xlsx
+  $ qsv excel -s -1 input.xlsx
 
 Export the second to last sheet:
-    qsv excel -s -2 input.xls
+  $ qsv excel -s -2 input.xls
 
 Export a table named "Table1" in an XLSX file. Note that --sheet is not required
 as the table definition includes the sheet.
-    qsv excel --table "Table1" input.xlsx
+  $ qsv excel --table "Table1" input.xlsx
 
 Export a range of cells in the first sheet:
-    qsv excel --range C3:T25 input.xlsx
+  $ qsv excel --range C3:T25 input.xlsx
 
 Export a named range in the workbook. Note that --sheet is not required
 as named ranges include the sheet.
-    qsv excel --range MyRange input.xlsx
+  $ qsv excel --range MyRange input.xlsx
 
 Export a range of cells in the second sheet:
-    qsv excel --range C3:T25 -s 1 input.xlsx
+  $ qsv excel --range C3:T25 -s 1 input.xlsx
 
 Export a range of cells in a sheet by name.
 Note the range name must be enclosed in single quotes in certain shells
 as it may contain special characters like ! and $:
-    qsv excel --range 'Sheet2!C3:T25' input.xlsx
-    qsv excel --range 'Sheet2!$C$3:$T$25' input.xlsx
+  $ qsv excel --range 'Sheet2!C3:T25' input.xlsx
+  $ qsv excel --range 'Sheet2!$C$3:$T$25' input.xlsx
 
 Export metadata for all sheets in CSV format:
-    qsv excel --metadata csv input.xlsx
-    qsv excel --metadata c input.xlsx
-    # short CSV mode is much faster, but doesn't contain as much metadata
-    qsv excel --metadata short input.xlsx
-    qsv excel --metadata s input.xlsx
+  $ qsv excel --metadata csv input.xlsx
+  $ qsv excel --metadata c input.xlsx
+  # short CSV mode is much faster, but doesn't contain as much metadata
+  $ qsv excel --metadata short input.xlsx
+  $ qsv excel --metadata s input.xlsx
 
 Export metadata for all sheets in JSON format:
-    qsv excel --metadata json input.xlsx
-    qsv excel --metadata j input.xlsx
-    # pretty-printed JSON - first letter is capital J
-    qsv excel --metadata J input.xlsx
-    # short, minified JSON mode - first letter is capital S
-    qsv excel --metadata Short input.xlsx
-    qsv excel --metadata S input.xlsx
+  $ qsv excel --metadata json input.xlsx
+  $ qsv excel --metadata j input.xlsx
+  # pretty-printed JSON - first letter is capital J
+  $ qsv excel --metadata J input.xlsx
+  # short, minified JSON mode - first letter is capital S
+  $ qsv excel --metadata Short input.xlsx
+  $ qsv excel --metadata S input.xlsx
 
 Prompt for spreadsheets to export and then prompt where to save the CSV:
-    qsv prompt -d ~/Documents -m 'Select a spreadsheet to export to CSV' -F xlsx,xls,ods | \
-     qsv excel - | qsv prompt -m 'Save exported CSV to...' --fd-output
+  $ qsv prompt -d ~/Documents -m 'Select a spreadsheet to export to CSV' -F xlsx,xls,ods | \
+      qsv excel - | qsv prompt -m 'Save exported CSV to...' --fd-output
 
 For more examples, see https://github.com/dathere/qsv/blob/master/tests/test_excel.rs.
 
@@ -83,7 +83,7 @@ Excel argument:
 
 Excel options:
     -s, --sheet <name/index>   Name (case-insensitive) or zero-based index of sheet to export.
-                               Negative indices start from the end (-1 = last sheet). 
+                               Negative indices start from the end (-1 = last sheet).
                                If the sheet cannot be found, qsv will read the first sheet.
                                [default: 0]
     --header-row <row>         The header row. Set if other than the first non-empty row of the sheet.
@@ -100,14 +100,14 @@ Excel options:
                                duplicate_headers_count is a count of duplicate header names.
                                names is a list of defined names in the workbook, with the associated formula.
                                name_count is the number of defined names in the workbook.
-                               tables is a list of tables in the workbook, along with the sheet where 
+                               tables is a list of tables in the workbook, along with the sheet where
                                 the table is found, the columns and the column_count.  (XLSX only)
                                table_count is the number of tables in the workbook.  (XLSX only)
 
                                In CSV(c) mode, the output is in CSV format.
                                In short(s) CSV mode, the output is in CSV format with only the
                                 index, sheet_name, type and visible fields.
-                               
+
                                In JSON(j) mode, the output is minified JSON.
                                In Pretty JSON(J) mode, the output is pretty-printed JSON.
                                In Short(S) JSON mode, the output is minified JSON with only the
@@ -116,7 +116,7 @@ Excel options:
                                 and the number of sheets are also included.
                                If metadata retrieval performance is a concern, use the short modes
                                as they return instantaneously as they don't need to process the sheet data.
-                               
+
                                If this option is used, all other Excel options are ignored.
                                [default: none]
 

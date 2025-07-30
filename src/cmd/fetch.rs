@@ -30,12 +30,12 @@ Set the --disk-cache-dir option and the environment variables QSV_DISKCACHE_TTL_
 QSV_DISKCACHE_TTL_REFRESH to change default DiskCache settings.
 
 Redis Cache:
-Another persistent, inter-session cache option is a Redis cache enabled with the --redis flag. 
+Another persistent, inter-session cache option is a Redis cache enabled with the --redis flag.
 By default, it will connect to a local Redis instance at redis://127.0.0.1:6379/1,
 with a cache expiry Time-to-Live (TTL) of 2,419,200 seconds (28 days),
 and cache hits NOT refreshing the TTL of cached values.
 
-Set the environment variables QSV_REDIS_CONNSTR, QSV_REDIS_TTL_SECONDS and 
+Set the environment variables QSV_REDIS_CONNSTR, QSV_REDIS_TTL_SECONDS and
 QSV_REDIS_TTL_REFRESH to change default Redis settings.
 
 If you don't want responses to be cached at all, use the --no-cache flag.
@@ -71,15 +71,15 @@ data.csv
 
 Given the data.csv above, fetch the JSON response.
 
-  $ qsv fetch URL data.csv 
+  $ qsv fetch URL data.csv
 
 Note the output will be a JSONL file - with a minified JSON response per line, not a CSV file.
 
-Now, if we want to generate a CSV file with the parsed City and State, we use the 
+Now, if we want to generate a CSV file with the parsed City and State, we use the
 new-column and jaq options.
 
-$ qsv fetch URL --new-column CityState --jaq '[ ."places"[0]."place name",."places"[0]."state abbreviation" ]' 
-  data.csv > data_with_CityState.csv
+  $ qsv fetch URL --new-column CityState --jaq '[ ."places"[0]."place name",."places"[0]."state abbreviation" ]' \
+      data.csv > data_with_CityState.csv
 
 data_with_CityState.csv
   URL, CityState,
@@ -98,7 +98,7 @@ Instead of using hardcoded URLs, you can also dynamically construct the URL for 
 values in that row.
 
 Exanple 1:
-For example, we have a CSV with four columns and we want to geocode against the geocode.earth API that expects 
+For example, we have a CSV with four columns and we want to geocode against the geocode.earth API that expects
 latitude and longitude passed as URL parameters.
 
 addr_data.csv
@@ -112,17 +112,17 @@ addr_data.csv
 Geocode addresses in addr_data.csv, pass the latitude and longitude fields and store
 the response in a new column called response into enriched_addr_data.csv.
 
-$ qsv fetch --url-template "https://api.geocode.earth/v1/reverse?point.lat={latitude}&point.lon={longitude}" 
-  addr_data.csv -c response > enriched_addr_data.csv
+  $ qsv fetch --url-template "https://api.geocode.earth/v1/reverse?point.lat={latitude}&point.lon={longitude}" \
+      addr_data.csv -c response > enriched_addr_data.csv
 
 Example 2:
 Geocode addresses in addresses.csv, pass the "street address" and "zip-code" fields
 and use jaq to parse placename from the JSON response into a new column in addresses_with_placename.csv.
 Note how field name non-alphanumeric characters (space and hyphen) in the url-template were replaced with _.
 
-$ qsv fetch --jaq '."features"[0]."properties", ."name"' addresses.csv -c placename --url-template 
-  "https://api.geocode.earth/v1/search/structured?address={street_address}&postalcode={zip_code}"
-  > addresses_with_placename.csv
+  $ qsv fetch --jaq '."features"[0]."properties", ."name"' addresses.csv -c placename --url-template \
+      "https://api.geocode.earth/v1/search/structured?address={street_address}&postalcode={zip_code}" \
+      > addresses_with_placename.csv
 
 USING THE HTTP-HEADER OPTION:
 
@@ -130,7 +130,7 @@ The --http-header option allows you to append arbitrary key value pairs (a valid
 separated by a colon) to the HTTP header (to authenticate against an API, pass custom header fields, etc.).
 Note that you can pass as many key-value pairs by using --http-header option repeatedly. For example:
 
-$ qsv fetch URL data.csv --http-header "X-Api-Key:TEST_KEY" -H "X-Api-Secret:ABC123XYZ" -H "Accept-Language: fr-FR"
+  $ qsv fetch URL data.csv --http-header "X-Api-Key:TEST_KEY" -H "X-Api-Secret:ABC123XYZ" -H "Accept-Language: fr-FR"
 
 For more extensive examples, see https://github.com/dathere/qsv/blob/master/tests/test_fetch.rs.
 
@@ -165,7 +165,7 @@ Fetch options:
     --timeout <seconds>        Timeout for each URL request.
                                [default: 30 ]
     -H, --http-header <k:v>    Append custom header(s) to the HTTP header. Pass multiple key-value pairs
-                               by adding this option multiple times, once for each pair. The key and value 
+                               by adding this option multiple times, once for each pair. The key and value
                                should be separated by a colon.
     --max-retries <count>      Maximum number of retries per record before an error is raised.
                                [default: 5]
@@ -179,20 +179,20 @@ Fetch options:
                                Try to follow the syntax here -
                                https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/User-Agent
     --report <d|s>             Creates a report of the fetch job. The report has the same name as the input file
-                               with the ".fetch-report" suffix. 
+                               with the ".fetch-report" suffix.
                                There are two kinds of report - d for "detailed" & s for "short". The detailed
-                               report has the same columns as the input CSV with six additional columns - 
-                               qsv_fetch_url, qsv_fetch_status, qsv_fetch_cache_hit, qsv_fetch_retries, 
+                               report has the same columns as the input CSV with six additional columns -
+                               qsv_fetch_url, qsv_fetch_status, qsv_fetch_cache_hit, qsv_fetch_retries,
                                qsv_fetch_elapsed_ms & qsv_fetch_response.
                                The short report only has the six columns without the "qsv_fetch_" prefix.
                                [default: none]
 
                                CACHING OPTIONS:
     --no-cache                 Do not cache responses.
-    
+
     --mem-cache-size <count>   Maximum number of entries in the in-memory LRU cache.
                                [default: 2000000]
-    
+
     --disk-cache               Use a persistent disk cache for responses. The cache is stored in the directory
                                specified by --disk-cache-dir. If the directory does not exist, it will be
                                created. If the directory exists, it will be used as is.
@@ -207,14 +207,14 @@ Fetch options:
                                [default: ~/.qsv/cache/fetch]
 
     --redis-cache              Use Redis to cache responses. It connects to "redis://127.0.0.1:6379/1"
-                               with a connection pool size of 20, with a TTL of 28 days, and a cache hit 
+                               with a connection pool size of 20, with a TTL of 28 days, and a cache hit
                                NOT renewing an entry's TTL.
-                               Adjust the QSV_REDIS_CONNSTR, QSV_REDIS_MAX_POOL_SIZE, QSV_REDIS_TTL_SECONDS & 
+                               Adjust the QSV_REDIS_CONNSTR, QSV_REDIS_MAX_POOL_SIZE, QSV_REDIS_TTL_SECONDS &
                                QSV_REDIS_TTL_REFRESH env vars respectively to change Redis settings.
                                This option is ignored if the --disk-cache option is enabled.
 
     --cache-error              Cache error responses even if a request fails. If an identical URL is requested,
-                               the cached error is returned. Otherwise, the fetch is attempted again 
+                               the cached error is returned. Otherwise, the fetch is attempted again
                                for --max-retries.
     --flush-cache              Flush all the keys in the current cache on startup. This only applies to
                                Disk and Redis caches.

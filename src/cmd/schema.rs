@@ -3,11 +3,11 @@ Generate JSON Schema or Polars Schema (with the `--polars` option) from CSV data
 
 JSON Schema Validation:
 =======================
-This command derives a JSON Schema Validation (Draft 7) file from CSV data, 
+This command derives a JSON Schema Validation (Draft 7) file from CSV data,
 including validation rules based on data type and input data domain/range.
 https://json-schema.org/draft/2020-12/json-schema-validation.html
 
-Running `validate` command on original input CSV with generated schema 
+Running `validate` command on original input CSV with generated schema
 should not flag any invalid records.
 
 The intended workflow is to use the `schema` command to generate a JSON schema file
@@ -18,9 +18,9 @@ generated JSON schema.
 After manually fine-tuning the JSON schema file, note that you can also use the
 `validate` command to validate the JSON Schema file as well:
 
-  `qsv validate schema manually-tuned-jsonschema.json`
+  $ qsv validate schema manually-tuned-jsonschema.json
 
-The generated JSON schema file has `.schema.json` suffix appended. For example, 
+The generated JSON schema file has `.schema.json` suffix appended. For example,
 for input `mydata.csv`, the generated JSON schema is `mydata.csv.schema.json`.
 
 If piped from stdin, the schema file will be `stdin.csv.schema.json` and
@@ -43,7 +43,7 @@ instead of a JSON Schema. The generated Polars schema will be written to a file 
 The Polars schema is a JSON object that describes the schema of a CSV file. When present,
 the `sqlp`, `joinp`, and `pivotp` commands will use the Polars schema to read the CSV file
 instead of inferring the schema from the CSV data. Not only does this allow these commands to
-skip schema inferencing which may fail when the inferencing sample is too low, it also allows 
+skip schema inferencing which may fail when the inferencing sample is too low, it also allows
 Polars to optimize the query and gives the user the option to tailor the schema to their specific
 query needs (e.g. using a Decimal type instead of a Float type).
 
@@ -68,9 +68,9 @@ Schema options:
     --pattern-columns <args>   Select columns to derive regex pattern constraints.
                                That is, this will create a regular expression
                                that matches all values for each specified column.
-                               Columns are selected using `select` syntax 
+                               Columns are selected using `select` syntax
                                (see `qsv select --help` for details).
-    --dates-whitelist <list>   The case-insensitive patterns to look for when 
+    --dates-whitelist <list>   The case-insensitive patterns to look for when
                                shortlisting fields for date inference.
                                i.e. if the field's name has any of these patterns,
                                it is shortlisted for date inferencing.

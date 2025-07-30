@@ -9,19 +9,19 @@ Alternatively, you can specify pairs of old and new column names to rename
 only specific columns. The format is "old1,new1,old2,new2,...".
 
   Change the column names of a CSV with three columns:
-    $ qsv rename id,name,title
+  $ qsv rename id,name,title
 
   Rename only specific columns using pairs:
-    $ qsv rename oldname,newname,oldcol,newcol
+  $ qsv rename oldname,newname,oldcol,newcol
 
   Replace the column names with generic ones (_col_N):
-    $ qsv rename _all_generic
+  $ qsv rename _all_generic
 
   Add generic column names to a CSV with no headers:
-    $ qsv rename _all_generic --no-headers
+  $ qsv rename _all_generic --no-headers
 
   Use column names that contains commas and conflict with the separator:
-    $ qsv rename '"Date - Opening","Date - Actual Closing"'
+  $ qsv rename '"Date - Opening","Date - Actual Closing"'
 
 For more examples, see https://github.com/dathere/qsv/blob/master/tests/test_rename.rs.
 
@@ -41,7 +41,7 @@ rename arguments:
 Common options:
     -h, --help             Display this message
     -o, --output <file>    Write output to <file> instead of stdout.
-    -n, --no-headers       When set, the header will be inserted on top.    
+    -n, --no-headers       When set, the header will be inserted on top.
     -d, --delimiter <arg>  The field delimiter for reading CSV data.
                            Must be a single character. (default: ,)
 "#;

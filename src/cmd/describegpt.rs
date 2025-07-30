@@ -7,11 +7,12 @@ inaccurate information being produced. Verify output results before using them.
 Let's say you have Ollama installed (must be v0.2.0 or above) to use LLMs locally with qsv describegpt.
 To attempt generating a data dictionary of a spreadsheet file you may run (replace <> values):
 
-qsv describegpt <filepath> --base-url http://localhost:11434/v1 --api-key ollama --model <model> --max-tokens <number> --dictionary
+  $ qsv describegpt <filepath> --base-url http://localhost:11434/v1 --api-key ollama \
+      --model <model> --max-tokens <number> --dictionary
 
 For more examples, see https://github.com/dathere/qsv/blob/master/tests/test_describegpt.rs.
 
-For more detailed info on how describegpt works and how to prepare a prompt file, 
+For more detailed info on how describegpt works and how to prepare a prompt file,
 see https://github.com/dathere/qsv/blob/master/docs/Describegpt.md
 
 Usage:
@@ -21,12 +22,12 @@ Usage:
 describegpt options:
     -A, --all              Print all extended metadata options output.
     --description          Print a general description of the dataset.
-    --dictionary           For each field, prints an inferred type, a 
+    --dictionary           For each field, prints an inferred type, a
                            human-readable label, a description, and stats.
     --tags                 Prints tags that categorize the dataset. Useful
                            for grouping datasets and filtering.
     --api-key <key>        The API key to use. The default API key for Ollama is ollama.
-                           If the QSV_LLM_APIKEY envvar is set, it will be used instead.                           
+                           If the QSV_LLM_APIKEY envvar is set, it will be used instead.
     --max-tokens <value>   Limits the number of generated tokens in the output.
                            [default: 50]
     --json                 Return results in JSON format.

@@ -15,17 +15,17 @@ columns1 and columns2 must specify exactly the same number of columns.
 
 Examples:
 
-    qsv exclude id records.csv id previously-processed.csv
-    qsv exclude col1,col2 records.csv col1,col2 previously-processed.csv
-    qsv exclude col1-col5 records.csv col1-col5 previously-processed.csv
-    qsv exclude id records.csv id previously-processed.csv > new-records.csv
-    qsv exclude id records.csv id previously-processed.csv --output new-records.csv
-    qsv exclude -v id records.csv id previously-processed.csv -o intersection.csv
-    qsv exclude --ignore-case id records.csv id previously-processed.csv
-    qsv exclude id records.csv id previously-processed.csv |
-       qsv sort > new-sorted-records.csv
-    qsv exclude id records.csv id previously-processed.csv | qsv sort |
-       qsv --sorted dedup > new-sorted-deduped-records.csv
+  $ qsv exclude id records.csv id previously-processed.csv
+  $ qsv exclude col1,col2 records.csv col1,col2 previously-processed.csv
+  $ qsv exclude col1-col5 records.csv col1-col5 previously-processed.csv
+  $ qsv exclude id records.csv id previously-processed.csv > new-records.csv
+  $ qsv exclude id records.csv id previously-processed.csv --output new-records.csv
+  $ qsv exclude -v id records.csv id previously-processed.csv -o intersection.csv
+  $ qsv exclude --ignore-case id records.csv id previously-processed.csv
+  $ qsv exclude id records.csv id previously-processed.csv |
+      qsv sort > new-sorted-records.csv
+  $ qsv exclude id records.csv id previously-processed.csv | qsv sort |
+      qsv --sorted dedup > new-sorted-deduped-records.csv
 
 For more examples, see https://github.com/dathere/qsv/blob/master/tests/test_exclude.rs.
 
@@ -35,7 +35,7 @@ Usage:
 
 input arguments:
     <input1> is the file from which data will be removed.
-    <input2> is the file containing the data to be removed from <input1> 
+    <input2> is the file containing the data to be removed from <input1>
      e.g. 'qsv exclude id records.csv id previously-processed.csv'
 
 exclude options:

@@ -9,7 +9,7 @@ flashlight,gray
 
 To output the data with the color of the shoes as green instead of blue, run:
 
-qsv edit items.csv color 0 green
+$ qsv edit items.csv color 0 green
 
 The following is returned as output:
 

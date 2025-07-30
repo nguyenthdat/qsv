@@ -31,7 +31,7 @@ As an example, say we have the following JSON data in a file fruits.json:
 
 To convert it to CSV format run:
 
-  qsv json fruits.json
+  $ qsv json fruits.json
 
 And the following is printed to the terminal:
 
@@ -39,7 +39,7 @@ fruit,price,calories
 apple,2.5,95
 banana,3.0,105
 
-IMPORTANT: 
+IMPORTANT:
   The order of the columns in the CSV file will be the same as the order of the keys in the first JSON object.
   The order of the rows in the CSV file will be the same as the order of the objects in the JSON array.
 
@@ -75,22 +75,22 @@ For example, say we have the following JSON data in a file fruits2.json:
 
 If we run the following command:
 
-  qsv json fruits2.json | qsv table
+  $ qsv json fruits2.json | qsv table
 
 The output CSV will have the following columns:
 
 fruit       cost  price  calories  rating
-apple       1.75  2.5    95        
-mangosteen        5.0    56        
+apple       1.75  2.5    95
+mangosteen        5.0    56
 starapple         4.5    95        9
-banana            3.0    105       
+banana            3.0    105
 
 Note that the "rating" column is added as an additional column in the output CSV,
 though it appears as the 2nd column in the third JSON object for "starapple".
 
 If you want to select/reorder/drop columns in the output CSV, use the --select option, for example:
 
-  qsv json fruits.json --select price,fruit
+  $ qsv json fruits.json --select price,fruit
 
 The following is printed to the terminal:
 
@@ -103,7 +103,7 @@ Note: Trailing zeroes in decimal numbers after the decimal are truncated (2.50 b
 If the JSON data was provided using stdin then either use - or do not provide a file path.
 For example you may copy the JSON data above to your clipboard then run:
 
-qsv clipboard | qsv json
+  $ qsv clipboard | qsv json
 
 Again, when JSON data is nested or complex, try using the --jaq option and provide a filter value.
 
@@ -115,7 +115,7 @@ For example we have a .json file with a "data" key and the value being the same 
 
 We may run the following to select the JSON file and convert the nested array to CSV:
 
-qsv prompt -F json | qsv json --jaq .data
+  $ qsv prompt -F json | qsv json --jaq .data
 
 For more examples, see https://github.com/dathere/qsv/blob/master/tests/test_json.rs.
 

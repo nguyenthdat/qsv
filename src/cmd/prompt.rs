@@ -5,17 +5,17 @@ Examples:
 Pick a single file as input to qsv stats using an INPUT file dialog,
 pipe into qsv stats using qsv prompt, and browse the stats using qsv lens:
 
-  qsv prompt | qsv stats | qsv lens
+  $ qsv prompt | qsv stats | qsv lens
 
 If you want to save the output of a command to a file using a save file OUTPUT dialog,
 pipe into qsv prompt using the --fd-output flag:
 
-  qsv prompt -m 'Pick a CSV file to summarize' | qsv stats -E | qsv prompt --fd-output
+  $ qsv prompt -m 'Pick a CSV file to summarize' | qsv stats -E | qsv prompt --fd-output
 
 Prompt for a spreadsheet, and export to CSV using a save file dialog:
 
-  qsv prompt -m 'Select a spreadsheet to export to CSV' -F xlsx,xls,ods | \
-    qsv excel - | qsv prompt -m 'Save exported CSV to...' --fd-output
+  $ qsv prompt -m 'Select a spreadsheet to export to CSV' -F xlsx,xls,ods | \
+      qsv excel - | qsv prompt -m 'Save exported CSV to...' --fd-output
 
 Usage:
     qsv prompt [options]

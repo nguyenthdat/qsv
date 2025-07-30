@@ -1,5 +1,5 @@
 static USAGE: &str = r#"
-Create multiple new computed columns, filter rows or compute aggregations by 
+Create multiple new computed columns, filter rows or compute aggregations by
 executing a Luau 0.682 script for every row (SEQUENTIAL MODE) or for
 specified rows (RANDOM ACCESS MODE) of a CSV file.
 
@@ -61,16 +61,16 @@ Some examples:
   $ qsv luau filter "tonumber(a) >= tonumber(b)"
 
   Typing long scripts on the command line gets tiresome rather quickly. Use the
-  "file:" prefix or the ".lua/.luau" file extension to read non-trivial scripts 
+  "file:" prefix or the ".lua/.luau" file extension to read non-trivial scripts
   from the filesystem.
 
   In the following example, both the BEGIN and END scripts have the lua/luau file
   extension so they are read from the filesystem.  With the debitcredit.script file,
   we use the "file:" prefix to read it from the filesystem.
 
-    $ qsv luau map Type -B init.lua file:debitcredit.script -E end.luau
+  $ qsv luau map Type -B init.lua file:debitcredit.script -E end.luau
 
-With "luau map", if the MAIN script is invalid for a row, "<ERROR>" followed by a 
+With "luau map", if the MAIN script is invalid for a row, "<ERROR>" followed by a
 detailed error message is returned for that row.
 With "luau filter", if the MAIN script is invalid for a row, that row is not filtered.
 
@@ -83,9 +83,9 @@ SPECIAL VARIABLES:
 
        It is primarily used in SEQUENTIAL MODE when the CSV has no index or you
        wish to process the CSV sequentially.
- 
+
   "_INDEX" - a READ/WRITE variable that enables RANDOM ACCESS MODE when used in
-       a script. Using "_INDEX" in a script switches qsv to RANDOM ACCESS MODE 
+       a script. Using "_INDEX" in a script switches qsv to RANDOM ACCESS MODE
        where setting it to a row number will change the current row to the
        specified row number. It will only work, however, if the CSV has an index.
 
@@ -95,8 +95,8 @@ SPECIAL VARIABLES:
 
        If the CSV has no index, qsv will abort with an error unless "qsv_autoindex()"
        is called in the BEGIN script to create an index.
-       
-  "_ROWCOUNT" - a READ-only variable which is zero during the BEGIN & MAIN scripts, 
+
+  "_ROWCOUNT" - a READ-only variable which is zero during the BEGIN & MAIN scripts,
        and set to the rowcount during the END script when the CSV has no index
        (SEQUENTIAL MODE).
 
