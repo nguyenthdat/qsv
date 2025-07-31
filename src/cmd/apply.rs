@@ -313,10 +313,10 @@ Common options:
 use std::{str::FromStr, sync::OnceLock};
 
 use base62;
+use base64_simd::STANDARD as BASE64;
 use censor::{Censor, Sex, Zealous};
 use cpc::eval;
 use crc32fast;
-use data_encoding::BASE64;
 use dynfmt2::Format;
 use eudex::Hash;
 use gender_guesser::Gender;
@@ -1033,12 +1033,11 @@ fn apply_operations(
                 *cell = String::from(cell.trim_end_matches(comparand));
             },
             Operations::Encode64 => {
-                *cell = BASE64.encode(cell.as_bytes());
+                *cell = BASE64.encode_to_string(cell.as_bytes());
             },
             Operations::Decode64 => {
-                let mut output = vec![0; BASE64.decode_len(cell.len()).unwrap_or_default()];
-                *cell = match BASE64.decode_mut(cell.as_bytes(), &mut output) {
-                    Ok(len) => simdutf8::basic::from_utf8(&output[0..len])
+                *cell = match BASE64.decode_to_vec(cell.as_bytes()) {
+                    Ok(decoded) => simdutf8::basic::from_utf8(&decoded)
                         .unwrap_or_default()
                         .to_owned(),
                     Err(e) => format!("decoding64 error: {e:?}"),
