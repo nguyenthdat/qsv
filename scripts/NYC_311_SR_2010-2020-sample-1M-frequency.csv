@@ -1,15 +1,5 @@
 field,value,count,percentage
-Unique Key,11465364,1,0.0001
-Unique Key,15626977,1,0.0001
-Unique Key,15627082,1,0.0001
-Unique Key,15627475,1,0.0001
-Unique Key,15627812,1,0.0001
-Unique Key,15628262,1,0.0001
-Unique Key,15628780,1,0.0001
-Unique Key,15633025,1,0.0001
-Unique Key,15633031,1,0.0001
-Unique Key,15633053,1,0.0001
-Unique Key,"Other (999,990)",999990,99.999
+Unique Key,<ALL_UNIQUE>,1000000,100
 Created Date,01/24/2013 12:00:00 AM,347,0.0347
 Created Date,01/07/2014 12:00:00 AM,315,0.0315
 Created Date,01/08/2015 12:00:00 AM,283,0.0283
