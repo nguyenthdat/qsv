@@ -2,6 +2,7 @@ use std::{borrow::ToOwned, collections::hash_map::Entry, process};
 
 use foldhash::{HashMap, HashMapExt};
 use serde::Deserialize;
+use serde_json::Value;
 use stats::Frequencies;
 
 use crate::{Csv, CsvData, qcheck_sized, workdir::Workdir};
@@ -913,4 +914,199 @@ fn frequency_vis_whitespace_ignore_case() {
     ];
 
     assert_eq!(got, expected);
+}
+
+#[test]
+fn frequency_json() {
+    let (wrk, mut cmd) = setup("frequency_json");
+    cmd.args(["--limit", "0"])
+        .args(["--select", "h2"])
+        .arg("--json");
+    let got: String = wrk.stdout(&mut cmd);
+    let v: Value = serde_json::from_str(&got).unwrap();
+    assert!(v["input"].as_str().unwrap().ends_with("in.csv"));
+    assert_eq!(v["rowcount"], 7);
+    assert_eq!(v["fieldcount"], 1);
+    let fields = v["fields"].as_array().unwrap();
+    assert_eq!(fields.len(), 1);
+    let field = &fields[0];
+    assert_eq!(field["field"], "h2");
+    assert_eq!(field["cardinality"], 4);
+    let freqs = field["frequencies"].as_array().unwrap();
+    let expected = vec![
+        ("z", 3, 42.85714),
+        ("y", 2, 28.57143),
+        ("Y", 1, 14.28571),
+        ("x", 1, 14.28571),
+    ];
+    for (i, (val, count, pct)) in expected.iter().enumerate() {
+        assert_eq!(freqs[i]["value"], *val);
+        assert_eq!(freqs[i]["count"], *count);
+        assert!((freqs[i]["percentage"].as_f64().unwrap() - *pct).abs() < 1e-5);
+    }
+}
+
+#[test]
+fn frequency_json_no_headers() {
+    let (wrk, mut cmd) = setup("frequency_json_no_headers");
+    cmd.args(["--limit", "0"])
+        .args(["--select", "1"])
+        .arg("--no-headers")
+        .arg("--json");
+    let got: String = wrk.stdout(&mut cmd);
+    let v: Value = serde_json::from_str(&got).unwrap();
+    assert!(v["input"].as_str().unwrap().ends_with("in.csv"));
+    assert_eq!(v["rowcount"], 8);
+    assert_eq!(v["fieldcount"], 1);
+    let fields = v["fields"].as_array().unwrap();
+    assert_eq!(fields.len(), 1);
+    let field = &fields[0];
+    assert_eq!(field["field"], "1");
+    assert_eq!(field["cardinality"], 5);
+    let freqs = field["frequencies"].as_array().unwrap();
+    let expected = vec![
+        ("a", 4, 50.0),
+        ("(NULL)", 1, 12.5),
+        ("(NULL)", 1, 12.5),
+        ("b", 1, 12.5),
+        ("h1", 1, 12.5),
+    ];
+    for (i, (val, count, pct)) in expected.iter().enumerate() {
+        assert_eq!(freqs[i]["value"], *val);
+        assert_eq!(freqs[i]["count"], *count);
+        assert!((freqs[i]["percentage"].as_f64().unwrap() - *pct).abs() < 1e-5);
+    }
+}
+
+#[test]
+fn frequency_json_ignore_case() {
+    let (wrk, mut cmd) = setup("frequency_json_ignore_case");
+    cmd.arg("--ignore-case")
+        .args(["--limit", "0"])
+        .args(["--select", "h2"])
+        .arg("--json");
+    let got: String = wrk.stdout(&mut cmd);
+    let v: Value = serde_json::from_str(&got).unwrap();
+    assert!(v["input"].as_str().unwrap().ends_with("in.csv"));
+    assert_eq!(v["rowcount"], 7);
+    assert_eq!(v["fieldcount"], 1);
+    let fields = v["fields"].as_array().unwrap();
+    assert_eq!(fields.len(), 1);
+    let field = &fields[0];
+    assert_eq!(field["field"], "h2");
+    assert_eq!(field["cardinality"], 3);
+    let freqs = field["frequencies"].as_array().unwrap();
+    let expected = vec![("y", 3, 42.85714), ("z", 3, 42.85714), ("x", 1, 14.28571)];
+    for (i, (val, count, pct)) in expected.iter().enumerate() {
+        assert_eq!(freqs[i]["value"], *val);
+        assert_eq!(freqs[i]["count"], *count);
+        assert!((freqs[i]["percentage"].as_f64().unwrap() - *pct).abs() < 1e-5);
+    }
+}
+
+#[test]
+fn frequency_json_limit() {
+    let (wrk, mut cmd) = setup("frequency_json_limit");
+    cmd.args(["--limit", "1"]).arg("--json");
+    let got: String = wrk.stdout(&mut cmd);
+    let v: Value = serde_json::from_str(&got).unwrap();
+    assert!(v["input"].as_str().unwrap().ends_with("in.csv"));
+    assert_eq!(v["rowcount"], 7);
+    assert_eq!(v["fieldcount"], 2);
+    let fields = v["fields"].as_array().unwrap();
+    assert_eq!(fields.len(), 2);
+    let (f1, f2) = (&fields[0], &fields[1]);
+    // Accept either order for fields
+    let (h1, h2) = if f1["field"] == "h1" {
+        (f1, f2)
+    } else {
+        (f2, f1)
+    };
+    assert_eq!(h1["cardinality"], 4);
+    assert_eq!(h2["cardinality"], 4);
+    let freqs_h1 = h1["frequencies"].as_array().unwrap();
+    let expected_h1 = vec![("a", 4, 57.14286), ("Other (3)", 3, 42.85714)];
+    for (i, (val, count, pct)) in expected_h1.iter().enumerate() {
+        assert_eq!(freqs_h1[i]["value"], *val);
+        assert_eq!(freqs_h1[i]["count"], *count);
+        assert!((freqs_h1[i]["percentage"].as_f64().unwrap() - *pct).abs() < 1e-5);
+    }
+    let freqs_h2 = h2["frequencies"].as_array().unwrap();
+    let expected_h2 = vec![("z", 3, 42.85714), ("Other (3)", 4, 57.14286)];
+    for (i, (val, count, pct)) in expected_h2.iter().enumerate() {
+        assert_eq!(freqs_h2[i]["value"], *val);
+        assert_eq!(freqs_h2[i]["count"], *count);
+        assert!((freqs_h2[i]["percentage"].as_f64().unwrap() - *pct).abs() < 1e-5);
+    }
+}
+
+#[test]
+fn frequency_json_all_unique() {
+    let wrk = Workdir::new("frequency_json_all_unique");
+    let testdata = wrk.load_test_file("boston311-100.csv");
+    let mut cmd = wrk.command("frequency");
+    cmd.args(["--select", "1"])
+        .arg(testdata.clone())
+        .arg("--json");
+    wrk.assert_success(&mut cmd);
+    let got: String = wrk.stdout(&mut cmd);
+    let v: Value = serde_json::from_str(&got).unwrap();
+    // Accept either full path or just filename for input
+    let input = v["input"].as_str().unwrap();
+    assert!(input.ends_with("boston311-100.csv"));
+    assert_eq!(v["rowcount"], 100);
+    assert_eq!(v["fieldcount"], 1);
+    let fields = v["fields"].as_array().unwrap();
+    assert_eq!(fields.len(), 1);
+    let field = &fields[0];
+    assert_eq!(field["field"], "case_enquiry_id");
+    assert_eq!(field["cardinality"], 100);
+    let freqs = field["frequencies"].as_array().unwrap();
+    assert_eq!(freqs.len(), 1);
+    assert_eq!(freqs[0]["value"], "<ALL_UNIQUE>");
+    assert_eq!(freqs[0]["count"], 100);
+    assert!((freqs[0]["percentage"].as_f64().unwrap() - 100.0).abs() < 1e-5);
+}
+
+#[test]
+fn frequency_json_vis_whitespace() {
+    let wrk = Workdir::new("frequency_json_vis_whitespace");
+    let rows = vec![
+        svec!["header"],
+        svec!["value\t"],
+        svec!["\tvalue"],
+        svec!["value "],
+        svec![" value"],
+        svec!["      "],
+        svec!["no_whitespace"],
+    ];
+    wrk.create("in.csv", rows);
+    let mut cmd = wrk.command("frequency");
+    cmd.env("QSV_STATSCACHE_MODE", "none")
+        .arg("in.csv")
+        .args(["--limit", "0"])
+        .arg("--vis-whitespace")
+        .arg("--json");
+    wrk.assert_success(&mut cmd);
+    let got: String = wrk.stdout(&mut cmd);
+    let v: Value = serde_json::from_str(&got).unwrap();
+    assert!(v["input"].as_str().unwrap().ends_with("in.csv"));
+    assert_eq!(v["rowcount"], 6);
+    assert_eq!(v["fieldcount"], 1);
+    let fields = v["fields"].as_array().unwrap();
+    assert_eq!(fields.len(), 1);
+    let field = &fields[0];
+    assert_eq!(field["field"], "header");
+    assert_eq!(field["cardinality"], 3);
+    let freqs = field["frequencies"].as_array().unwrap();
+    let expected = vec![
+        ("value", 4, 66.66667),
+        ("(NULL)", 1, 16.66667),
+        ("no_whitespace", 1, 16.66667),
+    ];
+    for (i, (val, count, pct)) in expected.iter().enumerate() {
+        assert_eq!(freqs[i]["value"], *val);
+        assert_eq!(freqs[i]["count"], *count);
+        assert!((freqs[i]["percentage"].as_f64().unwrap() - *pct).abs() < 1e-5);
+    }
 }
