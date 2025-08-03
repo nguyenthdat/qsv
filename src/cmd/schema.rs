@@ -565,6 +565,7 @@ fn get_unique_values(
         flag_delimiter:       args.flag_delimiter,
         flag_memcheck:        args.flag_memcheck,
         flag_vis_whitespace:  false,
+        flag_json:            false,
     };
 
     let curr_mode = std::env::var("QSV_STATSCACHE_MODE");

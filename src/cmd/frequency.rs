@@ -96,6 +96,8 @@ frequency options:
     --vis-whitespace        Visualize whitespace characters in the output.
                             See https://github.com/dathere/qsv/wiki/Supplemental#whitespace-markers
                             for the list of whitespace markers.
+    --json                  Output frequency table as nested JSON instead of CSV.
+                            The JSON output includes rowcount, fieldcount and each field's cardinality.
     -j, --jobs <arg>        The number of jobs to run in parallel.
                             This works much faster when the given CSV data has
                             an index already created. Note that a file handle
@@ -121,7 +123,8 @@ use std::{fs, io, sync::OnceLock};
 use crossbeam_channel;
 use indicatif::HumanCount;
 use rust_decimal::prelude::*;
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
+use serde_json;
 use stats::{Frequencies, merge_all};
 use threadpool::ThreadPool;
 
@@ -156,11 +159,34 @@ pub struct Args {
     pub flag_delimiter:       Option<Delimiter>,
     pub flag_memcheck:        bool,
     pub flag_vis_whitespace:  bool,
+    pub flag_json:            bool,
 }
 
 const NULL_VAL: &[u8] = b"(NULL)";
 const NON_UTF8_ERR: &str = "<Non-UTF8 ERROR>";
 const EMPTY_BYTE_VEC: Vec<u8> = Vec::new();
+
+#[derive(Serialize)]
+struct FrequencyEntry {
+    value:      String,
+    count:      u64,
+    percentage: f64,
+}
+
+#[derive(Serialize)]
+struct FrequencyField {
+    field:       String,
+    cardinality: u64,
+    frequencies: Vec<FrequencyEntry>,
+}
+
+#[derive(Serialize)]
+struct FrequencyOutput {
+    input:      String,
+    rowcount:   u64,
+    fieldcount: usize,
+    fields:     Vec<FrequencyField>,
+}
 
 static UNIQUE_COLUMNS_VEC: OnceLock<Vec<usize>> = OnceLock::new();
 static COL_CARDINALITY_VEC: OnceLock<Vec<(String, u64)>> = OnceLock::new();
@@ -175,12 +201,16 @@ pub fn run(argv: &[&str]) -> CliResult<()> {
         util::mem_file_check(&path, false, args.flag_memcheck)?;
     }
 
-    let mut wtr = Config::new(args.flag_output.as_ref()).writer()?;
     let (headers, tables) = match args.rconfig().indexed()? {
         Some(ref mut idx) if util::njobs(args.flag_jobs) > 1 => args.parallel_ftables(idx),
         _ => args.sequential_ftables(),
     }?;
 
+    if args.flag_json {
+        return args.output_json(&headers, tables, &rconfig);
+    }
+
+    let mut wtr = Config::new(args.flag_output.as_ref()).writer()?;
     #[allow(unused_assignments)]
     let mut header_vec: Vec<u8> = Vec::with_capacity(tables.len());
     let mut itoa_buffer = itoa::Buffer::new();
@@ -427,10 +457,10 @@ impl Args {
         let nsel = sel.normal();
         let nsel_len = nsel.len();
 
-        #[allow(unused_assignments)]
-        // amortize allocations
-        let mut field_buffer: Vec<u8> = Vec::with_capacity(1024);
+        // Optimize buffer allocations
+        let mut field_buffer: Vec<u8> = Vec::with_capacity(2048);
         let mut row_buffer: csv::ByteRecord = csv::ByteRecord::with_capacity(200, nsel_len);
+        let mut string_buf = String::with_capacity(512);
 
         let unique_headers_vec = UNIQUE_COLUMNS_VEC.get().unwrap();
 
@@ -448,8 +478,8 @@ impl Args {
         // optimize the capacity of the freq_tables based on the cardinality of the columns
         // if sequential, use the cardinality from the stats cache
         // if parallel, use a default capacity of 1000 for non-unique columns
-        let newvec = Vec::new();
-        let col_cardinality_vec = COL_CARDINALITY_VEC.get().unwrap_or(&newvec);
+        let empty_vec = Vec::new();
+        let col_cardinality_vec = COL_CARDINALITY_VEC.get().unwrap_or(&empty_vec);
         let mut freq_tables: Vec<_> = if col_cardinality_vec.is_empty() {
             (0..nsel_len)
                 .map(|_| Frequencies::with_capacity(1000))
@@ -475,37 +505,46 @@ impl Args {
                 .collect()
         };
 
-        // Pre-compute function pointers for the hot path
+        // Pre-compute function pointers for the hot path with buffer reuse
         // instead of doing if chains repeatedly in the hot loop
         let process_field = if flag_ignore_case {
             if flag_no_trim {
-                |field: &[u8], buf: &mut String| {
+                |field: &[u8], buf: &mut String, field_buf: &mut Vec<u8>| {
+                    field_buf.clear();
                     if let Ok(s) = simdutf8::basic::from_utf8(field) {
+                        buf.clear();
                         util::to_lowercase_into(s, buf);
-                        buf.as_bytes().to_vec()
+                        field_buf.extend_from_slice(buf.as_bytes());
                     } else {
-                        field.to_vec()
+                        field_buf.extend_from_slice(field);
                     }
                 }
             } else {
-                |field: &[u8], buf: &mut String| {
+                |field: &[u8], buf: &mut String, field_buf: &mut Vec<u8>| {
+                    field_buf.clear();
                     if let Ok(s) = simdutf8::basic::from_utf8(field) {
+                        buf.clear();
                         util::to_lowercase_into(s.trim(), buf);
-                        buf.as_bytes().to_vec()
+                        field_buf.extend_from_slice(buf.as_bytes());
                     } else {
-                        trim_bs_whitespace(field).to_vec()
+                        field_buf.extend_from_slice(trim_bs_whitespace(field));
                     }
                 }
             }
         } else if flag_no_trim {
-            |field: &[u8], _buf: &mut String| field.to_vec()
+            |field: &[u8], _buf: &mut String, field_buf: &mut Vec<u8>| {
+                field_buf.clear();
+                field_buf.extend_from_slice(field);
+            }
         } else {
             // this is the default hot path, so inline it
             #[inline]
-            |field: &[u8], _buf: &mut String| trim_bs_whitespace(field).to_vec()
+            |field: &[u8], _buf: &mut String, field_buf: &mut Vec<u8>| {
+                field_buf.clear();
+                field_buf.extend_from_slice(trim_bs_whitespace(field));
+            }
         };
 
-        let mut string_buf = String::with_capacity(100);
         for row in it {
             // safety: we know the row is valid
             row_buffer.clone_from(&unsafe { row.unwrap_unchecked() });
@@ -522,9 +561,10 @@ impl Args {
                 // i will always be < nsel_len since it comes from enumerate() over the selected
                 // columns
                 if !field.is_empty() {
-                    field_buffer = process_field(field, &mut string_buf);
+                    // Reuse buffers instead of creating new ones
+                    process_field(field, &mut string_buf, &mut field_buffer);
                     unsafe {
-                        freq_tables.get_unchecked_mut(i).add(field_buffer);
+                        freq_tables.get_unchecked_mut(i).add(field_buffer.clone());
                     }
                 } else if !flag_no_nulls {
                     // set to null (EMPTY_BYTES) as flag_no_nulls is false
@@ -617,6 +657,144 @@ impl Args {
         COL_CARDINALITY_VEC.get_or_init(|| col_cardinality_vec);
 
         Ok(all_unique_headers_vec)
+    }
+
+    fn output_json(&self, headers: &Headers, tables: FTables, rconfig: &Config) -> CliResult<()> {
+        let fieldcount = headers.len();
+
+        let mut fields = Vec::with_capacity(fieldcount);
+        let head_ftables = headers.iter().zip(tables);
+        let rowcount = *FREQ_ROW_COUNT.get().unwrap_or(&0);
+        let unique_headers_vec = UNIQUE_COLUMNS_VEC.get().unwrap();
+        let all_unique_text = self.flag_all_unique_text.as_bytes();
+
+        for (i, (header, ftab)) in head_ftables.enumerate() {
+            let field_name = if rconfig.no_headers {
+                (i + 1).to_string()
+            } else {
+                String::from_utf8_lossy(header).to_string()
+            };
+
+            let mut sorted_counts: Vec<(Vec<u8>, u64, f64)>;
+            let all_unique_header = unique_headers_vec.contains(&i);
+
+            if all_unique_header {
+                // if the column has all unique values, we don't need to sort the counts
+                sorted_counts = vec![(all_unique_text.to_vec(), rowcount, 100.0_f64)];
+            } else {
+                sorted_counts = self.counts(&ftab);
+
+                // if not --other_sorted and the first value is "Other (", rotate it to the end
+                if !self.flag_other_sorted
+                    && sorted_counts.first().is_some_and(|(value, _, _)| {
+                        value.starts_with(format!("{} (", self.flag_other_text).as_bytes())
+                    })
+                {
+                    sorted_counts.rotate_left(1);
+                }
+            }
+
+            let mut frequencies = Vec::with_capacity(sorted_counts.len());
+            for (value, count, percentage) in sorted_counts {
+                let value_str = if self.flag_vis_whitespace {
+                    util::visualize_whitespace(&String::from_utf8_lossy(&value))
+                } else {
+                    String::from_utf8_lossy(&value).to_string()
+                };
+
+                let pct_decimal = Decimal::from_f64(percentage).unwrap_or_default();
+                let abs_dec_places = self.flag_pct_dec_places.unsigned_abs() as u32;
+                let pct_scale = if self.flag_pct_dec_places < 0 {
+                    let current_scale = pct_decimal.scale();
+                    if current_scale > abs_dec_places {
+                        current_scale
+                    } else {
+                        abs_dec_places
+                    }
+                } else {
+                    abs_dec_places
+                };
+                let final_pct_decimal = pct_decimal
+                    .round_dp_with_strategy(
+                        pct_scale,
+                        rust_decimal::RoundingStrategy::MidpointAwayFromZero,
+                    )
+                    .normalize();
+                let pct_string =
+                    if final_pct_decimal.fract().to_string().len() > abs_dec_places as usize {
+                        final_pct_decimal
+                            .round_dp_with_strategy(
+                                abs_dec_places,
+                                RoundingStrategy::MidpointAwayFromZero,
+                            )
+                            .normalize()
+                            .to_string()
+                    } else {
+                        final_pct_decimal.to_string()
+                    };
+
+                frequencies.push(FrequencyEntry {
+                    value: value_str,
+                    count,
+                    percentage: pct_string.parse::<f64>().unwrap_or(percentage),
+                });
+            }
+
+            // Sort frequencies by count if flag_other_sorted
+            if self.flag_other_sorted {
+                if self.flag_asc {
+                    // ascending order
+                    frequencies.sort_by(|a, b| a.count.cmp(&b.count));
+                } else {
+                    // descending order
+                    frequencies.sort_by(|a, b| b.count.cmp(&a.count));
+                }
+            }
+
+            // Calculate cardinality for this field
+            let cardinality = if all_unique_header {
+                // For all-unique fields, cardinality equals rowcount
+                rowcount
+            } else {
+                // For regular fields, cardinality is the number of unique values in the original
+                // table before any limits are applied
+                ftab.len() as u64
+            };
+
+            fields.push(FrequencyField {
+                field: field_name,
+                cardinality,
+                frequencies,
+            });
+        }
+
+        let output = FrequencyOutput {
+            input: self
+                .arg_input
+                .clone()
+                .unwrap_or_else(|| "stdin".to_string()),
+            rowcount: if rowcount == 0 {
+                // if rowcount == 0 (most probably, coz the input is STDIN),
+                // derive the rowcount from first json_fields vec
+                // by summing the counts for the first field
+                fields
+                    .first()
+                    .map_or(0, |field| field.frequencies.iter().map(|f| f.count).sum())
+            } else {
+                rowcount
+            },
+            fieldcount,
+            fields,
+        };
+        let json_output = serde_json::to_string_pretty(&output)?;
+
+        if let Some(output_path) = &self.flag_output {
+            std::fs::write(output_path, json_output)?;
+        } else {
+            println!("{json_output}");
+        }
+
+        Ok(())
     }
 
     fn sel_headers<R: io::Read>(
