@@ -340,7 +340,7 @@ fn suggest_agg_function(
                         eprintln!("Info: \"{value_col}\" contains >50% NULL values, using Count");
                     }
                     // PivotAgg::Count
-                    PivotAgg(Arc::new(PivotExpr::from_expr(col("").count())))
+                    PivotAgg(Arc::new(PivotExpr::from_expr(col(value_col).count())))
                 } else if stats.cv > Some(1.0) {
                     // High coefficient of variation suggests using median for better central
                     // tendency
