@@ -81,8 +81,8 @@ pivotp_test!(
         let expected = vec![
             svec!["date", "region", "A", "B"],
             svec!["2023-01-01", "North", "100", "150"],
-            svec!["2023-01-01", "South", "200", ""],
-            svec!["2023-01-02", "South", "", "250"],
+            svec!["2023-01-01", "South", "200", "0"],
+            svec!["2023-01-02", "South", "0", "250"],
             svec!["2023-01-02", "North", "300", "350"],
         ];
         assert_eq!(got, expected);
@@ -369,8 +369,8 @@ pivotp_test!(
         let expected = vec![
             svec!["date", "region", "A", "B"],
             svec!["2023-01-01", "North", "100", "150"],
-            svec!["2023-01-01", "South", "200", ""],
-            svec!["2023-01-02", "South", "", "250"],
+            svec!["2023-01-01", "South", "200", "0"],
+            svec!["2023-01-02", "South", "0", "250"],
             svec!["2023-01-02", "North", "300", "350"],
         ];
         assert_eq!(got, expected);
@@ -403,8 +403,8 @@ pivotp_test!(
                 "{\"A\",\"South\"}",
                 "{\"B\",\"South\"}"
             ],
-            svec!["2023-01-01", "100", "150", "200", ""],
-            svec!["2023-01-02", "300", "350", "", "250"],
+            svec!["2023-01-01", "100", "150", "200", "0"],
+            svec!["2023-01-02", "300", "350", "0", "250"],
         ];
         assert_eq!(got, expected);
     }

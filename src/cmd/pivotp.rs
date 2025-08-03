@@ -76,7 +76,7 @@ use std::{
 
 use csv::ByteRecord;
 use indicatif::HumanCount;
-use polars::prelude::*;
+use polars::prelude::{pivot::PivotExpr, *};
 use polars_ops::pivot::{PivotAgg, pivot_stable};
 use polars_utils::plpath::PlPath;
 use serde::Deserialize;
@@ -227,7 +227,9 @@ fn suggest_agg_function(
 ) -> CliResult<Option<PivotAgg>> {
     // If multiple value columns, default to First
     if value_cols.len() > 1 {
-        return Ok(Some(PivotAgg::First));
+        return Ok(Some(PivotAgg(Arc::new(PivotExpr::from_expr(
+            col(&value_cols[0]).first(),
+        )))));
     }
 
     let quiet = args.flag_quiet;
@@ -329,14 +331,16 @@ fn suggest_agg_function(
                 if !quiet {
                     eprintln!("Info: \"{value_col}\" contains only NULL values");
                 }
-                PivotAgg::Count
+                // PivotAgg::Count
+                PivotAgg(Arc::new(PivotExpr::from_expr(col(value_col).count())))
             },
             "Integer" | "Float" => {
                 if stats.nullcount as f64 / row_count as f64 > 0.5 {
                     if !quiet {
                         eprintln!("Info: \"{value_col}\" contains >50% NULL values, using Count");
                     }
-                    PivotAgg::Count
+                    // PivotAgg::Count
+                    PivotAgg(Arc::new(PivotExpr::from_expr(col(value_col).count())))
                 } else if stats.cv > Some(1.0) {
                     // High coefficient of variation suggests using median for better central
                     // tendency
@@ -346,7 +350,8 @@ fn suggest_agg_function(
                              robust central tendency"
                         );
                     }
-                    PivotAgg::Median
+                    // PivotAgg::Median
+                    PivotAgg(Arc::new(PivotExpr::from_expr(col("").median())))
                 } else if high_cardinality_pivot && high_cardinality_index {
                     if ordered_pivot && ordered_index {
                         // With ordered high cardinality columns, mean might be more meaningful
@@ -355,7 +360,8 @@ fn suggest_agg_function(
                                 "Info: Ordered high cardinality columns detected, using Mean"
                             );
                         }
-                        PivotAgg::Mean
+                        // PivotAgg::Mean
+                        PivotAgg(Arc::new(PivotExpr::from_expr(col(value_col).mean())))
                     } else {
                         // With unordered high cardinality, sum might be more appropriate
                         if !quiet {
@@ -363,7 +369,8 @@ fn suggest_agg_function(
                                 "Info: High cardinality in pivot and index columns, using Sum"
                             );
                         }
-                        PivotAgg::Sum
+                        // PivotAgg::Sum
+                        PivotAgg(Arc::new(PivotExpr::from_expr(col(value_col).sum())))
                     }
                 } else if let Some(skewness) = stats.skewness {
                     if skewness.abs() > 2.0 {
@@ -371,12 +378,15 @@ fn suggest_agg_function(
                         if !quiet {
                             eprintln!("Info: Highly skewed numeric data detected, using Median");
                         }
-                        PivotAgg::Median
+                        // PivotAgg::Median
+                        PivotAgg(Arc::new(PivotExpr::from_expr(col("").median())))
                     } else {
-                        PivotAgg::Sum
+                        // PivotAgg::Sum
+                        PivotAgg(Arc::new(PivotExpr::from_expr(col("").sum())))
                     }
                 } else {
-                    PivotAgg::Sum
+                    // PivotAgg::Sum
+                    PivotAgg(Arc::new(PivotExpr::from_expr(col("").sum())))
                 }
             },
             "Date" | "DateTime" => {
@@ -387,7 +397,8 @@ fn suggest_agg_function(
                                 "Info: Ordered temporal data with high cardinality, using Last"
                             );
                         }
-                        PivotAgg::Last
+                        // PivotAgg::Last
+                        PivotAgg(Arc::new(PivotExpr::from_expr(col("").last())))
                     } else {
                         if !quiet {
                             eprintln!(
@@ -395,13 +406,15 @@ fn suggest_agg_function(
                                 stats.r#type
                             );
                         }
-                        PivotAgg::First
+                        // PivotAgg::First
+                        PivotAgg(Arc::new(PivotExpr::from_expr(col("").first())))
                     }
                 } else {
                     if !quiet {
                         eprintln!("Info: Using Count for {} column", stats.r#type);
                     }
-                    PivotAgg::Count
+                    // PivotAgg::Count
+                    PivotAgg(Arc::new(PivotExpr::from_expr(col("").count())))
                 }
             },
             _ => {
@@ -409,22 +422,26 @@ fn suggest_agg_function(
                     if !quiet {
                         eprintln!("Info: \"{value_col}\" contains all unique values, using First");
                     }
-                    PivotAgg::First
+                    // PivotAgg::First
+                    PivotAgg(Arc::new(PivotExpr::from_expr(col("").first())))
                 } else if stats.sparsity > Some(0.5) {
                     if !quiet {
                         eprintln!("Info: Sparse data detected, using Count");
                     }
-                    PivotAgg::Count
+                    // PivotAgg::Count
+                    PivotAgg(Arc::new(PivotExpr::from_expr(col("").count())))
                 } else if high_cardinality_pivot || high_cardinality_index {
                     if !quiet {
                         eprintln!("Info: High cardinality detected, using Count");
                     }
-                    PivotAgg::Count
+                    // PivotAgg::Count
+                    PivotAgg(Arc::new(PivotExpr::from_expr(col("").count())))
                 } else {
                     if !quiet {
                         eprintln!("Info: Using Count for String column");
                     }
-                    PivotAgg::Count
+                    // PivotAgg::Count
+                    PivotAgg(Arc::new(PivotExpr::from_expr(col("").count())))
                 }
             },
         };
@@ -483,14 +500,14 @@ pub fn run(argv: &[&str]) -> CliResult<()> {
             None
         } else {
             Some(match lower_agg.as_str() {
-                "first" => PivotAgg::First,
-                "sum" => PivotAgg::Sum,
-                "min" => PivotAgg::Min,
-                "max" => PivotAgg::Max,
-                "mean" => PivotAgg::Mean,
-                "median" => PivotAgg::Median,
-                "count" => PivotAgg::Count,
-                "last" => PivotAgg::Last,
+                "first" => PivotAgg(Arc::new(PivotExpr::from_expr(col("").first()))),
+                "sum" => PivotAgg(Arc::new(PivotExpr::from_expr(col("").sum()))),
+                "min" => PivotAgg(Arc::new(PivotExpr::from_expr(col("").min()))),
+                "max" => PivotAgg(Arc::new(PivotExpr::from_expr(col("").max()))),
+                "mean" => PivotAgg(Arc::new(PivotExpr::from_expr(col("").mean()))),
+                "median" => PivotAgg(Arc::new(PivotExpr::from_expr(col("").median()))),
+                "count" => PivotAgg(Arc::new(PivotExpr::from_expr(col("").count()))),
+                "last" => PivotAgg(Arc::new(PivotExpr::from_expr(col("").last()))),
                 "smart" => {
                     if let Some(value_cols) = &value_cols {
                         // Try to suggest an appropriate aggregation function
@@ -503,12 +520,14 @@ pub fn run(argv: &[&str]) -> CliResult<()> {
                             Some(suggested_agg) => suggested_agg,
                             _ => {
                                 // fallback to first, which always works
-                                PivotAgg::First
+                                // PivotAgg::First
+                                PivotAgg(Arc::new(PivotExpr::from_expr(col("").first())))
                             },
                         }
                     } else {
                         // Default to Count if no value columns specified
-                        PivotAgg::Count
+                        // PivotAgg::Count
+                        PivotAgg(Arc::new(PivotExpr::from_expr(col("").count())))
                     }
                 },
                 _ => {
