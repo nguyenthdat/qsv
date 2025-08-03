@@ -228,7 +228,7 @@ fn suggest_agg_function(
     // If multiple value columns, default to First
     if value_cols.len() > 1 {
         return Ok(Some(PivotAgg(Arc::new(PivotExpr::from_expr(
-            col("").first(),
+            col(&value_cols[0]).first(),
         )))));
     }
 
@@ -332,7 +332,7 @@ fn suggest_agg_function(
                     eprintln!("Info: \"{value_col}\" contains only NULL values");
                 }
                 // PivotAgg::Count
-                PivotAgg(Arc::new(PivotExpr::from_expr(col("").count())))
+                PivotAgg(Arc::new(PivotExpr::from_expr(col(value_col).count())))
             },
             "Integer" | "Float" => {
                 if stats.nullcount as f64 / row_count as f64 > 0.5 {
@@ -361,7 +361,7 @@ fn suggest_agg_function(
                             );
                         }
                         // PivotAgg::Mean
-                        PivotAgg(Arc::new(PivotExpr::from_expr(col("").mean())))
+                        PivotAgg(Arc::new(PivotExpr::from_expr(col(value_col).mean())))
                     } else {
                         // With unordered high cardinality, sum might be more appropriate
                         if !quiet {
@@ -370,7 +370,7 @@ fn suggest_agg_function(
                             );
                         }
                         // PivotAgg::Sum
-                        PivotAgg(Arc::new(PivotExpr::from_expr(col("").sum())))
+                        PivotAgg(Arc::new(PivotExpr::from_expr(col(value_col).sum())))
                     }
                 } else if let Some(skewness) = stats.skewness {
                     if skewness.abs() > 2.0 {
