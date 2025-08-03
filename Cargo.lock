@@ -2465,8 +2465,9 @@ checksum = "7360491ce676a36bf9bb3c56c1aa791658183a54d2744120f27285738d90465a"
 
 [[package]]
 name = "fancy-regex"
-version = "0.15.0"
-source = "git+https://github.com/fancy-regex/fancy-regex?rev=db14c31#db14c3133c3a7eba5d39b6c0b41abb243bc5ccd7"
+version = "0.16.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "bf04c5ec15464ace8355a7b440a33aece288993475556d461154d7a62ad9947c"
 dependencies = [
  "bit-set",
  "regex-automata",
@@ -3732,8 +3733,7 @@ dependencies = [
 [[package]]
 name = "jsonschema"
 version = "0.32.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6dbce926db3fae74d35e37f059a7b8eb1f30f5781c97ea1ae239a49c337dbb08"
+source = "git+https://github.com/jqnatividad/jsonschema-rs?branch=fancy-regex-0.16#03860d77f149e750d4d700d4db98d0d74edb3cde"
 dependencies = [
  "ahash 0.8.12",
  "base64",
@@ -6441,8 +6441,7 @@ dependencies = [
 [[package]]
 name = "referencing"
 version = "0.32.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e0c7a0ce4e6f443ac9fb6774a8e4c317f9122dcada54e9ca91e12cdbbae1cd1d"
+source = "git+https://github.com/jqnatividad/jsonschema-rs?branch=fancy-regex-0.16#03860d77f149e750d4d700d4db98d0d74edb3cde"
 dependencies = [
  "ahash 0.8.12",
  "fluent-uri",

@@ -115,7 +115,7 @@ dunce = "1"
 dynfmt2 = { version = "0.3", default-features = false, features = ["curly"] }
 eudex = { version = "0.1", optional = true }
 ext-sort = { version = "0.1", default-features = false }
-fancy-regex = "0.15"
+fancy-regex = "0.16"
 fast-float2 = "0.2"
 flate2 = { version = "1", optional = true }
 foldhash = "0.1"
@@ -324,14 +324,14 @@ csvs_convert = { git = "https://github.com/jqnatividad/csvs_convert", branch = "
 # use unreleased upstream fixes for dns-lookup
 dns-lookup = { git = "https://github.com/keeperofdakeys/dns-lookup", rev = "7745e71" }
 
-# use unreleased upstream fix that gets rid of unmaintained derivative crate
-fancy-regex = { git = "https://github.com/fancy-regex/fancy-regex", rev = "db14c31"}
-
 # use our patched fork of grex to bump dependencies and Unicode tables from 15 to 16 until our PR is merged
 grex = { git = "https://github.com/jqnatividad/grex", branch = "bumped-dependencies-202502" }
 
 # use our patched fork of json-objects-to-csv to bump deps and to preserve order until our PR is merged
 json-objects-to-csv = { git = "https://github.com/jqnatividad/json-objects-to-csv", branch = "preserve_order_issue_10" }
+
+# use our patched fork of jsonschema with bumped fancy-regex 0.16 dependency
+jsonschema = { git = "https://github.com/jqnatividad/jsonschema-rs", branch = "fancy-regex-0.16" }
 
 # use our patched fork of localzone to bump dependencies until our PR is merged
 localzone = { git = "https://github.com/jqnatividad/localzone", branch = "bump-deps-may2025" }
