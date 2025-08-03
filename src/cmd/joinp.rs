@@ -777,8 +777,30 @@ impl JoinStruct {
                 // Add "_left" & "_right" suffixes to all columns before doing the non-equi join.
                 // This is necessary as the NonEqui expression is a SQL where clause and the
                 // column names for the left and right data sets are used in the expression.
-                self.left_lf = self.left_lf.select([all().name().suffix("_left")]);
-                self.right_lf = self.right_lf.select([all().name().suffix("_right")]);
+                let left_cols = self
+                    .left_lf
+                    .collect_schema()?
+                    .iter_names()
+                    .cloned()
+                    .collect::<Vec<_>>();
+                let right_cols = self
+                    .right_lf
+                    .collect_schema()?
+                    .iter_names()
+                    .cloned()
+                    .collect::<Vec<_>>();
+
+                let left_renamed_cols: Vec<Expr> = left_cols
+                    .iter()
+                    .map(|col| polars::lazy::dsl::col(col.as_str()).alias(format!("{col}_left")))
+                    .collect();
+                let right_renamed_cols: Vec<Expr> = right_cols
+                    .iter()
+                    .map(|col| polars::lazy::dsl::col(col.as_str()).alias(format!("{col}_right")))
+                    .collect();
+
+                self.left_lf = self.left_lf.select(left_renamed_cols);
+                self.right_lf = self.right_lf.select(right_renamed_cols);
 
                 self.left_lf
                     .with_optimizations(optflags)
