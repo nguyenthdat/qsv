@@ -500,87 +500,14 @@ pub fn run(argv: &[&str]) -> CliResult<()> {
             None
         } else {
             Some(match lower_agg.as_str() {
-                "first" => {
-                    if let Some(value_cols) = &value_cols {
-                        if !value_cols.is_empty() {
-                            PivotAgg(Arc::new(PivotExpr::from_expr(col(&value_cols[0]).first())))
-                        } else {
-                            return fail_incorrectusage_clierror!("No value column specified for 'first' aggregation.");
-                        }
-                    } else {
-                        return fail_incorrectusage_clierror!("No value column specified for 'first' aggregation.");
-                    }
-                },
-                "sum" => {
-                    if let Some(value_cols) = &value_cols {
-                        if !value_cols.is_empty() {
-                            PivotAgg(Arc::new(PivotExpr::from_expr(col(&value_cols[0]).sum())))
-                        } else {
-                            return fail_incorrectusage_clierror!("No value column specified for 'sum' aggregation.");
-                        }
-                    } else {
-                        return fail_incorrectusage_clierror!("No value column specified for 'sum' aggregation.");
-                    }
-                },
-                "min" => {
-                    if let Some(value_cols) = &value_cols {
-                        if !value_cols.is_empty() {
-                            PivotAgg(Arc::new(PivotExpr::from_expr(col(&value_cols[0]).min())))
-                        } else {
-                            return fail_incorrectusage_clierror!("No value column specified for 'min' aggregation.");
-                        }
-                    } else {
-                        return fail_incorrectusage_clierror!("No value column specified for 'min' aggregation.");
-                    }
-                },
-                "max" => {
-                    if let Some(value_cols) = &value_cols {
-                        if !value_cols.is_empty() {
-                            PivotAgg(Arc::new(PivotExpr::from_expr(col(&value_cols[0]).max())))
-                        } else {
-                            return fail_incorrectusage_clierror!("No value column specified for 'max' aggregation.");
-                        }
-                    } else {
-                        return fail_incorrectusage_clierror!("No value column specified for 'max' aggregation.");
-                    }
-                },
-                "mean" => {
-                    if let Some(value_cols) = &value_cols {
-                        if !value_cols.is_empty() {
-                            PivotAgg(Arc::new(PivotExpr::from_expr(col(&value_cols[0]).mean())))
-                        } else {
-                            return fail_incorrectusage_clierror!("No value column specified for 'mean' aggregation.");
-                        }
-                    } else {
-                        return fail_incorrectusage_clierror!("No value column specified for 'mean' aggregation.");
-                    }
-                },
-                "median" => {
-                    if let Some(value_cols) = &value_cols {
-                        if !value_cols.is_empty() {
-                            PivotAgg(Arc::new(PivotExpr::from_expr(col(&value_cols[0]).median())))
-                        } else {
-                            return fail_incorrectusage_clierror!("No value column specified for 'median' aggregation.");
-                        }
-                    } else {
-                        return fail_incorrectusage_clierror!("No value column specified for 'median' aggregation.");
-                    }
-                },
-                "count" => {
-                    // For count, we can use col("*") to count all rows
-                    PivotAgg(Arc::new(PivotExpr::from_expr(col("*").count())))
-                },
-                "last" => {
-                    if let Some(value_cols) = &value_cols {
-                        if !value_cols.is_empty() {
-                            PivotAgg(Arc::new(PivotExpr::from_expr(col(&value_cols[0]).last())))
-                        } else {
-                            return fail_incorrectusage_clierror!("No value column specified for 'last' aggregation.");
-                        }
-                    } else {
-                        return fail_incorrectusage_clierror!("No value column specified for 'last' aggregation.");
-                    }
-                },
+                "first" => PivotAgg(Arc::new(PivotExpr::from_expr(col("").first()))),
+                "sum" => PivotAgg(Arc::new(PivotExpr::from_expr(col("").sum()))),
+                "min" => PivotAgg(Arc::new(PivotExpr::from_expr(col("").min()))),
+                "max" => PivotAgg(Arc::new(PivotExpr::from_expr(col("").max()))),
+                "mean" => PivotAgg(Arc::new(PivotExpr::from_expr(col("").mean()))),
+                "median" => PivotAgg(Arc::new(PivotExpr::from_expr(col("").median()))),
+                "count" => PivotAgg(Arc::new(PivotExpr::from_expr(col("").count()))),
+                "last" => PivotAgg(Arc::new(PivotExpr::from_expr(col("").last()))),
                 "smart" => {
                     if let Some(value_cols) = &value_cols {
                         // Try to suggest an appropriate aggregation function
