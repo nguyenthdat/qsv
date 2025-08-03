@@ -322,7 +322,7 @@ csvlens = { git = "https://github.com/jqnatividad/csvlens", branch = "133-natura
 csvs_convert = { git = "https://github.com/jqnatividad/csvs_convert", branch = "bump-rust_xlsxwriter-to-0.88" }
 
 # use unreleased upstream fixes for dns-lookup
-dns-lookup = { git = "https://github.com/keeperofdakeys/dns-lookup", rev = "aa13809" }
+dns-lookup = { git = "https://github.com/keeperofdakeys/dns-lookup", rev = "7745e71" }
 
 # use unreleased upstream fix that gets rid of unmaintained derivative crate
 fancy-regex = { git = "https://github.com/fancy-regex/fancy-regex", rev = "db14c31"}
