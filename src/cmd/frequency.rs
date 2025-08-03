@@ -182,10 +182,11 @@ struct FrequencyField {
 
 #[derive(Serialize)]
 struct FrequencyOutput {
-    input:      String,
-    rowcount:   u64,
-    fieldcount: usize,
-    fields:     Vec<FrequencyField>,
+    input:       String,
+    description: String,
+    rowcount:    u64,
+    fieldcount:  usize,
+    fields:      Vec<FrequencyField>,
 }
 
 static UNIQUE_COLUMNS_VEC: OnceLock<Vec<usize>> = OnceLock::new();
@@ -207,7 +208,7 @@ pub fn run(argv: &[&str]) -> CliResult<()> {
     }?;
 
     if args.flag_json {
-        return args.output_json(&headers, tables, &rconfig);
+        return args.output_json(&headers, tables, &rconfig, &argv);
     }
 
     let mut wtr = Config::new(args.flag_output.as_ref()).writer()?;
@@ -650,7 +651,13 @@ impl Args {
         Ok(all_unique_headers_vec)
     }
 
-    fn output_json(&self, headers: &Headers, tables: FTables, rconfig: &Config) -> CliResult<()> {
+    fn output_json(
+        &self,
+        headers: &Headers,
+        tables: FTables,
+        rconfig: &Config,
+        argv: &[&str],
+    ) -> CliResult<()> {
         let fieldcount = headers.len();
 
         let mut fields = Vec::with_capacity(fieldcount);
@@ -764,6 +771,7 @@ impl Args {
                 .arg_input
                 .clone()
                 .unwrap_or_else(|| "stdin".to_string()),
+            description: format!("Generated with `qsv {}`", argv[1..].join(" ")),
             rowcount: if rowcount == 0 {
                 // if rowcount == 0 (most probably, coz the input is STDIN),
                 // derive the rowcount from first json_fields vec
