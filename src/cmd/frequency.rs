@@ -189,6 +189,15 @@ struct FrequencyOutput {
     fields:      Vec<FrequencyField>,
 }
 
+// Shared frequency processing result
+#[derive(Clone)]
+struct ProcessedFrequency {
+    count:                u64,
+    percentage:           f64,
+    formatted_percentage: String,
+    value:                Vec<u8>,
+}
+
 static UNIQUE_COLUMNS_VEC: OnceLock<Vec<usize>> = OnceLock::new();
 static COL_CARDINALITY_VEC: OnceLock<Vec<(String, u64)>> = OnceLock::new();
 static FREQ_ROW_COUNT: OnceLock<u64> = OnceLock::new();
@@ -208,23 +217,14 @@ pub fn run(argv: &[&str]) -> CliResult<()> {
     }?;
 
     if args.flag_json {
-        return args.output_json(&headers, tables, &rconfig, &argv);
+        return args.output_json(&headers, tables, &rconfig, argv);
     }
 
     let mut wtr = Config::new(args.flag_output.as_ref()).writer()?;
     #[allow(unused_assignments)]
     let mut header_vec: Vec<u8> = Vec::with_capacity(tables.len());
     let mut itoa_buffer = itoa::Buffer::new();
-    let mut pct_decimal: Decimal;
-    let mut final_pct_decimal: Decimal;
-    // most percentages are less than 10 characters, so pre-allocate 10 characters
-    #[allow(unused_assignments)]
-    let mut pct_string = String::with_capacity(10);
-    let mut pct_scale: u32;
-    let mut current_scale: u32;
-    let abs_dec_places = args.flag_pct_dec_places.unsigned_abs() as u32;
     let mut row: Vec<&[u8]>;
-    let mut all_unique_header: bool;
 
     // safety: we know that UNIQUE_COLUMNS has been previously set when compiling frequencies
     // by sel_headers fn
@@ -233,8 +233,9 @@ pub fn run(argv: &[&str]) -> CliResult<()> {
     wtr.write_record(vec!["field", "value", "count", "percentage"])?;
     let head_ftables = headers.iter().zip(tables);
     let row_count = *FREQ_ROW_COUNT.get().unwrap_or(&0);
-
-    let all_unique_text = args.flag_all_unique_text.as_bytes();
+    #[allow(unused_assignments)]
+    let mut processed_frequencies: Vec<ProcessedFrequency> = Vec::with_capacity(head_ftables.len());
+    let abs_dec_places = args.flag_pct_dec_places.unsigned_abs() as u32;
 
     for (i, (header, ftab)) in head_ftables.enumerate() {
         header_vec = if rconfig.no_headers {
@@ -243,66 +244,34 @@ pub fn run(argv: &[&str]) -> CliResult<()> {
             header.to_vec()
         };
 
-        let mut sorted_counts: Vec<(Vec<u8>, u64, f64)>;
-        all_unique_header = unique_headers_vec.contains(&i);
-
-        if all_unique_header {
-            // if the column has all unique values, we don't need to sort the counts
-            sorted_counts = vec![(all_unique_text.to_vec(), row_count, 100.0_f64)];
-        } else {
-            sorted_counts = args.counts(&ftab);
-
-            // if not --other_sorted and the first value is "Other (", rotate it to the end
-            if !args.flag_other_sorted
-                && sorted_counts.first().is_some_and(|(value, _, _)| {
-                    value.starts_with(format!("{} (", args.flag_other_text).as_bytes())
-                })
-            {
-                sorted_counts.rotate_left(1);
-            }
-        }
+        let all_unique_header = unique_headers_vec.contains(&i);
+        args.process_frequencies(
+            all_unique_header,
+            abs_dec_places,
+            row_count,
+            &ftab,
+            &mut processed_frequencies,
+        );
 
         #[allow(unused_assignments)]
         let mut value_str = String::with_capacity(100);
-        for (value, count, percentage) in sorted_counts {
-            pct_decimal = Decimal::from_f64(percentage).unwrap_or_default();
-            pct_scale = if args.flag_pct_dec_places < 0 {
-                current_scale = pct_decimal.scale();
-                if current_scale > abs_dec_places {
-                    current_scale
-                } else {
-                    abs_dec_places
-                }
-            } else {
-                abs_dec_places
-            };
-            final_pct_decimal = pct_decimal
-                .round_dp_with_strategy(
-                    pct_scale,
-                    rust_decimal::RoundingStrategy::MidpointAwayFromZero,
-                )
-                .normalize();
-            pct_string = if final_pct_decimal.fract().to_string().len() > abs_dec_places as usize {
-                final_pct_decimal
-                    .round_dp_with_strategy(abs_dec_places, RoundingStrategy::MidpointAwayFromZero)
-                    .normalize()
-                    .to_string()
-            } else {
-                final_pct_decimal.to_string()
-            };
+        for processed_freq in &processed_frequencies {
             row = vec![
                 &*header_vec,
                 if args.flag_vis_whitespace {
-                    value_str = util::visualize_whitespace(&String::from_utf8_lossy(&value));
+                    value_str =
+                        util::visualize_whitespace(&String::from_utf8_lossy(&processed_freq.value));
                     value_str.as_bytes()
                 } else {
-                    &value
+                    &processed_freq.value
                 },
-                itoa_buffer.format(count).as_bytes(),
-                pct_string.as_bytes(),
+                itoa_buffer.format(processed_freq.count).as_bytes(),
+                processed_freq.formatted_percentage.as_bytes(),
             ];
             wtr.write_record(row)?;
         }
+        // Clear the vector for the next iteration
+        processed_frequencies.clear();
     }
     Ok(wtr.flush()?)
 }
@@ -317,6 +286,79 @@ impl Args {
             .delimiter(self.flag_delimiter)
             .no_headers(self.flag_no_headers)
             .select(self.flag_select.clone())
+    }
+
+    /// Shared frequency processing function used by both CSV and JSON output
+    /// This eliminates code duplication and ensures consistent processing
+    fn process_frequencies(
+        &self,
+        all_unique_header: bool,
+        abs_dec_places: u32,
+        row_count: u64,
+        ftab: &FTable,
+        processed_frequencies: &mut Vec<ProcessedFrequency>,
+    ) {
+        if all_unique_header {
+            // For all-unique headers, create a single entry
+            let all_unique_text = self.flag_all_unique_text.as_bytes().to_vec();
+            let formatted_pct = self.format_percentage(100.0, abs_dec_places);
+            processed_frequencies.push(ProcessedFrequency {
+                value:                all_unique_text,
+                count:                row_count,
+                percentage:           100.0,
+                formatted_percentage: formatted_pct,
+            });
+        } else {
+            // Process regular frequencies
+            let mut counts_to_process = self.counts(ftab);
+            if !self.flag_other_sorted
+                && counts_to_process.first().is_some_and(|(value, _, _)| {
+                    value.starts_with(format!("{} (", self.flag_other_text).as_bytes())
+                })
+            {
+                counts_to_process.rotate_left(1);
+            }
+
+            // Convert to processed frequencies
+            for (value, count, percentage) in counts_to_process {
+                let formatted_pct = self.format_percentage(percentage, abs_dec_places);
+                processed_frequencies.push(ProcessedFrequency {
+                    value,
+                    count,
+                    percentage,
+                    formatted_percentage: formatted_pct,
+                });
+            }
+        }
+    }
+
+    /// Format percentage with proper decimal places
+    fn format_percentage(&self, percentage: f64, abs_dec_places: u32) -> String {
+        let pct_decimal = Decimal::from_f64(percentage).unwrap_or_default();
+        let pct_scale = if self.flag_pct_dec_places < 0 {
+            let current_scale = pct_decimal.scale();
+            if current_scale > abs_dec_places {
+                current_scale
+            } else {
+                abs_dec_places
+            }
+        } else {
+            abs_dec_places
+        };
+        let final_pct_decimal = pct_decimal
+            .round_dp_with_strategy(
+                pct_scale,
+                rust_decimal::RoundingStrategy::MidpointAwayFromZero,
+            )
+            .normalize();
+        if final_pct_decimal.fract().to_string().len() > abs_dec_places as usize {
+            final_pct_decimal
+                .round_dp_with_strategy(abs_dec_places, RoundingStrategy::MidpointAwayFromZero)
+                .normalize()
+                .to_string()
+        } else {
+            final_pct_decimal.to_string()
+        }
     }
 
     #[inline]
@@ -664,7 +706,9 @@ impl Args {
         let head_ftables = headers.iter().zip(tables);
         let rowcount = *FREQ_ROW_COUNT.get().unwrap_or(&0);
         let unique_headers_vec = UNIQUE_COLUMNS_VEC.get().unwrap();
-        let all_unique_text = self.flag_all_unique_text.as_bytes();
+        let mut processed_frequencies: Vec<ProcessedFrequency> =
+            Vec::with_capacity(head_ftables.len());
+        let abs_dec_places = self.flag_pct_dec_places.unsigned_abs() as u32;
 
         for (i, (header, ftab)) in head_ftables.enumerate() {
             let field_name = if rconfig.no_headers {
@@ -673,79 +717,23 @@ impl Args {
                 String::from_utf8_lossy(header).to_string()
             };
 
-            let mut sorted_counts: Vec<(Vec<u8>, u64, f64)>;
             let all_unique_header = unique_headers_vec.contains(&i);
-
-            if all_unique_header {
-                // if the column has all unique values, we don't need to sort the counts
-                sorted_counts = vec![(all_unique_text.to_vec(), rowcount, 100.0_f64)];
-            } else {
-                sorted_counts = self.counts(&ftab);
-
-                // if not --other_sorted and the first value is "Other (", rotate it to the end
-                if !self.flag_other_sorted
-                    && sorted_counts.first().is_some_and(|(value, _, _)| {
-                        value.starts_with(format!("{} (", self.flag_other_text).as_bytes())
-                    })
-                {
-                    sorted_counts.rotate_left(1);
-                }
-            }
-
-            let mut frequencies = Vec::with_capacity(sorted_counts.len());
-            for (value, count, percentage) in sorted_counts {
-                let value_str = if self.flag_vis_whitespace {
-                    util::visualize_whitespace(&String::from_utf8_lossy(&value))
-                } else {
-                    String::from_utf8_lossy(&value).to_string()
-                };
-
-                let pct_decimal = Decimal::from_f64(percentage).unwrap_or_default();
-                let abs_dec_places = self.flag_pct_dec_places.unsigned_abs() as u32;
-                let pct_scale = if self.flag_pct_dec_places < 0 {
-                    let current_scale = pct_decimal.scale();
-                    if current_scale > abs_dec_places {
-                        current_scale
-                    } else {
-                        abs_dec_places
-                    }
-                } else {
-                    abs_dec_places
-                };
-                let final_pct_decimal = pct_decimal
-                    .round_dp_with_strategy(
-                        pct_scale,
-                        rust_decimal::RoundingStrategy::MidpointAwayFromZero,
-                    )
-                    .normalize();
-                let pct_string =
-                    if final_pct_decimal.fract().to_string().len() > abs_dec_places as usize {
-                        final_pct_decimal
-                            .round_dp_with_strategy(
-                                abs_dec_places,
-                                RoundingStrategy::MidpointAwayFromZero,
-                            )
-                            .normalize()
-                            .to_string()
-                    } else {
-                        final_pct_decimal.to_string()
-                    };
-
-                frequencies.push(FrequencyEntry {
-                    value: value_str,
-                    count,
-                    percentage: pct_string.parse::<f64>().unwrap_or(percentage),
-                });
-            }
+            self.process_frequencies(
+                all_unique_header,
+                abs_dec_places,
+                rowcount,
+                &ftab,
+                &mut processed_frequencies,
+            );
 
             // Sort frequencies by count if flag_other_sorted
             if self.flag_other_sorted {
                 if self.flag_asc {
                     // ascending order
-                    frequencies.sort_by(|a, b| a.count.cmp(&b.count));
+                    processed_frequencies.sort_by(|a, b| a.count.cmp(&b.count));
                 } else {
                     // descending order
-                    frequencies.sort_by(|a, b| b.count.cmp(&a.count));
+                    processed_frequencies.sort_by(|a, b| b.count.cmp(&a.count));
                 }
             }
 
@@ -762,8 +750,24 @@ impl Args {
             fields.push(FrequencyField {
                 field: field_name,
                 cardinality,
-                frequencies,
+                frequencies: processed_frequencies
+                    .iter()
+                    .map(|pf| FrequencyEntry {
+                        value:      if self.flag_vis_whitespace {
+                            util::visualize_whitespace(&String::from_utf8_lossy(&pf.value))
+                        } else {
+                            String::from_utf8_lossy(&pf.value).to_string()
+                        },
+                        count:      pf.count,
+                        percentage: pf
+                            .formatted_percentage
+                            .parse::<f64>()
+                            .unwrap_or(pf.percentage),
+                    })
+                    .collect(),
             });
+            // Clear the vector for the next iteration
+            processed_frequencies.clear();
         }
 
         let output = FrequencyOutput {
