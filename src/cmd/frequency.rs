@@ -457,8 +457,9 @@ impl Args {
         let nsel = sel.normal();
         let nsel_len = nsel.len();
 
+        #[allow(unused_assignments)]
         // Optimize buffer allocations
-        let mut field_buffer: Vec<u8> = Vec::with_capacity(2048);
+        let mut field_buffer: Vec<u8> = Vec::with_capacity(1024);
         let mut row_buffer: csv::ByteRecord = csv::ByteRecord::with_capacity(200, nsel_len);
         let mut string_buf = String::with_capacity(512);
 
@@ -505,44 +506,34 @@ impl Args {
                 .collect()
         };
 
-        // Pre-compute function pointers for the hot path with buffer reuse
+        // Pre-compute function pointers for the hot path
         // instead of doing if chains repeatedly in the hot loop
         let process_field = if flag_ignore_case {
             if flag_no_trim {
-                |field: &[u8], buf: &mut String, field_buf: &mut Vec<u8>| {
-                    field_buf.clear();
+                |field: &[u8], buf: &mut String| {
                     if let Ok(s) = simdutf8::basic::from_utf8(field) {
-                        buf.clear();
                         util::to_lowercase_into(s, buf);
-                        field_buf.extend_from_slice(buf.as_bytes());
+                        buf.as_bytes().to_vec()
                     } else {
-                        field_buf.extend_from_slice(field);
+                        field.to_vec()
                     }
                 }
             } else {
-                |field: &[u8], buf: &mut String, field_buf: &mut Vec<u8>| {
-                    field_buf.clear();
+                |field: &[u8], buf: &mut String| {
                     if let Ok(s) = simdutf8::basic::from_utf8(field) {
-                        buf.clear();
                         util::to_lowercase_into(s.trim(), buf);
-                        field_buf.extend_from_slice(buf.as_bytes());
+                        buf.as_bytes().to_vec()
                     } else {
-                        field_buf.extend_from_slice(trim_bs_whitespace(field));
+                        trim_bs_whitespace(field).to_vec()
                     }
                 }
             }
         } else if flag_no_trim {
-            |field: &[u8], _buf: &mut String, field_buf: &mut Vec<u8>| {
-                field_buf.clear();
-                field_buf.extend_from_slice(field);
-            }
+            |field: &[u8], _buf: &mut String| field.to_vec()
         } else {
             // this is the default hot path, so inline it
             #[inline]
-            |field: &[u8], _buf: &mut String, field_buf: &mut Vec<u8>| {
-                field_buf.clear();
-                field_buf.extend_from_slice(trim_bs_whitespace(field));
-            }
+            |field: &[u8], _buf: &mut String| trim_bs_whitespace(field).to_vec()
         };
 
         for row in it {
@@ -562,9 +553,9 @@ impl Args {
                 // columns
                 if !field.is_empty() {
                     // Reuse buffers instead of creating new ones
-                    process_field(field, &mut string_buf, &mut field_buffer);
+                    field_buffer = process_field(field, &mut string_buf);
                     unsafe {
-                        freq_tables.get_unchecked_mut(i).add(field_buffer.clone());
+                        freq_tables.get_unchecked_mut(i).add(field_buffer);
                     }
                 } else if !flag_no_nulls {
                     // set to null (EMPTY_BYTES) as flag_no_nulls is false
