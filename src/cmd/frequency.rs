@@ -166,6 +166,8 @@ const NULL_VAL: &[u8] = b"(NULL)";
 const NON_UTF8_ERR: &str = "<Non-UTF8 ERROR>";
 const EMPTY_BYTE_VEC: Vec<u8> = Vec::new();
 
+// FrequencyEntry, FrequencyField and FrequencyOutput are
+// structs for JSON output
 #[derive(Serialize)]
 struct FrequencyEntry {
     value:      String,
@@ -190,6 +192,7 @@ struct FrequencyOutput {
 }
 
 // Shared frequency processing result
+// used by both CSV and JSON output
 #[derive(Clone)]
 struct ProcessedFrequency {
     count:                u64,
@@ -220,22 +223,27 @@ pub fn run(argv: &[&str]) -> CliResult<()> {
         return args.output_json(&headers, tables, &rconfig, argv);
     }
 
-    let mut wtr = Config::new(args.flag_output.as_ref()).writer()?;
+    // amortize allocations
     #[allow(unused_assignments)]
     let mut header_vec: Vec<u8> = Vec::with_capacity(tables.len());
     let mut itoa_buffer = itoa::Buffer::new();
     let mut row: Vec<&[u8]>;
 
-    // safety: we know that UNIQUE_COLUMNS has been previously set when compiling frequencies
-    // by sel_headers fn
-    let unique_headers_vec = UNIQUE_COLUMNS_VEC.get().unwrap();
-
-    wtr.write_record(vec!["field", "value", "count", "percentage"])?;
     let head_ftables = headers.iter().zip(tables);
     let row_count = *FREQ_ROW_COUNT.get().unwrap_or(&0);
+    let abs_dec_places = args.flag_pct_dec_places.unsigned_abs() as u32;
+
     #[allow(unused_assignments)]
     let mut processed_frequencies: Vec<ProcessedFrequency> = Vec::with_capacity(head_ftables.len());
-    let abs_dec_places = args.flag_pct_dec_places.unsigned_abs() as u32;
+    #[allow(unused_assignments)]
+    let mut value_str = String::with_capacity(100);
+
+    // safety: we know that UNIQUE_COLUMNS has been previously set
+    // when compiling frequencies by sel_headers fn
+    let unique_headers_vec = UNIQUE_COLUMNS_VEC.get().unwrap();
+
+    let mut wtr = Config::new(args.flag_output.as_ref()).writer()?;
+    wtr.write_record(vec!["field", "value", "count", "percentage"])?;
 
     for (i, (header, ftab)) in head_ftables.enumerate() {
         header_vec = if rconfig.no_headers {
@@ -253,8 +261,6 @@ pub fn run(argv: &[&str]) -> CliResult<()> {
             &mut processed_frequencies,
         );
 
-        #[allow(unused_assignments)]
-        let mut value_str = String::with_capacity(100);
         for processed_freq in &processed_frequencies {
             row = vec![
                 &*header_vec,
