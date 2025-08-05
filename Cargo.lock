@@ -2202,8 +2202,9 @@ dependencies = [
 
 [[package]]
 name = "dns-lookup"
-version = "2.0.4"
-source = "git+https://github.com/CosminPerRam/dns-lookup?branch=deps%2Fsocket06#c70c50f07ba4568205137702534e2f2110a8b5c8"
+version = "2.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "91adf1f5ae09290d87cca8f4f0a8e49bcc30672993eb8aa11a5c9d8872d16a98"
 dependencies = [
  "cfg-if",
  "libc",
