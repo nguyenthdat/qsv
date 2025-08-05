@@ -766,8 +766,8 @@ impl Args {
         let mut processed_frequencies: Vec<ProcessedFrequency> =
             Vec::with_capacity(head_ftables.len());
         let abs_dec_places = self.flag_pct_dec_places.unsigned_abs() as u32;
-        // Get stats record for this field
         let stats_records = STATS_RECORDS.get();
+
         for (i, (header, ftab)) in head_ftables.enumerate() {
             let field_name = if rconfig.no_headers {
                 (i + 1).to_string()
@@ -805,16 +805,15 @@ impl Args {
                 ftab.len() as u64
             };
 
+            // Get stats record for this field
             let stats_record = stats_records.and_then(|records| records.get(&field_name));
 
-            // Get r#type from stats record
+            // Get data type and nullcount from stats record
             let dtype = stats_record.map_or(String::new(), |sr| sr.r#type.clone());
-
-            // Get nullcount from stats record
             let nullcount = stats_record.map_or(0, |sr| sr.nullcount);
 
             // Build stats vector from stats record
-            let mut field_stats = Vec::new();
+            let mut field_stats = Vec::with_capacity(15);
             if let Some(sr) = stats_record {
                 match dtype.as_str() {
                     "String" => {
