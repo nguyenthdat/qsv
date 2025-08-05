@@ -1,11 +1,12 @@
 static USAGE: &str = r#"
-Compute a frequency table on CSV data.
+Compute a frequency table on input data. It has CSV and JSON output modes.
 
-The frequency table is formatted as CSV data with the following columns:
+In CSV output mode (default), the frequency table is formatted as CSV data with
+the following columns - field,value,count,percentage.
 
-    field,value,count,percentage
-
-With a row for the N most frequent values (default:10) for each column in the CSV.
+In JSON output mode, the frequency table is formatted as nested JSON data.
+In addition to the columns above, the JSON output includes the rowcount,
+fieldcount, each field's type, cardinality and nullcount, and its stats.
 
 Since this command computes an exact frequency table, memory proportional to the
 cardinality of each column would be normally required.
@@ -20,6 +21,9 @@ all unique values (i.e. where rowcount == cardinality), eliminating the need to
 maintain an in-memory hashmap for ID columns. This allows `frequency` to handle
 larger-than-memory datasets with the added benefit of also making it faster when
 working with datasets with ID columns.
+
+It is therefore highly recommended to index the CSV and run the stats command first
+before running the frequency command.
 
 NOTE: "Complete" Frequency Tables:
 
@@ -97,7 +101,8 @@ frequency options:
                             See https://github.com/dathere/qsv/wiki/Supplemental#whitespace-markers
                             for the list of whitespace markers.
     --json                  Output frequency table as nested JSON instead of CSV.
-                            The JSON output includes rowcount, fieldcount and each field's cardinality.
+                            The JSON output includes rowcount, fieldcount and each field's
+                            type, cardinality, nullcount and its stats.
     -j, --jobs <arg>        The number of jobs to run in parallel.
                             This works much faster when the given CSV data has
                             an index already created. Note that a file handle
@@ -121,15 +126,17 @@ Common options:
 use std::{fs, io, sync::OnceLock};
 
 use crossbeam_channel;
+use foldhash::{HashMap, HashMapExt};
 use indicatif::HumanCount;
 use rust_decimal::prelude::*;
 use serde::{Deserialize, Serialize};
-use serde_json;
+use serde_json::{self, Value as JsonValue};
 use stats::{Frequencies, merge_all};
 use threadpool::ThreadPool;
 
 use crate::{
     CliResult,
+    cmd::stats::StatsData,
     config::{Config, Delimiter},
     index::Indexed,
     select::{SelectColumns, Selection},
@@ -165,6 +172,7 @@ pub struct Args {
 const NULL_VAL: &[u8] = b"(NULL)";
 const NON_UTF8_ERR: &str = "<Non-UTF8 ERROR>";
 const EMPTY_BYTE_VEC: Vec<u8> = Vec::new();
+static STATS_RECORDS: OnceLock<HashMap<String, StatsData>> = OnceLock::new();
 
 // FrequencyEntry, FrequencyField and FrequencyOutput are
 // structs for JSON output
@@ -178,8 +186,17 @@ struct FrequencyEntry {
 #[derive(Serialize)]
 struct FrequencyField {
     field:       String,
+    r#type:      String,
     cardinality: u64,
+    nullcount:   u64,
+    stats:       Vec<FieldStats>,
     frequencies: Vec<FrequencyEntry>,
+}
+
+#[derive(Serialize)]
+struct FieldStats {
+    name:  String,
+    value: JsonValue,
 }
 
 #[derive(Serialize)]
@@ -287,6 +304,24 @@ type FTable = Frequencies<Vec<u8>>;
 type FTables = Vec<Frequencies<Vec<u8>>>;
 
 impl Args {
+    /// Helper function to convert a value to the appropriate JSON type
+    /// Attempts to parse as number first, falls back to string
+    fn to_json_value(value: &str) -> JsonValue {
+        // Try to parse as integer first
+        if let Ok(int_val) = value.parse::<i64>() {
+            return JsonValue::Number(int_val.into());
+        }
+        // Try to parse as float
+        if let Ok(float_val) = value.parse::<f64>() {
+            return JsonValue::Number(
+                serde_json::Number::from_f64(float_val)
+                    .unwrap_or_else(|| serde_json::Number::from(0)),
+            );
+        }
+        // Fall back to string
+        JsonValue::String(value.to_string())
+    }
+
     pub fn rconfig(&self) -> Config {
         Config::new(self.arg_input.as_ref())
             .delimiter(self.flag_delimiter)
@@ -627,6 +662,7 @@ impl Args {
 
     /// return the names of headers/columns that are unique identifiers
     /// (i.e. where cardinality == rowcount)
+    /// Also stores the stats records in a hashmap for use when producing JSON output
     fn get_unique_headers(&self, headers: &Headers) -> CliResult<Vec<usize>> {
         // get the stats records for the entire CSV
         let schema_args = util::SchemaArgs {
@@ -645,6 +681,12 @@ impl Args {
             flag_delimiter:       self.flag_delimiter,
             arg_input:            self.arg_input.clone(),
             flag_memcheck:        false,
+        };
+        // initialize the stats records hashmap
+        let mut stats_records_hashmap = if self.flag_json {
+            HashMap::with_capacity(headers.len())
+        } else {
+            HashMap::new()
         };
 
         let (csv_fields, csv_stats, dataset_stats) =
@@ -665,12 +707,15 @@ impl Args {
                 // get the column name and stats record
                 // safety: we know that csv_fields and csv_stats have the same length
                 let col_name = csv_fields.get(i).unwrap();
-                (
-                    simdutf8::basic::from_utf8(col_name)
-                        .unwrap_or(NON_UTF8_ERR)
-                        .to_string(),
-                    stats_record.cardinality,
-                )
+                let col_name_str = simdutf8::basic::from_utf8(col_name)
+                    .unwrap_or(NON_UTF8_ERR)
+                    .to_string();
+                if self.flag_json {
+                    // Store the stats record in the hashmap for later use
+                    // when we're producing JSON output
+                    stats_records_hashmap.insert(col_name_str.clone(), stats_record.clone());
+                }
+                (col_name_str, stats_record.cardinality)
             })
             .collect();
 
@@ -696,6 +741,12 @@ impl Args {
 
         COL_CARDINALITY_VEC.get_or_init(|| col_cardinality_vec);
 
+        if self.flag_json {
+            // Store the stats records hashmap for later use
+            // when we're producing JSON output
+            STATS_RECORDS.set(stats_records_hashmap).unwrap();
+        }
+
         Ok(all_unique_headers_vec)
     }
 
@@ -715,7 +766,8 @@ impl Args {
         let mut processed_frequencies: Vec<ProcessedFrequency> =
             Vec::with_capacity(head_ftables.len());
         let abs_dec_places = self.flag_pct_dec_places.unsigned_abs() as u32;
-
+        // Get stats record for this field
+        let stats_records = STATS_RECORDS.get();
         for (i, (header, ftab)) in head_ftables.enumerate() {
             let field_name = if rconfig.no_headers {
                 (i + 1).to_string()
@@ -753,9 +805,196 @@ impl Args {
                 ftab.len() as u64
             };
 
+            let stats_record = stats_records.and_then(|records| records.get(&field_name));
+
+            // Get r#type from stats record
+            let dtype = stats_record.map_or(String::new(), |sr| sr.r#type.clone());
+
+            // Get nullcount from stats record
+            let nullcount = stats_record.map_or(0, |sr| sr.nullcount);
+
+            // Build stats vector from stats record
+            let mut field_stats = Vec::new();
+            if let Some(sr) = stats_record {
+                match dtype.as_str() {
+                    "String" => {
+                        // Add string-specific stats
+                        if let Some(ref min) = sr.min {
+                            field_stats.push(FieldStats {
+                                name:  "min".to_string(),
+                                value: JsonValue::String(min.clone()),
+                            });
+                        }
+                        if let Some(ref max) = sr.max {
+                            field_stats.push(FieldStats {
+                                name:  "max".to_string(),
+                                value: JsonValue::String(max.clone()),
+                            });
+                        }
+                        if let Some(ref sort_order) = sr.sort_order {
+                            field_stats.push(FieldStats {
+                                name:  "sort_order".to_string(),
+                                value: JsonValue::String(sort_order.clone()),
+                            });
+                        }
+                        if let Some(min_length) = sr.min_length {
+                            field_stats.push(FieldStats {
+                                name:  "min_length".to_string(),
+                                value: JsonValue::Number(min_length.into()),
+                            });
+                        }
+                        if let Some(max_length) = sr.max_length {
+                            field_stats.push(FieldStats {
+                                name:  "max_length".to_string(),
+                                value: JsonValue::Number(max_length.into()),
+                            });
+                        }
+                        if let Some(sum_length) = sr.sum_length {
+                            field_stats.push(FieldStats {
+                                name:  "sum_length".to_string(),
+                                value: JsonValue::Number(sum_length.into()),
+                            });
+                        }
+                        if let Some(avg_length) = sr.avg_length {
+                            field_stats.push(FieldStats {
+                                name:  "avg_length".to_string(),
+                                value: Self::to_json_value(&avg_length.to_string()),
+                            });
+                        }
+                        if let Some(stddev_length) = sr.stddev_length {
+                            field_stats.push(FieldStats {
+                                name:  "stddev_length".to_string(),
+                                value: Self::to_json_value(&stddev_length.to_string()),
+                            });
+                        }
+                        if let Some(variance_length) = sr.variance_length {
+                            field_stats.push(FieldStats {
+                                name:  "variance_length".to_string(),
+                                value: Self::to_json_value(&variance_length.to_string()),
+                            });
+                        }
+                        if let Some(cv_length) = sr.cv_length {
+                            field_stats.push(FieldStats {
+                                name:  "cv_length".to_string(),
+                                value: Self::to_json_value(&cv_length.to_string()),
+                            });
+                        }
+                        if let Some(sparsity) = sr.sparsity {
+                            field_stats.push(FieldStats {
+                                name:  "sparsity".to_string(),
+                                value: Self::to_json_value(&sparsity.to_string()),
+                            });
+                        }
+                        if let Some(uniqueness_ratio) = sr.uniqueness_ratio {
+                            field_stats.push(FieldStats {
+                                name:  "uniqueness_ratio".to_string(),
+                                value: Self::to_json_value(&uniqueness_ratio.to_string()),
+                            });
+                        }
+                        field_stats.push(FieldStats {
+                            name:  "is_ascii".to_string(),
+                            value: JsonValue::Bool(sr.is_ascii),
+                        });
+                    },
+                    "Integer" | "Float" | "DateTime" | "Date" => {
+                        // Add numeric-specific stats
+                        if let Some(ref sum) = sr.sum {
+                            field_stats.push(FieldStats {
+                                name:  "sum".to_string(),
+                                value: Self::to_json_value(&sum.to_string()),
+                            });
+                        }
+                        if let Some(ref min) = sr.min {
+                            field_stats.push(FieldStats {
+                                name:  "min".to_string(),
+                                value: Self::to_json_value(min),
+                            });
+                        }
+                        if let Some(ref max) = sr.max {
+                            field_stats.push(FieldStats {
+                                name:  "max".to_string(),
+                                value: Self::to_json_value(max),
+                            });
+                        }
+                        if let Some(range) = sr.range {
+                            field_stats.push(FieldStats {
+                                name:  "range".to_string(),
+                                value: Self::to_json_value(&range.to_string()),
+                            });
+                        }
+                        if let Some(ref sort_order) = sr.sort_order {
+                            field_stats.push(FieldStats {
+                                name:  "sort_order".to_string(),
+                                value: JsonValue::String(sort_order.clone()),
+                            });
+                        }
+                        if let Some(ref mean) = sr.mean {
+                            field_stats.push(FieldStats {
+                                name:  "mean".to_string(),
+                                value: Self::to_json_value(&mean.to_string()),
+                            });
+                        }
+                        if let Some(ref sem) = sr.sem {
+                            field_stats.push(FieldStats {
+                                name:  "sem".to_string(),
+                                value: Self::to_json_value(&sem.to_string()),
+                            });
+                        }
+                        if let Some(ref stddev) = sr.stddev {
+                            field_stats.push(FieldStats {
+                                name:  "stddev".to_string(),
+                                value: Self::to_json_value(&stddev.to_string()),
+                            });
+                        }
+                        if let Some(ref variance) = sr.variance {
+                            field_stats.push(FieldStats {
+                                name:  "variance".to_string(),
+                                value: Self::to_json_value(&variance.to_string()),
+                            });
+                        }
+                        if let Some(ref cv) = sr.cv {
+                            field_stats.push(FieldStats {
+                                name:  "cv".to_string(),
+                                value: Self::to_json_value(&cv.to_string()),
+                            });
+                        }
+                        if let Some(sparsity) = sr.sparsity {
+                            field_stats.push(FieldStats {
+                                name:  "sparsity".to_string(),
+                                value: Self::to_json_value(&sparsity.to_string()),
+                            });
+                        }
+                        if let Some(uniqueness_ratio) = sr.uniqueness_ratio {
+                            field_stats.push(FieldStats {
+                                name:  "uniqueness_ratio".to_string(),
+                                value: Self::to_json_value(&uniqueness_ratio.to_string()),
+                            });
+                        }
+                        if let Some(ref median) = sr.q2_median {
+                            field_stats.push(FieldStats {
+                                name:  "median".to_string(),
+                                value: Self::to_json_value(&median.to_string()),
+                            });
+                        }
+                        if let Some(ref mode) = sr.mode {
+                            field_stats.push(FieldStats {
+                                name:  "mode".to_string(),
+                                value: JsonValue::String(mode.clone()),
+                            });
+                        }
+                    },
+                    _ => {
+                        // Do not add any stats for fields of type NULL or Boolean
+                    },
+                }
+            }
+
             fields.push(FrequencyField {
                 field: field_name,
+                r#type: dtype,
                 cardinality,
+                nullcount,
+                stats: field_stats,
                 frequencies: processed_frequencies
                     .iter()
                     .map(|pf| FrequencyEntry {
