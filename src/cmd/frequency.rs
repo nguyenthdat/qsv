@@ -106,9 +106,13 @@ frequency options:
     --vis-whitespace        Visualize whitespace characters in the output.
                             See https://github.com/dathere/qsv/wiki/Supplemental#whitespace-markers
                             for the list of whitespace markers.
+
+                            JSON OUTPUT OPTIONS:
     --json                  Output frequency table as nested JSON instead of CSV.
                             The JSON output includes rowcount, fieldcount and each field's
                             type, cardinality, nullcount and its stats.
+    --no-stats              When using the JSON output mode, do not include stats.
+
     -j, --jobs <arg>        The number of jobs to run in parallel.
                             This works much faster when the given CSV data has
                             an index already created. Note that a file handle
@@ -173,6 +177,7 @@ pub struct Args {
     pub flag_memcheck:        bool,
     pub flag_vis_whitespace:  bool,
     pub flag_json:            bool,
+    pub flag_no_stats:        bool,
 }
 
 const NULL_VAL: &[u8] = b"(NULL)";
@@ -822,7 +827,11 @@ impl Args {
             let nullcount = stats_record.map_or(0, |sr| sr.nullcount);
 
             // Build stats vector from stats record if type is not empty and not NULL or Boolean
-            if !dtype.is_empty() && dtype.as_str() != "NULL" && dtype.as_str() != "Boolean" {
+            if !self.flag_no_stats
+                && !dtype.is_empty()
+                && dtype.as_str() != "NULL"
+                && dtype.as_str() != "Boolean"
+            {
                 if let Some(sr) = stats_record {
                     // numeric stats
                     if let Some(ref sum) = sr.sum {
@@ -998,7 +1007,13 @@ impl Args {
             fieldcount,
             fields,
         };
-        let json_output = serde_json::to_string_pretty(&output)?;
+        let mut json_output = serde_json::to_string_pretty(&output)?;
+
+        if self.flag_no_stats {
+            // remove stats property from the output using regex
+            let re = regex::Regex::new(r#""stats": \[\],\n\s*"#).unwrap();
+            json_output = re.replace_all(&json_output, "").to_string();
+        }
 
         if let Some(output_path) = &self.flag_output {
             std::fs::write(output_path, json_output)?;
