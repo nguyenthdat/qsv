@@ -1,15 +1,16 @@
 static USAGE: &str = r#"
 Compute a frequency table on input data. It has CSV and JSON output modes.
+https://en.wikipedia.org/wiki/Frequency_(statistics)#Frequency_distribution_table
 
-In CSV output mode (default), the frequency table is formatted as CSV data with
-the following columns - field,value,count,percentage.
+In CSV output mode (default), the table is formatted as CSV data with the following
+columns - field,value,count,percentage.
 
-In JSON output mode, the frequency table is formatted as nested JSON data.
-In addition to the columns above, the JSON output includes the rowcount,
-fieldcount, each field's type, cardinality and nullcount, and its stats.
+In JSON output mode, the table is formatted as nested JSON data. In addition to
+the columns above, the JSON output also includes the row count, field count, each
+field's data type, cardinality, nullcount and its stats.
 
-Since this command computes an exact frequency table, memory proportional to the
-cardinality of each column would be normally required.
+Since this command computes an exact frequency distribution table, memory proportional
+to the cardinality of each column would be normally required.
 
 However, this is problematic for columns with ALL unique values (e.g. an ID column),
 as the command will need to allocate memory proportional to the column's cardinality,
@@ -25,11 +26,13 @@ working with datasets with ID columns.
 It is therefore highly recommended to index the CSV and run the stats command first
 before running the frequency command.
 
-When using the JSON output mode and you want to infer dates and boolean types,
-note that you can "prime" the stats cache by running the stats command with
-the `--infer-dates` or `--infer-boolean` options with the `--stats-jsonl` option.
-This will allow the frequency command to use the stats cache to use the "primed"
-stats cache with the dates and boolean types inferred.
+When using the JSON output mode, note that boolean and date type inference are
+disabled by default. If you want to infer dates and boolean types, you can
+"prime" the stats cache by running the stats command with the `--infer-dates`
+or `--infer-boolean` options with the `--stats-jsonl` option
+(e.g. `qsv stats --infer-dates --infer-boolean --stats-jsonl <input>`).
+This will allow the frequency command to use the "primed" stats cache to inherit
+the already inferred dates and boolean types.
 
 NOTE: "Complete" Frequency Tables:
 
@@ -109,8 +112,8 @@ frequency options:
 
                             JSON OUTPUT OPTIONS:
     --json                  Output frequency table as nested JSON instead of CSV.
-                            The JSON output includes rowcount, fieldcount and each field's
-                            type, cardinality, nullcount and its stats.
+                            The JSON output includes row count, field count and each field's
+                            data type, cardinality, null count and its stats.
     --no-stats              When using the JSON output mode, do not include stats.
 
     -j, --jobs <arg>        The number of jobs to run in parallel.
@@ -349,7 +352,6 @@ impl Args {
     }
 
     /// Shared frequency processing function used by both CSV and JSON output
-    /// This eliminates code duplication and ensures consistent processing
     fn process_frequencies(
         &self,
         all_unique_header: bool,
@@ -645,15 +647,13 @@ impl Args {
             for (i, field) in nsel.select(row_buffer.into_iter()).enumerate() {
                 // safety: all_unique_flag_vec is pre-computed to have exactly nsel_len elements,
                 // which matches the number of selected columns that we iterate over.
-                // i will always be < nsel_len since it comes from enumerate() over the selected
-                // columns
+                // i will always be < nsel_len as it comes from enumerate() over the selected cols
                 if unsafe { *all_unique_flag_vec.get_unchecked(i) } {
                     continue;
                 }
 
                 // safety: freq_tables is pre-allocated with nsel_len elements.
-                // i will always be < nsel_len since it comes from enumerate() over the selected
-                // columns
+                // i will always be < nsel_len as it comes from enumerate() over the selected cols
                 if !field.is_empty() {
                     // Reuse buffers instead of creating new ones
                     field_buffer = process_field(field, &mut string_buf);
@@ -917,7 +917,7 @@ impl Args {
         };
         let mut json_output = serde_json::to_string_pretty(&output)?;
 
-        // remove empty stats property from the output using regex
+        // remove all empty stats properties from the output using regex
         let re = regex::Regex::new(r#""stats": \[\],\n\s*"#).unwrap();
         json_output = re.replace_all(&json_output, "").to_string();
 
