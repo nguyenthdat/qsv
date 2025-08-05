@@ -2203,12 +2203,12 @@ dependencies = [
 [[package]]
 name = "dns-lookup"
 version = "2.0.4"
-source = "git+https://github.com/keeperofdakeys/dns-lookup?rev=7745e71#7745e71a61053aab366cfd90c36b1c97f98b1b5c"
+source = "git+https://github.com/CosminPerRam/dns-lookup?branch=deps%2Fsocket06#c70c50f07ba4568205137702534e2f2110a8b5c8"
 dependencies = [
  "cfg-if",
  "libc",
- "socket2 0.5.10",
- "windows-sys 0.52.0",
+ "socket2 0.6.0",
+ "windows-sys 0.60.2",
 ]
 
 [[package]]
