@@ -315,22 +315,30 @@ type FTable = Frequencies<Vec<u8>>;
 type FTables = Vec<Frequencies<Vec<u8>>>;
 
 impl Args {
-    /// Helper function to convert a value to the appropriate JSON type
-    /// Attempts to parse as number first, falls back to string
-    fn to_json_value(value: &str) -> JsonValue {
-        // Try to parse as integer first
-        if let Ok(int_val) = value.parse::<i64>() {
-            return JsonValue::Number(int_val.into());
+    /// Helper function to add a field to field_stats if it exists
+    /// Automatically converts any type to appropriate JSON value
+    fn add_stat<T: ToString>(field_stats: &mut Vec<FieldStats>, name: &str, value: Option<T>) {
+        if let Some(val) = value {
+            let value_str = val.to_string();
+
+            // Try to parse as integer first
+            let json_value = if let Ok(int_val) = value_str.parse::<i64>() {
+                JsonValue::Number(int_val.into())
+            } else if let Ok(float_val) = value_str.parse::<f64>() {
+                JsonValue::Number(
+                    serde_json::Number::from_f64(float_val)
+                        .unwrap_or_else(|| serde_json::Number::from(0)),
+                )
+            } else {
+                // Fall back to string
+                JsonValue::String(value_str)
+            };
+
+            field_stats.push(FieldStats {
+                name:  name.to_string(),
+                value: json_value,
+            });
         }
-        // Try to parse as float
-        if let Ok(float_val) = value.parse::<f64>() {
-            return JsonValue::Number(
-                serde_json::Number::from_f64(float_val)
-                    .unwrap_or_else(|| serde_json::Number::from(0)),
-            );
-        }
-        // Fall back to string
-        JsonValue::String(value.to_string())
     }
 
     pub fn rconfig(&self) -> Config {
@@ -833,130 +841,30 @@ impl Args {
                 && dtype.as_str() != "Boolean"
             {
                 if let Some(sr) = stats_record {
-                    // numeric stats
-                    if let Some(ref sum) = sr.sum {
-                        field_stats.push(FieldStats {
-                            name:  "sum".to_string(),
-                            value: Self::to_json_value(&sum.to_string()),
-                        });
-                    }
+                    // Add all available stats using helper functions
+                    Self::add_stat(&mut field_stats, "sum", sr.sum);
+                    Self::add_stat(&mut field_stats, "min", sr.min.clone());
+                    Self::add_stat(&mut field_stats, "max", sr.max.clone());
+                    Self::add_stat(&mut field_stats, "range", sr.range);
+                    Self::add_stat(&mut field_stats, "sort_order", sr.sort_order.clone());
 
-                    if let Some(ref min) = sr.min {
-                        field_stats.push(FieldStats {
-                            name:  "min".to_string(),
-                            value: Self::to_json_value(min),
-                        });
-                    }
-                    if let Some(ref max) = sr.max {
-                        field_stats.push(FieldStats {
-                            name:  "max".to_string(),
-                            value: Self::to_json_value(max),
-                        });
-                    }
+                    // String-specific stats
+                    Self::add_stat(&mut field_stats, "min_length", sr.min_length);
+                    Self::add_stat(&mut field_stats, "max_length", sr.max_length);
+                    Self::add_stat(&mut field_stats, "sum_length", sr.sum_length);
+                    Self::add_stat(&mut field_stats, "avg_length", sr.avg_length);
+                    Self::add_stat(&mut field_stats, "stddev_length", sr.stddev_length);
+                    Self::add_stat(&mut field_stats, "variance_length", sr.variance_length);
+                    Self::add_stat(&mut field_stats, "cv_length", sr.cv_length);
 
-                    // numeric stats
-                    if let Some(range) = sr.range {
-                        field_stats.push(FieldStats {
-                            name:  "range".to_string(),
-                            value: Self::to_json_value(&range.to_string()),
-                        });
-                    }
-
-                    if let Some(ref sort_order) = sr.sort_order {
-                        field_stats.push(FieldStats {
-                            name:  "sort_order".to_string(),
-                            value: JsonValue::String(sort_order.clone()),
-                        });
-                    }
-
-                    // Add string-specific stats
-                    if let Some(min_length) = sr.min_length {
-                        field_stats.push(FieldStats {
-                            name:  "min_length".to_string(),
-                            value: JsonValue::Number(min_length.into()),
-                        });
-                    }
-                    if let Some(max_length) = sr.max_length {
-                        field_stats.push(FieldStats {
-                            name:  "max_length".to_string(),
-                            value: JsonValue::Number(max_length.into()),
-                        });
-                    }
-                    if let Some(sum_length) = sr.sum_length {
-                        field_stats.push(FieldStats {
-                            name:  "sum_length".to_string(),
-                            value: JsonValue::Number(sum_length.into()),
-                        });
-                    }
-                    if let Some(avg_length) = sr.avg_length {
-                        field_stats.push(FieldStats {
-                            name:  "avg_length".to_string(),
-                            value: Self::to_json_value(&avg_length.to_string()),
-                        });
-                    }
-                    if let Some(stddev_length) = sr.stddev_length {
-                        field_stats.push(FieldStats {
-                            name:  "stddev_length".to_string(),
-                            value: Self::to_json_value(&stddev_length.to_string()),
-                        });
-                    }
-                    if let Some(variance_length) = sr.variance_length {
-                        field_stats.push(FieldStats {
-                            name:  "variance_length".to_string(),
-                            value: Self::to_json_value(&variance_length.to_string()),
-                        });
-                    }
-                    if let Some(cv_length) = sr.cv_length {
-                        field_stats.push(FieldStats {
-                            name:  "cv_length".to_string(),
-                            value: Self::to_json_value(&cv_length.to_string()),
-                        });
-                    }
-
-                    // Add numeric-specific stats
-                    if let Some(ref mean) = sr.mean {
-                        field_stats.push(FieldStats {
-                            name:  "mean".to_string(),
-                            value: Self::to_json_value(&mean.to_string()),
-                        });
-                    }
-                    if let Some(ref sem) = sr.sem {
-                        field_stats.push(FieldStats {
-                            name:  "sem".to_string(),
-                            value: Self::to_json_value(&sem.to_string()),
-                        });
-                    }
-                    if let Some(ref stddev) = sr.stddev {
-                        field_stats.push(FieldStats {
-                            name:  "stddev".to_string(),
-                            value: Self::to_json_value(&stddev.to_string()),
-                        });
-                    }
-                    if let Some(ref variance) = sr.variance {
-                        field_stats.push(FieldStats {
-                            name:  "variance".to_string(),
-                            value: Self::to_json_value(&variance.to_string()),
-                        });
-                    }
-                    if let Some(ref cv) = sr.cv {
-                        field_stats.push(FieldStats {
-                            name:  "cv".to_string(),
-                            value: Self::to_json_value(&cv.to_string()),
-                        });
-                    }
-
-                    if let Some(sparsity) = sr.sparsity {
-                        field_stats.push(FieldStats {
-                            name:  "sparsity".to_string(),
-                            value: Self::to_json_value(&sparsity.to_string()),
-                        });
-                    }
-                    if let Some(uniqueness_ratio) = sr.uniqueness_ratio {
-                        field_stats.push(FieldStats {
-                            name:  "uniqueness_ratio".to_string(),
-                            value: Self::to_json_value(&uniqueness_ratio.to_string()),
-                        });
-                    }
+                    // Numeric-specific stats
+                    Self::add_stat(&mut field_stats, "mean", sr.mean);
+                    Self::add_stat(&mut field_stats, "sem", sr.sem);
+                    Self::add_stat(&mut field_stats, "stddev", sr.stddev);
+                    Self::add_stat(&mut field_stats, "variance", sr.variance);
+                    Self::add_stat(&mut field_stats, "cv", sr.cv);
+                    Self::add_stat(&mut field_stats, "sparsity", sr.sparsity);
+                    Self::add_stat(&mut field_stats, "uniqueness_ratio", sr.uniqueness_ratio);
                 }
             }
 
@@ -1009,11 +917,9 @@ impl Args {
         };
         let mut json_output = serde_json::to_string_pretty(&output)?;
 
-        if self.flag_no_stats {
-            // remove stats property from the output using regex
-            let re = regex::Regex::new(r#""stats": \[\],\n\s*"#).unwrap();
-            json_output = re.replace_all(&json_output, "").to_string();
-        }
+        // remove empty stats property from the output using regex
+        let re = regex::Regex::new(r#""stats": \[\],\n\s*"#).unwrap();
+        json_output = re.replace_all(&json_output, "").to_string();
 
         if let Some(output_path) = &self.flag_output {
             std::fs::write(output_path, json_output)?;
