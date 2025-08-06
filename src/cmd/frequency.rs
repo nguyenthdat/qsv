@@ -7,7 +7,7 @@ columns - field,value,count,percentage.
 
 In JSON output mode, the table is formatted as nested JSON data. In addition to
 the columns above, the JSON output also includes the row count, field count, each
-field's data type, cardinality, nullcount and its stats.
+field's data type, cardinality, nullcount, sparsity, uniqueness_ratio and its stats.
 
 Since this command computes an exact frequency distribution table, memory proportional
 to the cardinality of each column would be normally required.
@@ -106,8 +106,8 @@ frequency options:
     -i, --ignore-case       Ignore case when computing frequencies.
    --all-unique-text <arg>  The text to use for the "<ALL_UNIQUE>" category.
                             [default: <ALL_UNIQUE>]
-    --vis-whitespace        Visualize whitespace characters in the output.
-                            See https://github.com/dathere/qsv/wiki/Supplemental#whitespace-markers
+    --vis-whitespace        Visualize whitespace characters in the output. See
+                            https://github.com/dathere/qsv/wiki/Supplemental#whitespace-markers
                             for the list of whitespace markers.
     -j, --jobs <arg>        The number of jobs to run in parallel when the given CSV data has
                             an index. Note that a file handle is opened for each job.
@@ -115,8 +115,9 @@ frequency options:
 
                             JSON OUTPUT OPTIONS:
     --json                  Output frequency table as nested JSON instead of CSV.
-                            The JSON output includes row count, field count and each field's
-                            data type, cardinality, null count and its stats.
+                            The JSON output includes row count, field count & each field's
+                            data type, cardinality, null count, sparsity, uniqueness_ratio
+                            and its stats.
     --no-stats              When using the JSON output mode, do not include stats.
 
 Common options:
@@ -194,12 +195,14 @@ struct FrequencyEntry {
 
 #[derive(Serialize)]
 struct FrequencyField {
-    field:       String,
-    r#type:      String,
-    cardinality: u64,
-    nullcount:   u64,
-    stats:       Vec<FieldStats>,
-    frequencies: Vec<FrequencyEntry>,
+    field:            String,
+    r#type:           String,
+    cardinality:      u64,
+    nullcount:        u64,
+    sparsity:         f64,
+    uniqueness_ratio: f64,
+    stats:            Vec<FieldStats>,
+    frequencies:      Vec<FrequencyEntry>,
 }
 
 #[derive(Serialize, Clone)]
@@ -232,8 +235,23 @@ static COL_CARDINALITY_VEC: OnceLock<Vec<(String, u64)>> = OnceLock::new();
 static FREQ_ROW_COUNT: OnceLock<u64> = OnceLock::new();
 
 pub fn run(argv: &[&str]) -> CliResult<()> {
-    let args: Args = util::get_args(USAGE, argv)?;
-    let rconfig = args.rconfig();
+    let mut args: Args = util::get_args(USAGE, argv)?;
+    let mut rconfig = args.rconfig();
+
+    let is_stdin = rconfig.is_stdin();
+
+    // if stdin and args.flag_json is true, save stdin to tempfile
+    // so we can derive stats
+    let mut stdin_temp_file;
+    if is_stdin && args.flag_json {
+        let temp_dir = std::env::temp_dir();
+        stdin_temp_file = tempfile::Builder::new()
+            .suffix(".csv")
+            .tempfile_in(&temp_dir)?;
+        io::copy(&mut io::stdin(), &mut stdin_temp_file)?;
+        args.arg_input = Some(stdin_temp_file.path().to_string_lossy().to_string());
+        rconfig = args.rconfig();
+    }
 
     // we're loading the entire file into memory, we need to check avail mem
     if let Some(path) = rconfig.path.clone() {
@@ -246,7 +264,7 @@ pub fn run(argv: &[&str]) -> CliResult<()> {
     }?;
 
     if args.flag_json {
-        return args.output_json(&headers, tables, &rconfig, argv);
+        return args.output_json(&headers, tables, &rconfig, argv, is_stdin);
     }
 
     // amortize allocations
@@ -744,6 +762,7 @@ impl Args {
         tables: FTables,
         rconfig: &Config,
         argv: &[&str],
+        is_stdin: bool,
     ) -> CliResult<()> {
         let fieldcount = headers.len();
 
@@ -755,7 +774,7 @@ impl Args {
         let mut processed_frequencies = Vec::with_capacity(head_ftables.len());
         let abs_dec_places = self.flag_pct_dec_places.unsigned_abs() as u32;
         let stats_records = STATS_RECORDS.get();
-        let mut field_stats: Vec<FieldStats> = Vec::with_capacity(20);
+        let mut field_stats: Vec<FieldStats> = Vec::with_capacity(17);
 
         for (i, (header, ftab)) in head_ftables.enumerate() {
             let field_name = if rconfig.no_headers {
@@ -802,6 +821,12 @@ impl Args {
             // Get data type and nullcount from stats record
             let dtype = stats_record.map_or(String::new(), |sr| sr.r#type.clone());
             let nullcount = stats_record.map_or(0, |sr| sr.nullcount);
+            let sparsity = util::round_num(nullcount as f64 / rowcount as f64, 4)
+                .parse::<f64>()
+                .unwrap_or(0.0);
+            let uniqueness_ratio = util::round_num(cardinality as f64 / rowcount as f64, 4)
+                .parse::<f64>()
+                .unwrap_or(0.0);
 
             // Build stats vector from stats record if type is not empty and not NULL or Boolean
             if !self.flag_no_stats
@@ -810,7 +835,7 @@ impl Args {
                 && dtype.as_str() != "Boolean"
             {
                 if let Some(sr) = stats_record {
-                    // Add all available stats if some using helper functions
+                    // Add all available stats if some
                     add_stat(&mut field_stats, "sum", sr.sum);
                     add_stat(&mut field_stats, "min", sr.min.clone());
                     add_stat(&mut field_stats, "max", sr.max.clone());
@@ -832,8 +857,6 @@ impl Args {
                     add_stat(&mut field_stats, "stddev", sr.stddev);
                     add_stat(&mut field_stats, "variance", sr.variance);
                     add_stat(&mut field_stats, "cv", sr.cv);
-                    add_stat(&mut field_stats, "sparsity", sr.sparsity);
-                    add_stat(&mut field_stats, "uniqueness_ratio", sr.uniqueness_ratio);
                 }
             }
 
@@ -842,6 +865,8 @@ impl Args {
                 r#type: dtype,
                 cardinality,
                 nullcount,
+                sparsity,
+                uniqueness_ratio,
                 stats: field_stats.clone(),
                 frequencies: processed_frequencies
                     .iter()
@@ -866,10 +891,12 @@ impl Args {
         } // end for loop
 
         let output = FrequencyOutput {
-            input: self
-                .arg_input
-                .clone()
-                .unwrap_or_else(|| "stdin".to_string()),
+            input: if is_stdin {
+                "stdin".to_string()
+            } else {
+                // safety: we know arg_input is not None
+                self.arg_input.clone().unwrap()
+            },
             description: format!("Generated with `qsv {}`", argv[1..].join(" ")),
             rowcount: if rowcount == 0 {
                 // if rowcount == 0 (most probably, coz the input is STDIN),
@@ -886,7 +913,7 @@ impl Args {
         };
         let mut json_output = serde_json::to_string_pretty(&output)?;
 
-        // remove all empty stats properties from the output using regex
+        // remove all empty stats properties from the JSON output using regex
         let re = regex::Regex::new(r#""stats": \[\],\n\s*"#).unwrap();
         json_output = re.replace_all(&json_output, "").to_string();
 
