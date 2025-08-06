@@ -109,19 +109,15 @@ frequency options:
     --vis-whitespace        Visualize whitespace characters in the output.
                             See https://github.com/dathere/qsv/wiki/Supplemental#whitespace-markers
                             for the list of whitespace markers.
+    -j, --jobs <arg>        The number of jobs to run in parallel when the given CSV data has
+                            an index. Note that a file handle is opened for each job.
+                            When not set, defaults to the number of CPUs detected.
 
                             JSON OUTPUT OPTIONS:
     --json                  Output frequency table as nested JSON instead of CSV.
                             The JSON output includes row count, field count and each field's
                             data type, cardinality, null count and its stats.
     --no-stats              When using the JSON output mode, do not include stats.
-
-    -j, --jobs <arg>        The number of jobs to run in parallel.
-                            This works much faster when the given CSV data has
-                            an index already created. Note that a file handle
-                            is opened for each job.
-                            When not set, the number of jobs is set to the
-                            number of CPUs detected.
 
 Common options:
     -h, --help             Display this message
@@ -153,8 +149,7 @@ use crate::{
     config::{Config, Delimiter},
     index::Indexed,
     select::{SelectColumns, Selection},
-    util,
-    util::{ByteString, StatsMode, get_stats_records},
+    util::{self, ByteString, StatsMode, get_stats_records},
 };
 
 #[allow(clippy::unsafe_derive_deserialize)]
@@ -318,32 +313,6 @@ type FTable = Frequencies<Vec<u8>>;
 type FTables = Vec<Frequencies<Vec<u8>>>;
 
 impl Args {
-    /// Helper function to add a field to field_stats if it exists
-    /// Automatically converts any type to appropriate JSON value
-    fn add_stat<T: ToString>(field_stats: &mut Vec<FieldStats>, name: &str, value: Option<T>) {
-        if let Some(val) = value {
-            let value_str = val.to_string();
-
-            // Try to parse as integer first
-            let json_value = if let Ok(int_val) = value_str.parse::<i64>() {
-                JsonValue::Number(int_val.into())
-            } else if let Ok(float_val) = value_str.parse::<f64>() {
-                JsonValue::Number(
-                    serde_json::Number::from_f64(float_val)
-                        .unwrap_or_else(|| serde_json::Number::from(0)),
-                )
-            } else {
-                // Fall back to string
-                JsonValue::String(value_str)
-            };
-
-            field_stats.push(FieldStats {
-                name:  name.to_string(),
-                value: json_value,
-            });
-        }
-    }
-
     pub fn rconfig(&self) -> Config {
         Config::new(self.arg_input.as_ref())
             .delimiter(self.flag_delimiter)
@@ -778,15 +747,15 @@ impl Args {
     ) -> CliResult<()> {
         let fieldcount = headers.len();
 
+        // init vars and amortize allocations
         let mut fields = Vec::with_capacity(fieldcount);
         let head_ftables = headers.iter().zip(tables);
         let rowcount = *FREQ_ROW_COUNT.get().unwrap_or(&0);
         let unique_headers_vec = UNIQUE_COLUMNS_VEC.get().unwrap();
-        let mut processed_frequencies: Vec<ProcessedFrequency> =
-            Vec::with_capacity(head_ftables.len());
+        let mut processed_frequencies = Vec::with_capacity(head_ftables.len());
         let abs_dec_places = self.flag_pct_dec_places.unsigned_abs() as u32;
         let stats_records = STATS_RECORDS.get();
-        let mut field_stats: Vec<FieldStats> = Vec::with_capacity(15);
+        let mut field_stats: Vec<FieldStats> = Vec::with_capacity(20);
 
         for (i, (header, ftab)) in head_ftables.enumerate() {
             let field_name = if rconfig.no_headers {
@@ -841,30 +810,30 @@ impl Args {
                 && dtype.as_str() != "Boolean"
             {
                 if let Some(sr) = stats_record {
-                    // Add all available stats using helper functions
-                    Self::add_stat(&mut field_stats, "sum", sr.sum);
-                    Self::add_stat(&mut field_stats, "min", sr.min.clone());
-                    Self::add_stat(&mut field_stats, "max", sr.max.clone());
-                    Self::add_stat(&mut field_stats, "range", sr.range);
-                    Self::add_stat(&mut field_stats, "sort_order", sr.sort_order.clone());
+                    // Add all available stats if some using helper functions
+                    add_stat(&mut field_stats, "sum", sr.sum);
+                    add_stat(&mut field_stats, "min", sr.min.clone());
+                    add_stat(&mut field_stats, "max", sr.max.clone());
+                    add_stat(&mut field_stats, "range", sr.range);
+                    add_stat(&mut field_stats, "sort_order", sr.sort_order.clone());
 
                     // String-specific stats
-                    Self::add_stat(&mut field_stats, "min_length", sr.min_length);
-                    Self::add_stat(&mut field_stats, "max_length", sr.max_length);
-                    Self::add_stat(&mut field_stats, "sum_length", sr.sum_length);
-                    Self::add_stat(&mut field_stats, "avg_length", sr.avg_length);
-                    Self::add_stat(&mut field_stats, "stddev_length", sr.stddev_length);
-                    Self::add_stat(&mut field_stats, "variance_length", sr.variance_length);
-                    Self::add_stat(&mut field_stats, "cv_length", sr.cv_length);
+                    add_stat(&mut field_stats, "min_length", sr.min_length);
+                    add_stat(&mut field_stats, "max_length", sr.max_length);
+                    add_stat(&mut field_stats, "sum_length", sr.sum_length);
+                    add_stat(&mut field_stats, "avg_length", sr.avg_length);
+                    add_stat(&mut field_stats, "stddev_length", sr.stddev_length);
+                    add_stat(&mut field_stats, "variance_length", sr.variance_length);
+                    add_stat(&mut field_stats, "cv_length", sr.cv_length);
 
                     // Numeric-specific stats
-                    Self::add_stat(&mut field_stats, "mean", sr.mean);
-                    Self::add_stat(&mut field_stats, "sem", sr.sem);
-                    Self::add_stat(&mut field_stats, "stddev", sr.stddev);
-                    Self::add_stat(&mut field_stats, "variance", sr.variance);
-                    Self::add_stat(&mut field_stats, "cv", sr.cv);
-                    Self::add_stat(&mut field_stats, "sparsity", sr.sparsity);
-                    Self::add_stat(&mut field_stats, "uniqueness_ratio", sr.uniqueness_ratio);
+                    add_stat(&mut field_stats, "mean", sr.mean);
+                    add_stat(&mut field_stats, "sem", sr.sem);
+                    add_stat(&mut field_stats, "stddev", sr.stddev);
+                    add_stat(&mut field_stats, "variance", sr.variance);
+                    add_stat(&mut field_stats, "cv", sr.cv);
+                    add_stat(&mut field_stats, "sparsity", sr.sparsity);
+                    add_stat(&mut field_stats, "uniqueness_ratio", sr.uniqueness_ratio);
                 }
             }
 
@@ -894,7 +863,7 @@ impl Args {
             // Clear the vectors for the next iteration
             field_stats.clear();
             processed_frequencies.clear();
-        }
+        } // end for loop
 
         let output = FrequencyOutput {
             input: self
@@ -943,6 +912,32 @@ impl Args {
 
         let sel = self.rconfig().selection(headers)?;
         Ok((sel.select(headers).map(<[u8]>::to_vec).collect(), sel))
+    }
+}
+
+/// Helper function to add a field to field_stats if it exists
+/// Automatically converts any type to appropriate JSON value
+fn add_stat<T: ToString>(field_stats: &mut Vec<FieldStats>, name: &str, value: Option<T>) {
+    if let Some(val) = value {
+        let value_str = val.to_string();
+
+        // Try to parse as integer first
+        let json_value = if let Ok(int_val) = value_str.parse::<i64>() {
+            JsonValue::Number(int_val.into())
+        } else if let Ok(float_val) = value_str.parse::<f64>() {
+            JsonValue::Number(
+                serde_json::Number::from_f64(float_val)
+                    .unwrap_or_else(|| serde_json::Number::from(0)),
+            )
+        } else {
+            // Fall back to string
+            JsonValue::String(value_str)
+        };
+
+        field_stats.push(FieldStats {
+            name:  name.to_string(),
+            value: json_value,
+        });
     }
 }
 
