@@ -74,7 +74,7 @@ Options:
     -U, --updatenow      Update qsv to the latest release from GitHub without confirming.
     -h, --help           Display this message
     <command> -h         Display the command help message
-    -v, --version        Print version info, mem allocator, features installed, 
+    -v, --version        Print version info, mem allocator, features installed,
                          max_jobs, num_cpus, build info then exit"#;
 
 #[derive(Deserialize)]
