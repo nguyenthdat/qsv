@@ -295,9 +295,6 @@ assert-json-diff = "2.0"
 criterion = "0.7"
 newline-converter = "0.3"
 
-# disable similar-asserts until it upgrades its console dependency
-# similar-asserts = "1.7"
-
 # disable these dev dependencies for testing the `to` command
 # as they are expensive and slow down the build/CI tests
 # postgres = "0.19"
