@@ -2955,19 +2955,19 @@ impl FieldType {
         }
 
         // an int can be a float, but once we've seen a float, we can't go back to an int
-        if current_type != FieldType::TFloat {
-            if let Ok(samp_int) = atoi_simd::parse::<i64>(sample) {
-                // Check for integer, with leading zero check for strings like zip codes
-                // safety: we know sample is not null as we checked earlier
-                if samp_int == 0 || unsafe { *sample.get_unchecked(0) != b'0' } {
-                    // note that we still return samp_int as f64 even if it's an integer
-                    // as the qsv-stats crate expects a float value for integer fields
-                    #[allow(clippy::cast_precision_loss)]
-                    return (FieldType::TInteger, samp_int, samp_int as f64);
-                }
-                // If starts with '0' and a valid integer != 0, it's a string with a leading zero
-                return (FieldType::TString, 0, 0.0);
+        if current_type != FieldType::TFloat
+            && let Ok(samp_int) = atoi_simd::parse::<i64>(sample)
+        {
+            // Check for integer, with leading zero check for strings like zip codes
+            // safety: we know sample is not null as we checked earlier
+            if samp_int == 0 || unsafe { *sample.get_unchecked(0) != b'0' } {
+                // note that we still return samp_int as f64 even if it's an integer
+                // as the qsv-stats crate expects a float value for integer fields
+                #[allow(clippy::cast_precision_loss)]
+                return (FieldType::TInteger, samp_int, samp_int as f64);
             }
+            // If starts with '0' and a valid integer != 0, it's a string with a leading zero
+            return (FieldType::TString, 0, 0.0);
         }
 
         // Check for float
