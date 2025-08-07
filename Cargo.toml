@@ -1,20 +1,20 @@
 [package]
-name          = "qsv"
-version       = "6.0.1"                                                                    #:version
-authors       = ["Joel Natividad <joel@datHere.com>"]
-description   = "A Blazing-Fast Data-wrangling toolkit."
+name = "qsv"
+version = "6.0.1"                                                                          #:version
+authors = ["Joel Natividad <joel@datHere.com>"]
+description = "A Blazing-Fast Data-wrangling toolkit."
 documentation = "https://github.com/dathere/qsv#qsv-ultra-fast-csv-data-wrangling-toolkit"
-homepage      = "https://qsv.dathere.com"
-repository    = "https://github.com/dathere/qsv"
-readme        = "README.md"
-keywords      = ["csv", "geocode", "data-engineering", "etl", "opendata"]
-categories    = ["command-line-utilities", "parser-implementations"]
-license       = "MIT OR Unlicense"
-autotests     = false
-edition       = "2024"
-rust-version  = "1.88"
-resolver      = "3"
-autobins      = false
+homepage = "https://qsv.dathere.com"
+repository = "https://github.com/dathere/qsv"
+readme = "README.md"
+keywords = ["csv", "geocode", "data-engineering", "etl", "opendata"]
+categories = ["command-line-utilities", "parser-implementations"]
+license = "MIT OR Unlicense"
+autotests = false
+edition = "2024"
+rust-version = "1.88"
+resolver = "3"
+autobins = false
 
 include = [
     "src/**/*",
@@ -25,28 +25,32 @@ include = [
     "resources/luau/vendor/luadate/date.lua",
 ]
 
+[lib]
+name = "qsv"
+path = "src/lib.rs"
+
 [[bin]]
-name              = "qsv"
-test              = true
-bench             = false
-doctest           = false
-path              = "src/main.rs"
+name = "qsv"
+test = true
+bench = false
+doctest = false
+path = "src/main.rs"
 required-features = ["feature_capable"]
 
 [[bin]]
-name              = "qsvlite"
-test              = true
-bench             = false
-doctest           = false
-path              = "src/mainlite.rs"
+name = "qsvlite"
+test = true
+bench = false
+doctest = false
+path = "src/mainlite.rs"
 required-features = ["lite"]
 
 [[bin]]
-name              = "qsvdp"
-test              = true
-bench             = false
-doctest           = false
-path              = "src/maindp.rs"
+name = "qsvdp"
+test = true
+bench = false
+doctest = false
+path = "src/maindp.rs"
 required-features = ["datapusher_plus"]
 
 [[test]]
@@ -54,24 +58,24 @@ name = "tests"
 path = "tests/tests.rs"
 
 [[bench]]
-name    = "trim_benchmark"
+name = "trim_benchmark"
 harness = false
 
 [profile.release]
 codegen-units = 1
-debug         = false
-lto           = true
-opt-level     = 3
-strip         = true
+debug = false
+lto = true
+opt-level = 3
+strip = true
 
 [profile.release-samply]
 inherits = "release"
-debug    = true
-strip    = false
+debug = true
+strip = false
 
 [profile.release-nightly]
 inherits = "release"
-panic    = "abort"
+panic = "abort"
 
 [dependencies]
 arboard = { version = "3.6.0", default-features = false, optional = true }
@@ -303,7 +307,7 @@ newline-converter = "0.3"
 # postgres = "0.19"
 # rusqlite = { version = "0.32", features = ["bundled"] }
 
-quickcheck  = { version = "1", default-features = false }
+quickcheck = { version = "1", default-features = false }
 serial_test = { version = "3.2", features = ["file_locks"] }
 
 [patch.crates-io]
@@ -311,8 +315,8 @@ serial_test = { version = "3.2", features = ["file_locks"] }
 # the csv crate underpins a lot of qsv's functionality, so every perf tweak helps
 # the main feature of this csv fork is accelerated UTF-8 validation using the simdutf8 crate
 # non-allocating ByteRecord trim and a non-allocating StringRecord trim_ascii
-csv       = { git = "https://github.com/dathere/rust-csv", branch = "qsv-optimized-non-allocating-byterecord-trim" }
-csv-core  = { git = "https://github.com/dathere/rust-csv", branch = "qsv-optimized-non-allocating-byterecord-trim" }
+csv = { git = "https://github.com/dathere/rust-csv", branch = "qsv-optimized-non-allocating-byterecord-trim" }
+csv-core = { git = "https://github.com/dathere/rust-csv", branch = "qsv-optimized-non-allocating-byterecord-trim" }
 csv-index = { git = "https://github.com/dathere/rust-csv", branch = "qsv-optimized-non-allocating-byterecord-trim" }
 
 # use our patched fork of cached; though our PR of hashbrown to 0.15 has been merged,
@@ -447,22 +451,22 @@ nightly = [
 ]
 
 [package.metadata.deb]
-maintainer           = "Konstantin Sivakov <konstantin@datHere.com>"
-copyright            = "2024, datHere Inc. <www.dathere.com>"
+maintainer = "Konstantin Sivakov <konstantin@datHere.com>"
+copyright = "2024, datHere Inc. <www.dathere.com>"
 extended-description = """A high performance CSV data-wrangling toolkit."""
-depends              = "$auto"
-section              = "utility"
-priority             = "optional"
+depends = "$auto"
+section = "utility"
+priority = "optional"
 
 # Default feature and asset
 features = ["feature_capable"]
-assets   = [["target/release/qsv", "/usr/local/bin/", "755"]]
+assets = [["target/release/qsv", "/usr/local/bin/", "755"]]
 
 # Conditional features and assets
 [package.metadata.deb.variants.lite]
 features = ["lite"]
-assets   = [["target/release/qsvlite", "/usr/local/bin/", "755"]]
+assets = [["target/release/qsvlite", "/usr/local/bin/", "755"]]
 
 [package.metadata.deb.variants.datapusher_plus]
 features = ["datapusher_plus", "luau"]
-assets   = [["target/release/qsvdp", "/usr/local/bin/", "755"]]
+assets = [["target/release/qsvdp", "/usr/local/bin/", "755"]]
