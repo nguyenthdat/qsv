@@ -662,6 +662,17 @@ macro_rules! update_cache_info {
 #[cfg(all(any(feature = "fetch", feature = "geocode"), not(feature = "lite")))]
 pub(crate) use update_cache_info;
 
+#[cfg(not(all(any(feature = "fetch", feature = "geocode"), not(feature = "lite"))))]
+#[allow(unused_macros)]
+macro_rules! update_cache_info {
+    ($($tt:tt)*) => {
+        // no-op in builds without fetch/geocode (or with lite)
+    };
+}
+
+#[allow(unused_imports)]
+pub(crate) use update_cache_info;
+
 pub fn get_args<T>(usage: &str, argv: &[&str]) -> CliResult<T>
 where
     T: DeserializeOwned,
@@ -2696,6 +2707,13 @@ pub fn expand_tilde(path: impl AsRef<Path>) -> Option<PathBuf> {
         p.to_path_buf()
     };
     Some(expanded)
+}
+
+#[cfg(feature = "lite")]
+#[inline]
+pub fn expand_tilde(path: impl AsRef<Path>) -> Option<PathBuf> {
+    // Lite build stub: no tilde expansion (directories crate not used)
+    Some(path.as_ref().to_path_buf())
 }
 
 // comment out for now as this is still WIP

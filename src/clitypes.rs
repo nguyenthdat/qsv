@@ -6,6 +6,7 @@ use std::{
 };
 
 /// write to stdout
+#[macro_export]
 macro_rules! wout {
     ($($arg:tt)*) => ({
         use std::io::Write;
@@ -25,6 +26,7 @@ macro_rules! woutinfo {
 }
 
 /// write to stderr and log::error
+#[macro_export]
 macro_rules! werr {
     ($($arg:tt)*) => ({
         use std::io::Write;

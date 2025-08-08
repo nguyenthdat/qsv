@@ -796,6 +796,7 @@ async fn geocode_main(args: Args) -> CliResult<()> {
         .select(SelectColumns::parse(&args.arg_column)?);
 
     #[cfg(feature = "datapusher_plus")]
+    #[allow(unused_variables)]
     let show_progress = false;
 
     // prep progress bar
