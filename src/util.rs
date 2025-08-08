@@ -670,6 +670,7 @@ macro_rules! update_cache_info {
     };
 }
 
+#[cfg(not(all(any(feature = "fetch", feature = "geocode"), not(feature = "lite"))))]
 #[allow(unused_imports)]
 pub(crate) use update_cache_info;
 
