@@ -833,31 +833,30 @@ impl Args {
                 && !dtype.is_empty()
                 && dtype.as_str() != "NULL"
                 && dtype.as_str() != "Boolean"
+                && let Some(sr) = stats_record
             {
-                if let Some(sr) = stats_record {
-                    // Add all available stats if some
-                    add_stat(&mut field_stats, "sum", sr.sum);
-                    add_stat(&mut field_stats, "min", sr.min.clone());
-                    add_stat(&mut field_stats, "max", sr.max.clone());
-                    add_stat(&mut field_stats, "range", sr.range);
-                    add_stat(&mut field_stats, "sort_order", sr.sort_order.clone());
+                // Add all available stats if some
+                add_stat(&mut field_stats, "sum", sr.sum);
+                add_stat(&mut field_stats, "min", sr.min.clone());
+                add_stat(&mut field_stats, "max", sr.max.clone());
+                add_stat(&mut field_stats, "range", sr.range);
+                add_stat(&mut field_stats, "sort_order", sr.sort_order.clone());
 
-                    // String-specific stats
-                    add_stat(&mut field_stats, "min_length", sr.min_length);
-                    add_stat(&mut field_stats, "max_length", sr.max_length);
-                    add_stat(&mut field_stats, "sum_length", sr.sum_length);
-                    add_stat(&mut field_stats, "avg_length", sr.avg_length);
-                    add_stat(&mut field_stats, "stddev_length", sr.stddev_length);
-                    add_stat(&mut field_stats, "variance_length", sr.variance_length);
-                    add_stat(&mut field_stats, "cv_length", sr.cv_length);
+                // String-specific stats
+                add_stat(&mut field_stats, "min_length", sr.min_length);
+                add_stat(&mut field_stats, "max_length", sr.max_length);
+                add_stat(&mut field_stats, "sum_length", sr.sum_length);
+                add_stat(&mut field_stats, "avg_length", sr.avg_length);
+                add_stat(&mut field_stats, "stddev_length", sr.stddev_length);
+                add_stat(&mut field_stats, "variance_length", sr.variance_length);
+                add_stat(&mut field_stats, "cv_length", sr.cv_length);
 
-                    // Numeric-specific stats
-                    add_stat(&mut field_stats, "mean", sr.mean);
-                    add_stat(&mut field_stats, "sem", sr.sem);
-                    add_stat(&mut field_stats, "stddev", sr.stddev);
-                    add_stat(&mut field_stats, "variance", sr.variance);
-                    add_stat(&mut field_stats, "cv", sr.cv);
-                }
+                // Numeric-specific stats
+                add_stat(&mut field_stats, "mean", sr.mean);
+                add_stat(&mut field_stats, "sem", sr.sem);
+                add_stat(&mut field_stats, "stddev", sr.stddev);
+                add_stat(&mut field_stats, "variance", sr.variance);
+                add_stat(&mut field_stats, "cv", sr.cv);
             }
 
             fields.push(FrequencyField {
