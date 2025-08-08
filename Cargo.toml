@@ -119,7 +119,7 @@ fancy-regex = "0.16"
 fast-float2 = "0.2"
 flate2 = { version = "1", optional = true }
 foldhash = "0.1"
-file-format = { version = "0.27", features = ["reader"] }
+file-format = { version = "0.28", features = ["reader"] }
 filetime = "0.2"
 flexi_logger = { version = "0.31", features = [
     "async",
