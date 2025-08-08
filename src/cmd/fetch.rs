@@ -355,6 +355,12 @@ pub struct RedisConfig {
     pub ttl_secs:      Duration,
     pub ttl_refresh:   bool,
 }
+impl Default for RedisConfig {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl RedisConfig {
     pub fn new() -> RedisConfig {
         Self {
@@ -380,6 +386,12 @@ pub struct DiskCacheConfig {
     pub ttl_secs:    Duration,
     pub ttl_refresh: bool,
 }
+impl Default for DiskCacheConfig {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl DiskCacheConfig {
     pub fn new() -> DiskCacheConfig {
         Self {
