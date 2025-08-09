@@ -16,15 +16,15 @@ However, this is problematic for columns with ALL unique values (e.g. an ID colu
 as the command will need to allocate memory proportional to the column's cardinality,
 potentially causing Out-of-Memory (OOM) errors for larger-than-memory datasets.
 
-To overcome this, the frequency command can use the stats cache if it exists to get
-column cardinalities. This short-circuits frequency compilation for columns with
-all unique values (i.e. where rowcount == cardinality), eliminating the need to
+To overcome this, the frequency command uses the stats cache if it exists to get
+column cardinality information. This short-circuits frequency compilation for columns
+with all unique values (i.e. where rowcount == cardinality), eliminating the need to
 maintain an in-memory hashmap for ID columns. This allows `frequency` to handle
 larger-than-memory datasets with the added benefit of also making it faster when
 working with datasets with ID columns.
 
-It is therefore highly recommended to index the CSV and run the stats command first
-before running the frequency command.
+This is also why it is highly recommended to index the CSV and run the stats command
+first before running the frequency command.
 
 When using the JSON output mode, note that boolean and date type inference are
 disabled by default. If you want to infer dates and boolean types, you can
