@@ -1,6 +1,6 @@
 extern crate qsv_docopt as docopt;
 
-pub use clitypes::{CURRENT_COMMAND, CliError, CliResult, QsvExitCode};
+pub use clitypes::{CliError, CliResult, QsvExitCode, CURRENT_COMMAND};
 pub use config::SPONSOR_MESSAGE;
 pub use docopt::Docopt;
 pub mod clitypes;
