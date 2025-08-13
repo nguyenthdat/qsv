@@ -312,35 +312,35 @@ static DEFAULT_GZIP_COMPRESSION_LEVEL: u8 = 6;
 static DEFAULT_ZSTD_COMPRESSION_LEVEL: i32 = 3;
 
 #[derive(Deserialize, Clone)]
-struct Args {
-    arg_input:                  Vec<PathBuf>,
-    arg_sql:                    String,
-    flag_format:                String,
-    flag_try_parsedates:        bool,
-    flag_infer_len:             usize,
-    flag_cache_schema:          bool,
-    flag_streaming:             bool,
-    flag_low_memory:            bool,
-    flag_no_optimizations:      bool,
-    flag_ignore_errors:         bool,
-    flag_truncate_ragged_lines: bool,
-    flag_decimal_comma:         bool,
-    flag_datetime_format:       Option<String>,
-    flag_date_format:           Option<String>,
-    flag_time_format:           Option<String>,
-    flag_float_precision:       Option<usize>,
-    flag_rnull_values:          String,
-    flag_wnull_value:           String,
-    flag_compression:           String,
-    flag_compress_level:        Option<i32>,
-    flag_statistics:            bool,
-    flag_output:                Option<String>,
-    flag_delimiter:             Option<Delimiter>,
-    flag_quiet:                 bool,
+pub struct Args {
+    pub arg_input:                  Vec<PathBuf>,
+    pub arg_sql:                    String,
+    pub flag_format:                String,
+    pub flag_try_parsedates:        bool,
+    pub flag_infer_len:             usize,
+    pub flag_cache_schema:          bool,
+    pub flag_streaming:             bool,
+    pub flag_low_memory:            bool,
+    pub flag_no_optimizations:      bool,
+    pub flag_ignore_errors:         bool,
+    pub flag_truncate_ragged_lines: bool,
+    pub flag_decimal_comma:         bool,
+    pub flag_datetime_format:       Option<String>,
+    pub flag_date_format:           Option<String>,
+    pub flag_time_format:           Option<String>,
+    pub flag_float_precision:       Option<usize>,
+    pub flag_rnull_values:          String,
+    pub flag_wnull_value:           String,
+    pub flag_compression:           String,
+    pub flag_compress_level:        Option<i32>,
+    pub flag_statistics:            bool,
+    pub flag_output:                Option<String>,
+    pub flag_delimiter:             Option<Delimiter>,
+    pub flag_quiet:                 bool,
 }
 
 #[derive(Default, Clone, PartialEq)]
-enum OutputMode {
+pub enum OutputMode {
     #[default]
     Csv,
     Json,
@@ -354,7 +354,7 @@ enum OutputMode {
 // shamelessly copied from
 // https://github.com/pola-rs/polars-cli/blob/main/src/main.rs
 impl OutputMode {
-    fn execute_query(
+    pub fn execute_query(
         &self,
         query: &str,
         ctx: &mut SQLContext,
@@ -516,7 +516,7 @@ impl FromStr for OutputMode {
 }
 
 #[derive(Default, Copy, Clone)]
-enum PqtCompression {
+pub enum PqtCompression {
     Uncompressed,
     Gzip,
     Snappy,
@@ -525,7 +525,7 @@ enum PqtCompression {
     Lz4Raw,
 }
 #[derive(Default, Copy, Clone)]
-enum ArrowCompression {
+pub enum ArrowCompression {
     #[default]
     Uncompressed,
     Lz4,
@@ -533,7 +533,7 @@ enum ArrowCompression {
 }
 
 #[derive(Default, Copy, Clone)]
-enum QsvAvroCompression {
+pub enum QsvAvroCompression {
     #[default]
     Uncompressed,
     Deflate,

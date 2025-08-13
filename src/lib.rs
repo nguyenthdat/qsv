@@ -11,3 +11,5 @@ pub mod lookup;
 pub mod odhtcache;
 pub mod select;
 pub mod util;
+
+pub use polars;
