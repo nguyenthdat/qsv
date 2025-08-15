@@ -78,12 +78,13 @@ harness = false
 # panic = "abort"
 
 [dependencies]
+rayon = "1.11.0"
 arboard = { version = "3.6.0", default-features = false, optional = true }
 atoi_simd = "0.16"
 base62 = { version = "2.2", optional = true }
 base64-simd = { version = "0.8", optional = true }
 bitvec = "1"
-bytemuck = { version = "1.23", features = [
+bytemuck = { version = "1.23.2", features = [
     "latest_stable_rust",
 ], optional = true }
 byteorder = "1.5"
@@ -123,7 +124,7 @@ fancy-regex = "0.16"
 fast-float2 = "0.2"
 flate2 = { version = "1", optional = true }
 foldhash = "0.1"
-file-format = { version = "0.27", features = ["reader"] }
+file-format = { version = "0.28.0", features = ["reader"] }
 filetime = "0.2"
 flexi_logger = { version = "0.31", features = [
     "async",
@@ -157,7 +158,7 @@ jsonschema = { version = "0.32", features = [
     "resolve-file",
     "resolve-http",
 ], default-features = false }
-libc = "0.2"
+libc = "0.2.175"
 localzone = { version = "0.3", features = ["auto_validation"] }
 log = "0.4"
 memmap2 = "0.9"
@@ -178,7 +179,7 @@ minijinja-contrib = { version = "2", features = [
     "wordcount",
     "wordwrap",
 ] }
-mlua = { version = "0.11", features = [
+mlua = { version = "0.11.2", features = [
     "luau",
     "luau-jit",
     "serialize",
@@ -235,13 +236,12 @@ qsv_vader_sentiment_analysis = { version = "0.2", optional = true }
 rand = "0.9"
 rand_hc = "0.4"
 rand_xoshiro = "0.7"
-rayon = "1.10"
-redis = { version = "0.32", features = [
+redis = { version = "0.32.5", features = [
     "ahash",
     "tcp_nodelay",
 ], default-features = false, optional = true }
 regex = "1"
-reqwest = { version = "0.12", features = [
+reqwest = { version = "0.12.23", features = [
     "blocking",
     "brotli",
     "cookies",
@@ -283,11 +283,11 @@ thousands = { version = "0.2", optional = true }
 threadpool = "1.8"
 titlecase = { version = "3", optional = true }
 tokio = { version = "1", features = ["parking_lot", "rt-multi-thread"] }
-uuid = { version = "1", features = ["v4", "v7"] }
+uuid = { version = "1.18.0", features = ["v4", "v7"] }
 url = "2.5"
 whatlang = { version = "0.16", optional = true }
 xxhash-rust = { version = "0.8", features = ["xxh3"] }
-zip = "=4.2.0"
+zip = "4.3.0"
 
 [dev-dependencies]
 actix-governor = "0.8"
